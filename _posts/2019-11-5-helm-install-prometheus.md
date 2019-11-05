@@ -462,12 +462,12 @@ kubectl apply -f grafana-pv.yaml
 ## 微信报警
 > 将对应参数修改为自己微信企业号相对应参数
 ![tpl.png](/assets/images/monitoring/tpl.png)
-![wechat.png](/assets/images/monitoring/wechat.png)
 ![alertmanager.png](/assets/images/monitoring/alertmanager1.png)
  ```bash 
 kubectl delete secret alertmanager-main -n monitoring
 kubectl create secret generic alertmanager-main --from-file=alertmanager.yaml --from-file=wechat.tmpl -n monitoring
 wechat.tpl模板可以根据自己需求自己定制，我这里就找了个网上的例子,格式不太会玩，貌似看不到，如下图
  ```
+![wechat.png](/assets/images/monitoring/wechat.png)
 
 >基本完成。具体的修改可参考个人实际。
