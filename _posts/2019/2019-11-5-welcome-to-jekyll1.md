@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: "post"
 title:  "hello jekyll1!"
 date:   "2019-11-5 21:10:33"
 categories: "jekyll"
