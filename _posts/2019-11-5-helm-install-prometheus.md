@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "2019-11-04-helm-install-prometheus-operator"
+title: "2019-11-05-helm-install-prometheus-operator"
 date: "2019-11-05 20:00:00"
 category: kubernetes
 tags:  kubernetes  prometheus-operator
