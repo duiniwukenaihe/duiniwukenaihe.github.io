@@ -1,7 +1,7 @@
 ---
 layout: post
-title: "2019-11-04-k8s-helm-install-prometheus-operator"
-date: "2019-11-04 20:00:00"
+title: "2019-11-04-helm-install-prometheus-operator"
+date: "2019-11-05 20:00:00"
 category: kubernetes
 tags:  kubernetes  prometheus-operator
 author: duiniwukenaihe
@@ -30,6 +30,7 @@ author: duiniwukenaihe
 
 ## 安装prometheus-operator
 
+>
 先说下自己的流程：
 1. 克隆prometheus-operator仓库
 2. 按照官方quickstart进行安装
@@ -43,7 +44,7 @@ author: duiniwukenaihe
 
 ### 克隆prometheus-operator仓库
 
-注：新版本升级后和旧版本文件结构有些不一样 可以参照github仓库文档quickstart.
+>注：新版本升级后和旧版本文件结构有些不一样 可以参照github仓库文档quickstart.
 
  ```bash
 git clone https://github.com/coreos/kube-prometheus
@@ -68,7 +69,7 @@ node-exporter-thz4j                   2/2     Running            0          9m
 prometheus-adapter-5cd5798d96-2jnjl   0/1     ImagePullBackOff   0          9m
 prometheus-operator-99dccdc56-zr6fw   0/1     ImagePullBackOff   0          9m11s
   ```
-注意：会出现有些镜像下载不下来的问题，可墙外服务器下载镜像修改tag上传到harbor，修改yaml文件中镜像为对应harbor tag解决。最终如下图：
+>注意：会出现有些镜像下载不下来的问题，可墙外服务器下载镜像修改tag上传到harbor，修改yaml文件中镜像为对应harbor tag解决。最终如下图：
 ![create.png](/assets/images/monitoring/create.png) 
 ![state.png](/assets/images/monitoring/status.png) 
 
@@ -131,6 +132,7 @@ spec:
           port: 9090
 ---
 kubectl apply -f monitoring.com.yaml
+>
 登录https://monitoring.saynaihe.com/ 
 https://prometheus.saynaihe.com/
 https://alertmanager.saynaihe.com/
@@ -188,9 +190,7 @@ kubectl apply -f prometheus-kubeSchedulerService.yaml
  ```
 ![ready.png](/assets/images/monitoring/ready.png) 
 ## 监控集群etcd服务
- ```bash 
-kubernetes 安装etcd一般常用的是两种 外部搭建etcd和 容器化运行etc两种的方式都写了下。也特别说下既然都用了kubernetes了 都上了容器了 没有必要去外部搭建etd集群。尤其是后期集群升级，etcd的版本 各种的 会有些恶心，安装kubernetes集群还是安装官方的指导的安装比较好，个人觉得很多教程让二进制安装和kubeadm安装还外挂etcd集群的方式很爽反感。除非有良好系统的基础不建议那么的玩了。
- ```
+>kubernetes 安装etcd一般常用的是两种 外部搭建etcd和 容器化运行etc两种的方式都写了下。也特别说下既然都用了kubernetes了 都上了容器了 没有必要去外部搭建etd集群。尤其是后期集群升级，etcd的版本 各种的 会有些恶心，安装kubernetes集群还是安装官方的指导的安装比较好，个人觉得很多教程让二进制安装和kubeadm安装还外挂etcd集群的方式很爽反感。除非有良好系统的基础不建议那么的玩了。
 
 ### kubadm安装集成etcd方式下操作：
 
@@ -301,9 +301,7 @@ kubectl apply -f prometheus-serviceMonitorEtcd.yaml
 
 
 ## 开启服务自动发现，配置可持续存储，修改prometheus Storage Retention参数设置数据保留时间
- ```bash
- 参照https://www.qikqiak.com/post/prometheus-operator-advance/,自动发现集群中的 Service，就需要我们在 Service 的annotation区域添加prometheus.io/scrape=true的声明，然后通过这个文件创建一个对应的 Secret 对象。由于配置可持续存储和修改retention参数都在同一个配置文件就都写在一起了
- ```
+> 参照https://www.qikqiak.com/post/prometheus-operator-advance/,自动发现集群中的 Service，就需要我们在 Service 的annotation区域添加prometheus.io/scrape=true的声明，然后通过这个文件创建一个对应的 Secret 对象。由于配置可持续存储和修改retention参数都在同一个配置文件就都写在一起了
 
  ```bash
 cat <<EOF > prometheus-additional.yaml
@@ -448,9 +446,7 @@ kubectl apply -f grafana-pv.yaml
 ![grafana-dev1.png](/assets/images/monitoring/grafana-dev1.png)
 ![grafana-dev2.png](/assets/images/monitoring/grafana-dev2.png)
 
- ```bash
-kubectl apply -f grafana-deployment.yaml
- ```
+> kubectl apply -f grafana-deployment.yaml
 
 ### grafana添加模板，只添加了treafik2 和etcd模板
  ```bash
@@ -464,11 +460,9 @@ kubectl apply -f grafana-deployment.yaml
 ![etcd-prometheus.png](/assets/images/monitoring/etcd-prometheus.png)
 
 ## 微信报警
-
+> 将对应参数修改为自己微信企业号相对应参数
 
  ```bash
-将对应参数修改为自己微信企业号相对应参数:
-
 cat <<EOF > alertmanager.yaml
     global:
       resolve_timeout: 2m
@@ -520,6 +514,5 @@ wechat.tpl模板可以根据自己需求自己定制，我这里就找了个网�
  ```
 ![tpl.png](/assets/images/monitoring/tpl.png)
 ![wechat.png](/assets/images/monitoring/wechat.png)
- ```bash
-基本完成。具体的修改可参考个人实际。
- ```
+
+>基本完成。具体的修改可参考个人实际。
