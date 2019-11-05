@@ -461,58 +461,13 @@ kubectl apply -f grafana-pv.yaml
 
 ## 微信报警
 > 将对应参数修改为自己微信企业号相对应参数
-
- ```bash
-cat <<EOF > alertmanager.yaml
-    global:
-      resolve_timeout: 2m
-      wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
-    route:
-      group_by: ['alert']
-      group_wait: 10s
-      group_interval: 1m
-      repeat_interval: 1h
-      receiver: wechat
-    receivers:
-    - name: 'wechat'
-      wechat_configs:
-      - api_secret: 'xxxxxxx'
-        send_resolved: true
-        to_user: '@all'
-        to_party: 'xxxx'
-        agent_id: 'xxxx'
-        corp_id: 'xxxx'
-    templates:
-      - '/etc/config/alert/wechat.tmpl'
-    inhibit_rules:
-      - source_match:
-          severity: 'critical'
-        target_match:
-          severity: 'warning'
-        equal: ['alertname', 'dev', 'instance']
-EOF
-
-cat <<EOF > wechat.yaml
-{{ define "wechat.default.message" }}
-{{ range .Alerts }}
-========start==========
-告警程序：prometheus_alert
-告警级别：{{ .Labels.severity }}
-告警类型：{{ .Labels.alertname }}
-故障主机: {{ .Labels.instance }}
-告警主题: {{ .Annotations.summary }}
-告警详情: {{ .Annotations.description }}
-触发时间: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
-========end==========
-{{ end }}
-{{ end }}
--------------------->END<--------------------
-EOF
+![tpl.png](/assets/images/monitoring/tpl.png)
+![wechat.png](/assets/images/monitoring/wechat.png)
+![alertmanager.png](/assets/images/monitoring/alertmanager1.png)
+ ```bash 
 kubectl delete secret alertmanager-main -n monitoring
 kubectl create secret generic alertmanager-main --from-file=alertmanager.yaml --from-file=wechat.tmpl -n monitoring
 wechat.tpl模板可以根据自己需求自己定制，我这里就找了个网上的例子,格式不太会玩，貌似看不到，如下图
  ```
-![tpl.png](/assets/images/monitoring/tpl.png)
-![wechat.png](/assets/images/monitoring/wechat.png)
 
 >基本完成。具体的修改可参考个人实际。
