@@ -1,9 +1,9 @@
 ---
-layout: post
+layout: "post"
 title: "k8s-install-prometheus-operator"
 date:   "2019-11-5 21:00:33"
-category: kubernetes
-tags:  kubernetes
+category: "kubernetes"
+tags:  "kubernetes"
 author: duiniwukenaihe
 ---
 * content
