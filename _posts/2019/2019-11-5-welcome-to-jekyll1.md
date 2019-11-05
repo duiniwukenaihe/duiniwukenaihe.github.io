@@ -2,8 +2,8 @@
 layout: post
 title:  "hello jekyll1!"
 date:   "2019-11-5 21:10:33"
-categories: jekyll
-tags: jekyll
+categories: "jekyll"
+tags: "jekyll"
 excerpt: 当年创建 jekyll 时默认的一篇文章，没什么意义，我也一直没删除，留个纪念吧。
 mathjax: true
 ---
