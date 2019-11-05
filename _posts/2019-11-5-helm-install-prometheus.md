@@ -131,13 +131,12 @@ spec:
         - name: prometheus-k8s
           port: 9090
 ---
+EOF
 kubectl apply -f monitoring.com.yaml
->
 登录https://monitoring.saynaihe.com/ 
 https://prometheus.saynaihe.com/
 https://alertmanager.saynaihe.com/
 查看,如下图：
-EOF
 ```
 ![grafana.png](/assets/images/monitoring/grafana.png)
 ![prometheus.png](/assets/images/monitoring/prometheus.png) 
