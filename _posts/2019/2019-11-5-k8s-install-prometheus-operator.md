@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "helm-install-prometheus-operator"
+title: "k8s-install-prometheus-operator"
 date:   "2019-11-5 21:00:33"
 category: kubernetes
 tags:  kubernetes
@@ -12,7 +12,7 @@ author: duiniwukenaihe
  
 
 # 描述背景：
-注：记录各种常见问题
+注：搭建prometheus-operator
 
 集群配置：
 初始集群环境kubeadm 1.16.1
