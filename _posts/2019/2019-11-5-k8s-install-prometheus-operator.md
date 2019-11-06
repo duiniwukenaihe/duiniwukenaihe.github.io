@@ -3,7 +3,7 @@ layout: "post"
 title: "k8s-install-prometheus-operator"
 date:   "2019-11-5 21:00:33"
 category: "kubernetes"
-tags:  "kubernetes"
+tags:  "kubernetes prometheus-operator"
 author: duiniwukenaihe
 ---
 * content
@@ -460,6 +460,72 @@ kubectl apply -f grafana-pv.yaml
 
 ## 微信报警
 > 将对应参数修改为自己微信企业号相对应参数
+ ```bash 
+cat <<EOF > alertmanager.yaml 
+    global:
+      resolve_timeout: 2m
+      wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
+    route:
+      group_by: ['alert']
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 1h
+      receiver: wechat
+    receivers:
+    - name: 'wechat'
+      wechat_configs:
+      - api_secret: 'xxxx'
+        send_resolved: true
+        to_user: '@all'
+        to_party: 'xxx'
+        agent_id: 'xxx'
+        corp_id: 'xxxx'
+    templates:
+      - '/etc/config/alert/wechat.tmpl'
+    inhibit_rules:
+      - source_match:
+          severity: 'critical'
+        target_match:
+          severity: 'warning'
+        equal: ['alertname', 'dev', 'instance']
+EOF
+cat <<EOF > wechat.tpl
+{{ define "wechat.default.message" }}
+{{ if gt (len .Alerts.Firing) 0 -}}
+☸ Alerts Firing ✖️ ‼️ :
+{{ range .Alerts }}
+☎️ 触发警报 ☔ ☠️ : {{ .Labels.alertname }}
+☞名称空间: {{ .Labels.namespace }}
+☞主机: {{ .Labels.instance }}
+☞job: {{ .Labels.job }}
+->涉及容器名称: {{ .Labels.container_name }}
+->Pod名称: {{ .Labels.pod_name }}
+告警级别: {{ .Labels.severity }}
+告警详情: {{ .Annotations.message }}
+触发时间⏱: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+警报链接: {{ .GeneratorURL }}
+✍️ 备注详情❄️: {{ .Annotations.runbook_url }}
+-------------------->END<--------------------
+{{- end }}
+{{- end }}
+{{ if gt (len .Alerts.Resolved) 0 -}}
+☸ Alerts Resolved ✔️:
+{{ range .Alerts }}
+☎️ 触发警报 ☫ : {{ .Labels.alertname }}
+♥️ 名称空间 ✝️ : {{ .Labels.namespace }}
+♥️ ->涉及容器名称: {{ .Labels.container_name }}
+♥️ ->Pod名称☸: {{ .Labels.pod_name }}
+♥️ 告警级别: {{ .Labels.severity }}
+♥️ 告警详情: {{ .Annotations.message }}
+♥️ 触发时间 ⏱ : {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+♥️ 恢复时间 ⏲ : {{ .EndsAt.Format "2006-01-02 15:04:05" }}
+♥️ 备注详情: {{ .Annotations.runbook_url }}
+{{- end }}
+{{- end }}
+{{- end }}
+-------------------->END<--------------------
+EOF
+
 ![tpl.png](/assets/images/monitoring/tpl.png)
 ![alertmanager.png](/assets/images/monitoring/alertmanager1.png)
  ```bash 
