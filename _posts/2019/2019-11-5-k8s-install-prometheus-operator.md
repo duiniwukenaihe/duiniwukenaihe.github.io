@@ -525,7 +525,7 @@ cat <<EOF > wechat.tpl
 {{- end }}
 -------------------->END<--------------------
 EOF
-
+ ```
 ![tpl.png](/assets/images/monitoring/tpl.png)
 ![alertmanager.png](/assets/images/monitoring/alertmanager1.png)
  ```bash 
