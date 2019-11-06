@@ -460,6 +460,7 @@ kubectl apply -f grafana-pv.yaml
 
 ## 微信报警
 > 将对应参数修改为自己微信企业号相对应参数
+
  ```bash 
 cat <<EOF > alertmanager.yaml 
     global:
