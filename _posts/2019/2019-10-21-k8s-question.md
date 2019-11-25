@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "kuberntes1.16  qustion"
+title: "kuberntes1.16  question"
 date: "2019-10-21 10:00:00"
 category: kubernetes
 tags:  kubernetes  qustion
@@ -40,7 +40,3 @@ sysctl -p /etc/sysctl.d/k8s.conf
 ls /proc/sys/net/bridge
 ```
 OK问题解决
-
-
-
-
