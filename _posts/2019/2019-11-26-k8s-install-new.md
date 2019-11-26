@@ -1,6 +1,6 @@
 ---
 layout: "post"
-title: "2019-11-26-k8s-install-now"
+title: "2019-11-26-k8s-install-new"
 date: "2019-11-26 10:00:00"
 category: "kubernetes"
 tags:  "kubernetes1.16.2 kuberadm"
