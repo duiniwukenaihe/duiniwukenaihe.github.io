@@ -244,7 +244,7 @@ backend kubernetes-master           #后端服务器，也就是说访问192.168
 EOF
  systemctl enable haproxy && systemctl start haproxy && systemctl status haproxy
 
-腾讯云lsb负载均衡最终还是用了传统型，监听器tcp 6443代理后端三台haproxy 8443端口
+腾讯云slb负载均衡最终还是用了传统型，监听器tcp 6443代理后端三台haproxy 8443端口
  ```
 #### 2. kuberadm master安装
  ```bash
