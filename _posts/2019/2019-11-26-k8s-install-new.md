@@ -12,7 +12,7 @@ author: duiniwukenaihe
  
 
 集群配置：
-初始集群环境kubeadm 1.16.2
+centos7.6
 
 |  ip           | 自定义域名         |    主机名 |
 |  :----:       |     :----:        |   :----:  |
@@ -30,6 +30,8 @@ author: duiniwukenaihe
 >
 1. etcd自建外部挂载，个人对etcd不是很懂，版本升级兼容问题各种解决毕竟费劲，更主要的是都上容器了，我为什么不把etcd教给容器呢？当然了存储还是挂载master主机目录的。
 2. 腾讯云的slb了 还使用了haproxy，开始使用应用型负载均衡代理，后而且后面出现了各种诡异的问题，比如证书之类的。个人觉得问题应该简单化。
+
+> 注：https://zhangguanzhang.github.io/2019/11/24/kubeadm-base-use/很多可以参考下馆长写的文章比较详细。
 
 ## 开始
 
