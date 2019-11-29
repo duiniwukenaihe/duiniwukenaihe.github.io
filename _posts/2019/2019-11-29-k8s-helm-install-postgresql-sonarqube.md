@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "2019-11-29-k8s-helm-install-postgresql-sonarr"
+title: "2019-11-29-k8s-helm-install-postgresql-sonarqube"
 date: "2019-11-29 10:00:00"
 category: "kubernetes"
 tags:  "kubernetes  helm postgresql sonarqube"
