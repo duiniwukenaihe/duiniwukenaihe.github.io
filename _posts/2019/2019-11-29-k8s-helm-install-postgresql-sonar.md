@@ -2,19 +2,15 @@
 layout: post
 title: "2019-11-29-k8s-helm-install-postgresql-sonarr"
 date: "2019-11-29 10:00:00"
-category: kubernetes
-tags:  kubernetes  helm postgresql sonarqube
+category: "kubernetes"
+tags:  "kubernetes  helm postgresql sonarqube"
 author: duiniwukenaihe
 ---
 * content
 {:toc}
 
- 
-
-
-
 集群配置：
-初始集群环境kubeadm 1.16.1
+初始集群环境kubeadm 1.16.3
 
 |  ip           | 自定义域名         |    主机名 |
 |  :----:       |     :----:        |   :----:  |
@@ -27,10 +23,9 @@ author: duiniwukenaihe
 |192.168.3.4    |  node03.k8s.io    |  k8s-node-03|
 
 # 描述背景：
-> 正常来说helm玩的好应该是直接安装的但是玩的不太好 ，postgresql 和sonarqube分成两部安装的。变量各种用的不熟悉，安装后sonarqube报错什么的， 就分成两步安装了
+> 正常来说helm玩的好应该是直接安装的但是玩的不太好 ，postgresql 和sonarqube分成两部安装的。变量各种用的不熟悉，安装后sonarqube报错什么的， 就分成两步安装了。
 
 # 开始安装
-
 ## 1. git clone chart库
 > git clone https://github.com/helm/charts
 
@@ -38,7 +33,7 @@ author: duiniwukenaihe
 
 > cd charts/stable/sonarqube/postgresql
 > 
-修改 values.yaml，就设置了了用户密码和存储storageClass。
+修改 values.yaml，就设置了用户密码和存储类storageClass。
 
  ```bash
 postgresqlPassword: qmVy5wubfmcekZy3
@@ -67,8 +62,6 @@ postgres=# CREATE DATABASE sonar；
 > kubectl delete pods sonar-postgresql-client -n kube-ops 客户端就删除了就是看helm安装的输出试了一下呢。
 
 ## 3. helm 安装sonar
-
-
  ```bash
 cd ../sonarqube
 rm -rf requirements.yaml
