@@ -3,7 +3,7 @@ layout: post
 title: "2019-12-03-k8s-jenkins-sonarqube"
 date: "2019-12-03 10:00:00"
 category: "kubernetes"
-tags:  "kubernetes  jenkinsl sonarqube"
+tags:  "kubernetes  jenkins sonarqube"
 author: duiniwukenaihe
 ---
 * content
