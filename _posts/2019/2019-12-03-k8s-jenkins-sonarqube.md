@@ -69,7 +69,7 @@ SonarQube Scanner for Jenkins
 # 创建pipeline流水线测试项目
 ## 1. 创建流水线任务
 ![jenkins-sonar9](/assets/images/sonar/jenkins-sonar9.png)
-### 1. 参数化构建流程-文本参数
+### 2. 参数化构建流程-文本参数
  ```bash
 名称： sonar_project_properties
 默认值：
@@ -81,7 +81,7 @@ sonar.java.source=1.8
 sonar.java.target=1.8
  ```
 ![jenkins-sonar10](/assets/images/sonar/jenkins-sonar10.png)
-### 2. 创建pipeline 脚本 这里都是直接copy过来的
+### 3. 创建pipeline 脚本 这里都是直接copy过来的
  ```bash
 **// 设置超时时间为10分钟，如果未成功则结束任务
 timeout(time: 600, unit: 'SECONDS') {
@@ -117,7 +117,7 @@ timeout(time: 600, unit: 'SECONDS') {
 }**
   ```
 ![jenkins-sonar11](/assets/images/sonar/jenkins-sonar11.png)
-### 3. 执行jenkins任务构建
+### 4. 执行jenkins任务构建
 >点击 Build with Parameters 执行 Jenkins 任务,由于插件安装不完整，sonarqube 少安装了L18b插件，开始失败率 好多次。等待确认成功
 ![jenkins-sonar12](/assets/images/sonar/jenkins-sonar12.png)
 # 登陆sonarqube查看扫描结果.
