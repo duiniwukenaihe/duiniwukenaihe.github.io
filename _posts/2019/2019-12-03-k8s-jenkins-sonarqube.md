@@ -118,7 +118,7 @@ timeout(time: 600, unit: 'SECONDS') {
   ```
 ![jenkins-sonar11](/assets/images/sonar/jenkins-sonar11.png)
 ### 4. 执行jenkins任务构建
->点击 Build with Parameters 执行 Jenkins 任务,由于插件安装不完整，sonarqube 少安装了L18b插件，开始失败率 好多次。等待确认成功
+>点击 Build with Parameters 执行 Jenkins 任务,由于插件安装不完整，sonarqube 少安装了L10n插件，开始失败率 好多次。等待确认成功
 ![jenkins-sonar12](/assets/images/sonar/jenkins-sonar12.png)
 # 登陆sonarqube查看扫描结果.
 
