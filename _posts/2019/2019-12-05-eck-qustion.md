@@ -106,6 +106,8 @@ spec:
             storage: 30Gi
         storageClassName: rook-ceph-block
 EOF
+ ```
+ ```bash
 增加了：
       xpack.security.authc.realms:
         native:
