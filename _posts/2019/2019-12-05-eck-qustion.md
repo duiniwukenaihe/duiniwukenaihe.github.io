@@ -3,7 +3,7 @@ layout: post
 title: "2019-12-05-eck-qustion"
 date: "2019-12-05 10:00:00"
 category: "elastic-oparator"
-tags:  "elastic-oparator Elastic Cloud on Kubernetes (ECK)"
+tags:  "elastic-oparator ECK"
 author: duiniwukenaihe
 ---
 * content
