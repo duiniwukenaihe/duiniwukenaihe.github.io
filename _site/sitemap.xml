@@ -18,21 +18,6 @@
   
     
     <url>
-      <loc>http://localhost:4000/2020/07/22/kubernetes/</loc>
-      
-        <lastmod>2020-07-22T16:00:00+08:00</lastmod>
-      
-      
-        <changefreq>monthly</changefreq>
-      
-      
-        <priority>0.5</priority>
-      
-    </url>
-    
-  
-    
-    <url>
       <loc>http://localhost:4000/2019/12/27/traefik/</loc>
       
         <lastmod>2019-12-27T18:00:00+08:00</lastmod>
@@ -351,7 +336,7 @@
     <url>
       <loc>http://localhost:4000/archive/</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -366,7 +351,7 @@
     <url>
       <loc>http://localhost:4000/category/</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -381,7 +366,7 @@
     <url>
       <loc>http://localhost:4000/tag/</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -396,7 +381,7 @@
     <url>
       <loc>http://localhost:4000/collection/</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -411,7 +396,7 @@
     <url>
       <loc>http://localhost:4000/demo/</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -426,7 +411,7 @@
     <url>
       <loc>http://localhost:4000/nav/</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -441,7 +426,7 @@
     <url>
       <loc>http://localhost:4000/about/</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -456,7 +441,7 @@
     <url>
       <loc>http://localhost:4000/feed.xml</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -471,7 +456,7 @@
     <url>
       <loc>http://localhost:4000/</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -486,7 +471,7 @@
     <url>
       <loc>http://localhost:4000/css/main.css</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -505,7 +490,7 @@
     <url>
       <loc>http://localhost:4000/page2/</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -520,7 +505,7 @@
     <url>
       <loc>http://localhost:4000/page3/</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -535,7 +520,7 @@
     <url>
       <loc>http://localhost:4000/css/main.css.map</loc>
       
-        <lastmod>2020-07-22T20:16:13+08:00</lastmod>
+        <lastmod>2020-07-22T20:23:35+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>

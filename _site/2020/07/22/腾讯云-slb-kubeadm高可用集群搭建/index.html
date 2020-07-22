@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</title>
-    <meta name="description" content="  背景  开始          首先的还是环境初始化，master work节点全部执行                  1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名（10.0.4.20为slb负载均衡ip）          2. 升级linux内核...">
+    <meta name="description" content="  背景          一 .首先的还是环境初始化，master work节点全部执行                  1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置对应主机名（10.0.4.20为slb负载均衡ip）          2. 升级linux内核...">
 
     <link rel="shortcut icon" href="/favicon.ico?" type="image/x-icon">
     <link rel="icon" href="/favicon.ico?" type="image/x-icon">
@@ -209,27 +209,25 @@
         <hr>
         <article itemscope itemtype="http://schema.org/BlogPosting">
         <ul id="markdown-toc">
-  <li><a href="#背景" id="markdown-toc-背景">背景</a></li>
-  <li><a href="#开始" id="markdown-toc-开始">开始</a>    <ul>
-      <li><a href="#首先的还是环境初始化master-work节点全部执行" id="markdown-toc-首先的还是环境初始化master-work节点全部执行">首先的还是环境初始化，master work节点全部执行</a>        <ul>
-          <li><a href="#1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip" id="markdown-toc-1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip">1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名（10.0.4.20为slb负载均衡ip）</a></li>
+  <li><a href="#背景" id="markdown-toc-背景">背景</a>    <ul>
+      <li><a href="#一-首先的还是环境初始化master-work节点全部执行" id="markdown-toc-一-首先的还是环境初始化master-work节点全部执行">一 .首先的还是环境初始化，master work节点全部执行</a>        <ul>
+          <li><a href="#1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置对应主机名100420为slb负载均衡ip" id="markdown-toc-1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置对应主机名100420为slb负载均衡ip">1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置对应主机名（10.0.4.20为slb负载均衡ip）</a></li>
           <li><a href="#2-升级linux内核" id="markdown-toc-2-升级linux内核">2. 升级linux内核</a></li>
-          <li><a href="#2-关闭swap交换分区" id="markdown-toc-2-关闭swap交换分区">2. 关闭swap交换分区</a></li>
-          <li><a href="#3-关闭selinux" id="markdown-toc-3-关闭selinux">3. 关闭selinux</a></li>
-          <li><a href="#4--调整文件打开数等配置" id="markdown-toc-4--调整文件打开数等配置">4.  调整文件打开数等配置</a></li>
-          <li><a href="#5-开启ip转发优化-网桥等配置" id="markdown-toc-5-开启ip转发优化-网桥等配置">5. 开启ip转发优化 网桥等配置</a></li>
-          <li><a href="#6-加载ipvs" id="markdown-toc-6-加载ipvs">6. 加载ipvs</a></li>
-          <li><a href="#7-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置" id="markdown-toc-7-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置">7. journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志熟虑，最大20m(可根据个人需求设置)</a></li>
-          <li><a href="#8-配置yum源" id="markdown-toc-8-配置yum源">8. 配置yum源</a></li>
-          <li><a href="#9-安装基本服务" id="markdown-toc-9-安装基本服务">9. 安装基本服务</a></li>
-          <li><a href="#10-安装kubernetes" id="markdown-toc-10-安装kubernetes">10. 安装kubernetes</a></li>
+          <li><a href="#3-关闭swap交换分区" id="markdown-toc-3-关闭swap交换分区">3. 关闭swap交换分区</a></li>
+          <li><a href="#4-关闭selinux" id="markdown-toc-4-关闭selinux">4. 关闭selinux</a></li>
+          <li><a href="#5--调整文件打开数等配置" id="markdown-toc-5--调整文件打开数等配置">5.  调整文件打开数等配置</a></li>
+          <li><a href="#6-开启ip转发优化-网桥等配置" id="markdown-toc-6-开启ip转发优化-网桥等配置">6. 开启ip转发优化 网桥等配置</a></li>
+          <li><a href="#7-加载ipvs" id="markdown-toc-7-加载ipvs">7. 加载ipvs</a></li>
+          <li><a href="#8-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置" id="markdown-toc-8-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置">8. journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志熟虑，最大20m(可根据个人需求设置)</a></li>
+          <li><a href="#9-配置yum源" id="markdown-toc-9-配置yum源">9. 配置yum源</a></li>
+          <li><a href="#10-安装基本服务" id="markdown-toc-10-安装基本服务">10. 安装基本服务</a></li>
+          <li><a href="#11-安装kubernetes" id="markdown-toc-11-安装kubernetes">11. 安装kubernetes</a></li>
         </ul>
       </li>
-      <li><a href="#master节点操作" id="markdown-toc-master节点操作">master节点操作</a>        <ul>
+      <li><a href="#二--master节点操作" id="markdown-toc-二--master节点操作">二 . master节点操作</a>        <ul>
           <li><a href="#1-master节点安装haproxysh-master01-sh-master-02-sh-master03" id="markdown-toc-1-master节点安装haproxysh-master01-sh-master-02-sh-master03">1. master节点安装haproxy（sh-master01 sh-master-02 sh-master03）</a></li>
           <li><a href="#2-kuberadm-master安装" id="markdown-toc-2-kuberadm-master安装">2. kuberadm master安装</a></li>
           <li><a href="#3-配置flannel插件" id="markdown-toc-3-配置flannel插件">3. 配置flannel插件</a></li>
-          <li><a href="#4-work节点加入mastersh-node-01sh-node-05" id="markdown-toc-4-work节点加入mastersh-node-01sh-node-05">4. work节点加入master(sh-node-01–sh-node-05)</a></li>
         </ul>
       </li>
     </ul>
@@ -298,18 +296,15 @@ centos7.7 64位</p>
   <li>集群采用了slb代理work节点80 443等端口然后用traefik对外暴露应用。日志采集使用了elastic on kubernetes（eck）收集集群日志保留7天内应用日志。另外还搭建了springboot对外收集前端post埋点日志，入kafka。logstash消费入elasticsearch。kibana展示数据。报警监控系统使用了promethus-oprator，报警alartmanager,企业微信报警。granfna展示。持久化存储开始搭建了rook-ceph1.1集群， 但是在版本升级还有节点异常时出现了各种问题，最终放弃。包括eck等应用都使用了local-storage方式存储，elasticsearch的备份使用了腾讯云对象存储服务cos，定制了elasticsearch镜像添加了相关组件。</li>
   <li>项目的更新发布使用了jenkins，集成kubernets。线上环境已经正常运行近一年时间。</li>
   <li>想体验下新版本，然后又动手搭建了一套1.18.6测试环境。中间犯了好多错误，比如iptables没有关闭，也更加深入了解了下负载均衡slb代理本地端口的过程。</li>
-  <li>大致过程与1.16差不多，自己写下日志记录一遍。然后今年想深入集成一下腾讯云的cbs.不要问我为什么不用腾讯云的tke.首先每个slb到现在应该还是只可以挂载一个ssl证书的，业务比较少，我不想管理多个负载均衡，然后负载均衡的策略也比较坑，偶尔tke集群slb测还经常更新。还有上传文件大小限制这样的策略。使用traefik的tcp代理很方便解决这些问题。而且我还是比较喜欢原生不喜欢定制。</li>
+  <li>
+    <p>大致过程与1.16差不多，自己写下日志记录一遍。然后今年想深入集成一下腾讯云的cbs.不要问我为什么不用腾讯云的tke.首先每个slb到现在应该还是只可以挂载一个ssl证书的，业务比较少，我不想管理多个负载均衡，然后负载均衡的策略也比较坑，偶尔tke集群slb测还经常更新。还有上传文件大小限制这样的策略。使用traefik的tcp代理很方便解决这些问题。而且我还是比较喜欢原生不喜欢定制。</p>
+  </li>
+  <li>关于环境的初始化和安装可以看下张馆长的文档，真心不错 https://zhangguanzhang.github.io/2019/11/24/kubeadm-base-use/。</li>
 </ol>
 
-<blockquote>
-  <p>注：关于环境的初始化和安装可以看下张馆长的文档，真心不错：https://zhangguanzhang.github.io/2019/11/24/kubeadm-base-use/</p>
-</blockquote>
+<h3 id="一-首先的还是环境初始化master-work节点全部执行">一 .首先的还是环境初始化，master work节点全部执行</h3>
 
-<h2 id="开始">开始</h2>
-
-<h3 id="首先的还是环境初始化master-work节点全部执行">首先的还是环境初始化，master work节点全部执行</h3>
-
-<h4 id="1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip">1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名（10.0.4.20为slb负载均衡ip）</h4>
+<h4 id="1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置对应主机名100420为slb负载均衡ip">1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置对应主机名（10.0.4.20为slb负载均衡ip）</h4>
 <h4 id="2-升级linux内核">2. 升级linux内核</h4>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>centos7默认内核为3.10版本，一般是建议把内核更新一下。
 <span class="c">##导入key</span>
@@ -336,18 +331,18 @@ package-cleanup <span class="nt">--oldkernels</span>
  <img src="/assets/images/2020/07/kubernetes1.18.6/kernel2.png" alt="kernel2" />
  <img src="/assets/images/2020/07/kubernetes1.18.6/kernel3.png" alt="kernel3" />
  <img src="/assets/images/2020/07/kubernetes1.18.6/kernel4.png" alt="kerne41" /></p>
-<h4 id="2-关闭swap交换分区">2. 关闭swap交换分区</h4>
+<h4 id="3-关闭swap交换分区">3. 关闭swap交换分区</h4>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swapoff <span class="nt">-a</span>
 <span class="nb">sed</span> <span class="nt">-i</span> <span class="s1">'s/.*swap.*/#&amp;/'</span> /etc/fstab
 </code></pre></div></div>
-<h4 id="3-关闭selinux">3. 关闭selinux</h4>
+<h4 id="4-关闭selinux">4. 关闭selinux</h4>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>setenforce  0 
 <span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/sysconfig/selinux 
 <span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/selinux/config 
 <span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=permissive/SELINUX=disabled/g"</span> /etc/sysconfig/selinux 
 <span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=permissive/SELINUX=disabled/g"</span> /etc/selinux/config 
 </code></pre></div></div>
-<h4 id="4--调整文件打开数等配置">4.  调整文件打开数等配置</h4>
+<h4 id="5--调整文件打开数等配置">5.  调整文件打开数等配置</h4>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">echo</span> <span class="s2">"* soft nofile 65536"</span> <span class="o">&gt;&gt;</span> /etc/security/limits.conf
 <span class="nb">echo</span> <span class="s2">"* hard nofile 65536"</span> <span class="o">&gt;&gt;</span> /etc/security/limits.conf
 <span class="nb">echo</span> <span class="s2">"* soft nproc 65536"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
@@ -355,7 +350,7 @@ package-cleanup <span class="nt">--oldkernels</span>
 <span class="nb">echo</span> <span class="s2">"* soft  memlock  unlimited"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
 <span class="nb">echo</span> <span class="s2">"* hard memlock  unlimited"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
 </code></pre></div></div>
-<h4 id="5-开启ip转发优化-网桥等配置">5. 开启ip转发优化 网桥等配置</h4>
+<h4 id="6-开启ip转发优化-网桥等配置">6. 开启ip转发优化 网桥等配置</h4>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; /etc/sysctl.d/k8s.conf
 net.ipv6.conf.all.disable_ipv6 = 1
 net.ipv6.conf.default.disable_ipv6 = 1
@@ -399,7 +394,7 @@ net.ipv4.tcp_keepalive_probes = 10
 </span><span class="no">EOF
 </span>sysctl <span class="nt">--system</span>
 </code></pre></div></div>
-<h4 id="6-加载ipvs">6. 加载ipvs</h4>
+<h4 id="7-加载ipvs">7. 加载ipvs</h4>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
 :&gt; /etc/modules-load.d/ipvs.conf
 <span class="nv">module</span><span class="o">=(</span>
@@ -419,7 +414,7 @@ systemctl <span class="nb">enable</span> <span class="nt">--now</span> systemd-m
 lsmod | <span class="nb">grep </span>ip_v
 </code></pre></div></div>
 <p><img src="/assets/images/2020/07/kubernetes1.18.6/ipvs.png" alt="ipvs" /></p>
-<h4 id="7-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置">7. journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志熟虑，最大20m(可根据个人需求设置)</h4>
+<h4 id="8-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置">8. journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志熟虑，最大20m(可根据个人需求设置)</h4>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sed</span> <span class="nt">-ri</span> <span class="s1">'s/^\$ModLoad imjournal/#&amp;/'</span> /etc/rsyslog.conf
 <span class="nb">sed</span> <span class="nt">-ri</span> <span class="s1">'s/^\$IMJournalStateFile/#&amp;/'</span> /etc/rsyslog.conf
 
@@ -429,7 +424,7 @@ lsmod | <span class="nb">grep </span>ip_v
 <span class="nb">sed</span> <span class="nt">-ri</span> <span class="s1">'s/^#(UseDNS )yes/\1no/'</span> /etc/ssh/sshd_config
 journalctl <span class="nt">--vacuum-size</span><span class="o">=</span>20M
 </code></pre></div></div>
-<h4 id="8-配置yum源">8. 配置yum源</h4>
+<h4 id="9-配置yum源">9. 配置yum源</h4>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum-config-manager <span class="nt">--add-repo</span> http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 <span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
@@ -441,7 +436,7 @@ repo_gpgcheck=1
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg 
 </span><span class="no">EOF
 </span></code></pre></div></div>
-<h4 id="9-安装基本服务">9. 安装基本服务</h4>
+<h4 id="10-安装基本服务">10. 安装基本服务</h4>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>安装依赖包
 yum <span class="nb">install</span> <span class="nt">-y</span> epel-release
 yum <span class="nb">install</span> <span class="nt">-y</span> yum-utils device-mapper-persistent-data lvm2 net-tools conntrack-tools wget vim  ntpdate libseccomp libtool-ltdl
@@ -469,7 +464,7 @@ yum <span class="nb">install </span>docker-ce <span class="nt">-y</span>
 <span class="nb">sudo </span>systemctl restart docker
 添加个日志最多值，否则有的苦了，入坑体验过了。docker要不要开机启动呢？我后面安装rook ceph 开机重新启动了老有错误，因为没有将节点设置为cordon，但是也懒了， 我就没有设置为开机启动。故开机启动后在启动docker了
 </code></pre></div></div>
-<h4 id="10-安装kubernetes">10. 安装kubernetes</h4>
+<h4 id="11-安装kubernetes">11. 安装kubernetes</h4>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="c">#查看yum源中可支持版本</span>
  yum list <span class="nt">--showduplicates</span> kubeadm <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes 
 
@@ -479,7 +474,7 @@ yum <span class="nb">install</span> <span class="nt">-y</span> kubelet kubeadm k
 systemctl <span class="nb">enable </span>kubelet
 </code></pre></div></div>
 
-<h3 id="master节点操作">master节点操作</h3>
+<h3 id="二--master节点操作">二 . master节点操作</h3>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>注：slb内网传统型负载均衡使用了。尝试了两种方式：
  1. slb+haproxy slb 绑定三台master6443代理后端haproxy 8443端口。（kubeadm-config.yaml配置文件中controlPlaneEndpoint: <span class="s2">"10.0.4.20:6443"</span>）。
 2. keepalived +haproxy 配置slb地址（三台server设置不同权重，kubeadm-config.yaml配置文件中controlPlaneEndpoint: <span class="s2">"10.0.4.20:8443"</span>）。
@@ -630,7 +625,7 @@ mode: ipvs  #使用ipvs方式
 kubectl apply <span class="nt">-f</span> kube-flannel.yml
 然后基本发现 master节点都已经redeay
 </code></pre></div></div>
-<h4 id="4-work节点加入mastersh-node-01sh-node-05">4. work节点加入master(sh-node-01–sh-node-05)</h4>
+<p>### 二 . work节点j加入集群</p>
 <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm <span class="nb">join </span>192.168.3.9:6443 <span class="nt">--token</span> 3o6dy0.9gbbfuf55xiloe9d <span class="nt">--discovery-token-ca-cert-hash</span> sha256:5d631bb4bdce01dcad51163037ef21f663c88e058e70c6c362c9c5ccb1a92095
 OK集群算是初始搭建完了，不知道跑一遍咋样，我的是正常跑起来了。
 </code></pre></div></div>
@@ -682,195 +677,143 @@ kubectl get pod <span class="nt">-n</span> kube-system | <span class="nb">grep <
             
                 
                     
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
                         
                         <h2 id="similar_posts">Similar Posts</h2>
                         <ul>
-                        
-                        <li class="relatedPost">
-                            <a href="/2020/07/22/kubernetes/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建
-                            
-                            </a>
-                        </li>
-                        
-                        
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-        
-            
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-        
-            
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-        
-            
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-        
-            
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-        
-            
-            
-                
-                    
-                
-                    
-                
-                    
-                
-                    
-                
-            
-                
-                    
-                
-                    
                         
                         <li class="relatedPost">
                             <a href="/2019/11/26/k8s-install-new/">2019-11-26-k8s-install-new
@@ -1019,6 +962,39 @@ kubectl get pod <span class="nt">-n</span> kube-system | <span class="nb">grep <
                 
             
         
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
         
             </ul>
         
@@ -1026,7 +1002,7 @@ kubectl get pod <span class="nt">-n</span> kube-system | <span class="nb">grep <
         <div class="post-recent">
     <div class="pre">
         
-        <p><strong>上一篇</strong> <a href="/2020/07/22/kubernetes/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a></p>
+        <p><strong>上一篇</strong> <a href="/2019/12/27/traefik/">2019-12-27-traefik</a></p>
         
     </div>
     <div class="nex">

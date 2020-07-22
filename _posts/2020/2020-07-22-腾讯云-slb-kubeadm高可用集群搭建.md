@@ -35,13 +35,12 @@ centos7.7 64位
  4. 想体验下新版本，然后又动手搭建了一套1.18.6测试环境。中间犯了好多错误，比如iptables没有关闭，也更加深入了解了下负载均衡slb代理本地端口的过程。
  5. 大致过程与1.16差不多，自己写下日志记录一遍。然后今年想深入集成一下腾讯云的cbs.不要问我为什么不用腾讯云的tke.首先每个slb到现在应该还是只可以挂载一个ssl证书的，业务比较少，我不想管理多个负载均衡，然后负载均衡的策略也比较坑，偶尔tke集群slb测还经常更新。还有上传文件大小限制这样的策略。使用traefik的tcp代理很方便解决这些问题。而且我还是比较喜欢原生不喜欢定制。
 
-> 注：关于环境的初始化和安装可以看下张馆长的文档，真心不错：https://zhangguanzhang.github.io/2019/11/24/kubeadm-base-use/
+6. 关于环境的初始化和安装可以看下张馆长的文档，真心不错 https://zhangguanzhang.github.io/2019/11/24/kubeadm-base-use/。
 
-## 开始
 
-### 首先的还是环境初始化，master work节点全部执行
+### 一 .首先的还是环境初始化，master work节点全部执行
 
-#### 1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名（10.0.4.20为slb负载均衡ip）
+#### 1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置对应主机名（10.0.4.20为slb负载均衡ip）
 #### 2. 升级linux内核
  ```bash
 centos7默认内核为3.10版本，一般是建议把内核更新一下。
@@ -69,12 +68,12 @@ package-cleanup --oldkernels
  ![kernel2](/assets/images/2020/07/kubernetes1.18.6/kernel2.png)
  ![kernel3](/assets/images/2020/07/kubernetes1.18.6/kernel3.png)
  ![kerne41](/assets/images/2020/07/kubernetes1.18.6/kernel4.png)
-#### 2. 关闭swap交换分区
+#### 3. 关闭swap交换分区
  ```bash
 swapoff -a
 sed -i 's/.*swap.*/#&/' /etc/fstab
  ```
-#### 3. 关闭selinux
+#### 4. 关闭selinux
  ```bash
 setenforce  0 
 sed -i "s/^SELINUX=enforcing/SELINUX=disabled/g" /etc/sysconfig/selinux 
@@ -82,7 +81,7 @@ sed -i "s/^SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config
 sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/sysconfig/selinux 
 sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/selinux/config 
  ```
-#### 4.  调整文件打开数等配置
+#### 5.  调整文件打开数等配置
  ```bash
 echo "* soft nofile 65536" >> /etc/security/limits.conf
 echo "* hard nofile 65536" >> /etc/security/limits.conf
@@ -91,7 +90,7 @@ echo "* hard nproc 65536"  >> /etc/security/limits.conf
 echo "* soft  memlock  unlimited"  >> /etc/security/limits.conf
 echo "* hard memlock  unlimited"  >> /etc/security/limits.conf
  ```
-#### 5. 开启ip转发优化 网桥等配置
+#### 6. 开启ip转发优化 网桥等配置
  ```bash
 cat <<EOF > /etc/sysctl.d/k8s.conf
 net.ipv6.conf.all.disable_ipv6 = 1
@@ -137,7 +136,7 @@ net.ipv4.tcp_keepalive_probes = 10
 EOF
 sysctl --system
  ```
-#### 6. 加载ipvs
+#### 7. 加载ipvs
  ```bash
 
 :> /etc/modules-load.d/ipvs.conf
@@ -158,7 +157,7 @@ systemctl enable --now systemd-modules-load.service
 lsmod | grep ip_v
 ```
 ![ipvs](/assets/images/2020/07/kubernetes1.18.6/ipvs.png)
-#### 7. journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志熟虑，最大20m(可根据个人需求设置)
+#### 8. journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志熟虑，最大20m(可根据个人需求设置)
  ```bash
 sed -ri 's/^\$ModLoad imjournal/#&/' /etc/rsyslog.conf
 sed -ri 's/^\$IMJournalStateFile/#&/' /etc/rsyslog.conf
@@ -169,7 +168,7 @@ sed -ri 's/^#(DefaultLimitNOFILE)=/\1=100000/' /etc/systemd/system.conf
 sed -ri 's/^#(UseDNS )yes/\1no/' /etc/ssh/sshd_config
 journalctl --vacuum-size=20M
  ```
-#### 8. 配置yum源
+#### 9. 配置yum源
  ```bash
 yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
@@ -182,7 +181,7 @@ repo_gpgcheck=1
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg 
 EOF
  ```
-#### 9. 安装基本服务
+#### 10. 安装基本服务
  ```bash
 安装依赖包
 yum install -y epel-release
@@ -211,7 +210,7 @@ sudo systemctl daemon-reload
 sudo systemctl restart docker
 添加个日志最多值，否则有的苦了，入坑体验过了。docker要不要开机启动呢？我后面安装rook ceph 开机重新启动了老有错误，因为没有将节点设置为cordon，但是也懒了， 我就没有设置为开机启动。故开机启动后在启动docker了
  ```
-#### 10. 安装kubernetes
+#### 11. 安装kubernetes
  ```bash
  #查看yum源中可支持版本
  yum list --showduplicates kubeadm --disableexcludes=kubernetes 
@@ -222,7 +221,7 @@ yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 systemctl enable kubelet
   ```
 
-###  master节点操作
+### 二 . master节点操作
  ```bash
 注：slb内网传统型负载均衡使用了。尝试了两种方式：
  1. slb+haproxy slb 绑定三台master6443代理后端haproxy 8443端口。（kubeadm-config.yaml配置文件中controlPlaneEndpoint: "10.0.4.20:6443"）。
@@ -377,7 +376,7 @@ wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-
 kubectl apply -f kube-flannel.yml
 然后基本发现 master节点都已经redeay
  ```
-#### 4. work节点加入master(sh-node-01--sh-node-05)
+ ### 二 . work节点j加入集群
  ```bash
 kubeadm join 192.168.3.9:6443 --token 3o6dy0.9gbbfuf55xiloe9d --discovery-token-ca-cert-hash sha256:5d631bb4bdce01dcad51163037ef21f663c88e058e70c6c362c9c5ccb1a92095
 OK集群算是初始搭建完了，不知道跑一遍咋样，我的是正常跑起来了。
