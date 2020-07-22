@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>2019-09-23-k8s-1.15.3-update1.16.0</title>
+    <meta name="description" content="  描述背景：描述背景：已经搭建完的k8s集群只有两个worker节点，现在增加work节点到集群。原有集群机器：|  ip           | 自定义域名         |    主机名 ||  :----:       |     :----:        |   :----:  ||        ...">
+
+    <link rel="shortcut icon" href="/favicon.ico?" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico?" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_8v3czwksspqlg14i.css">
+    <link rel="stylesheet" href="/css/main.css ">
+    <link rel="canonical" href="http://localhost:4000/2019/09/23/k8s-1.15.3-update1.16.0/">
+    <link rel="alternate" type="application/rss+xml" title="duiniwukenaihe" href="http://localhost:4000/feed.xml ">
+
+
+    <script>
+    // 百度统计代码
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d5fc86dcc214ca5ef6e06cd0c7120d64";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+
+
+</head>
+
+
+  <body>
+
+    <header id="top">
+    <div class="wrapper">
+        <a href="/" class="brand">duiniwukenaihe</a>
+        <small>SRE Engineer(target)</small>
+        <button id="headerMenu" class="menu"><i class="fa fa-bars"></i></button>
+        <nav id="headerNav">
+            <ul>
+                <li>
+                    
+                    <a href="/">
+                    
+                        <i class="fa fa-home"></i>Home
+                    </a>
+                </li>
+
+                
+                    
+                    <li>
+                        
+                        <a href="/archive/">
+                        
+                            <i class="fa fa-archive"></i>Archives
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/category/">
+                        
+                            <i class="fa fa-th-list"></i>Categories
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/tag/">
+                        
+                            <i class="fa fa-tags"></i>Tags
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/collection/">
+                        
+                            <i class="fa fa-bookmark"></i>Collections
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/demo/">
+                        
+                            <i class="fa fa-play"></i>Topic
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/nav/">
+                        
+                            <i class="fa fa-location-arrow"></i>Nav
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/about/">
+                        
+                            <i class="fa fa-heart"></i>About
+                        </a>
+                    </li>
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            </ul>
+        </nav>
+    </div>
+</header>
+
+
+        <div class="page clearfix" post>
+    <div class="left">
+        <h1>2019-09-23-k8s-1.15.3-update1.16.0</h1>
+        <div class="label">
+
+            <div class="label-card">
+                <i class="fa fa-calendar"></i>2019-09-23
+            </div>
+
+            <div class="label-card">
+                <i class="fa fa-user"></i>duiniwukenaihe
+                
+            </div>
+
+            <div class="label-card">
+                
+            </div>
+
+            <div class="label-card">
+            
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+            </div>
+
+            <div class="label-card">
+            
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <!--a href="/tag/#kubernetes%E5%8D%87%E7%BA%A7" title="Tag: kubernetes升级" rel="tag">kubernetes升级</a-->
+        <a href="/tag/#kubernetes升级" title="Tag: kubernetes升级" rel="tag">kubernetes升级</a>
+    
+  
+
+</span>
+
+            </div>
+
+        </div>
+        <hr>
+        <article itemscope itemtype="http://schema.org/BlogPosting">
+        <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+</ul>
+
+<h2 id="描述背景">描述背景：</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>已经搭建完的k8s集群只有两个worker节点，现在增加work节点到集群。原有集群机器：
+
+|  ip           | 自定义域名         |    主机名 |
+|  :----:       |     :----:        |   :----:  |
+|                |  master.k8s.io    |  k8s-vip  |
+|192.168.0.195    |  master01.k8s.io  |  k8s-master-01|
+|192.168.0.197   |  master02.k8s.io  |  k8s-master-02| 
+|192.168.0.198   |  master03.k8s.io  |  k8s-master-03|
+|192.168.0.199    |  node01.k8s.io    |  k8s-node-01|
+|192.168.0.202    |  node02.k8s.io    |  k8s-node-02|
+|192.168.0.108    |  node03.k8s.io    |  k8s-node-03|
+|192.168.0.111    |  node04.k8s.io    |  k8s-node-04|
+|192.168.0.115    |  node05.k8s.io    |  k8s-node-05|
+
+ 
+初始集群参照 https://duiniwukenaihe.github.io/2019/09/18/k8s-expanded/ 由于上周kubernetes1.15.3爆出漏洞，决定将集群升级为1.16.0 。
+
+
+</code></pre></div></div>
+<p>#升级master节点</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">##k8s-master-01节点操作</span>
+yum list <span class="nt">--showduplicates</span> kubeadm <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes <span class="c">#查看yum源中可支持版本</span>
+  
+yum <span class="nb">install  </span>kubeadm-1.16.0 kubectl-1.16.0 <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes。我这里懒人方式直接yum update了
+kubeadm version
+kubeadm upgrade plan <span class="nt">--certificate-renewal</span><span class="o">=</span><span class="nb">false</span> <span class="c"># 如果不加-certificate-renewal=false将重新生成证书</span>
+kubeadm upgrade apply v1.16.0
+systemctl daemon-reload
+systemctl restart kubelet
+</code></pre></div></div>
+<p><img src="/assets/images/k8s/k8s-update1.png" alt="k8s-update1.png" /> 
+<img src="/assets/images/k8s/k8s-update3.png" alt="k8s-update3.png" /></p>
+
+<p>##发现 master节点一直not ready
+<img src="/assets/images/k8s/k8s-update2.png" alt="k8s-update2.png" /></p>
+
+<p>参照：
+https://github.com/coreos/flannel/pull/1181/commits/2be363419f0cf6a497235a457f6511df396685d4</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; /etc/cni/net.d/10-flannel.conflist
+{
+  "name": "cbr0",
+  "cniVersion": "0.2.0",
+  "plugins": [
+    {
+      "type": "flannel",
+      "delegate": {
+        "hairpinMode": true,
+        "isDefaultGateway": true
+      }
+    },
+    {
+      "type": "portmap",
+      "capabilities": {
+        "portMappings": true
+      }
+    }
+  ]
+}
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<p>最好还是修改下kube-flannel.yml</p>
+
+<p><img src="/assets/images/k8s/k8s-update5.png" alt="k8s-update5.png" /></p>
+
+<p>kubectl apply -f kube-flannel.yml</p>
+
+<p>##依次升级其他master02 master03节点</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum <span class="nb">install  </span>kubeadm-1.16.0 kubectl-1.16.0 <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes
+kubeadm upgrade apply v1.16.0
+systemctl daemon-reload
+systemctl restart kubelet
+</code></pre></div></div>
+
+<p>##worker nodes 节点升级</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#在master01节点依次将worker节点设置为不可调用</span>
+kubectl drain <span class="nv">$node</span> <span class="nt">--ignore-daemonsets</span>
+yum <span class="nb">install  </span>kubeadm-1.16.0 kubectl-1.16.0 <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes
+systemctl daemon-reload
+systemctl restart kubelet
+systemctl status kubelet
+kubectl uncordon <span class="nv">$node</span>
+</code></pre></div></div>
+<p>work节点以此升级</p>
+
+<p>##查看集群##
+kubectl get nodes
+<img src="/assets/images/k8s/k8s-update4.png" alt="k8s-update4.png" /></p>
+
+<p>注：碰到的问题 早前yaml文件apiVersion用的是extensions/v1beta1 ，1,16要修改为apps/v1beta1。具体看https://kubernetes.io/zh/docs/concepts/workloads/controllers/deployment/</p>
+
+
+        </article>
+        <hr>
+
+        
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+        
+
+        <div class="post-recent">
+    <div class="pre">
+        
+        <p><strong>上一篇</strong> <a href="/2019/09/18/elastic-search-one/">elasticsearch常用查询</a></p>
+        
+    </div>
+    <div class="nex">
+
+        
+        <p><strong>下一篇</strong> <a href="/2019/10/17/k8s-traefik2/">traefik2 安装实现 http  https</a></p>
+        
+    </div>
+</div>
+
+
+        <h2 id="comments">Comments</h2>
+        
+
+
+
+
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script>
+var gitalk = new Gitalk({
+  clientID: 'ec38bbdf8e7fa3dae292',
+  clientSecret: '2fbd28fed67dd309af98565dabc45190938506e2',
+  repo: 'duiniwukenaihe.github.io',
+  owner: 'duiniwukenaihe',
+  admin: ['duiniwukenaihe'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+
+
+
+    </div>
+    <button class="anchor"><i class="fa fa-anchor"></i></button>
+    <div class="right">
+        <div class="wrap">
+
+            <!-- Content -->
+            <div class="side content">
+                <div>
+                    Content
+                </div>
+                <ul id="content-side" class="content-ul">
+                    
+                    <li><a href="#comments">Comments</a></li>
+                </ul>
+            </div>
+            <!-- 其他div框放到这里 -->
+            <!-- <div class="side">bbbb</div> -->
+        </div>
+    </div>
+</div>
+<script>
+/**
+ * target _blank
+ */
+(function() {
+    var aTags = document.querySelectorAll('article a:not([id])')
+    for (var i = 0; i < aTags.length; i++) {
+        aTags[i].setAttribute('target', '_blank')
+    }
+}());
+</script>
+<script src="/js/pageContent.js " charset="utf-8"></script>
+
+
+    <footer class="site-footer">
+
+
+    <div class="wrapper">
+
+        <p class="description">
+             本站记录我成长之路的点点滴滴！ 
+        </p>
+        <p class="contact">
+            Contact me at: 
+            <a href="https://github.com/duiniwukenaihe" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>  
+            <a href="mailto:zhangpeng19871017@hotmail.com" title="email"><i class="fa fa-envelope-o" aria-hidden="true"></i></a>  
+            <a href="http://weibo.com/duiniwukenaihe" title="Weibo"><i class="fa fa-weibo" aria-hidden="true"></i></a>       
+        </p>
+        <p>
+            本站总访问量<span id="busuanzi_value_site_pv"></span>次，本站访客数<span id="busuanzi_value_site_uv"></span>人次，本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        </p>
+        <p class="power">
+            <span>
+                Site powered by <a href="https://jekyllrb.com/">Jekyll</a> & <a href="https://pages.github.com/">Github Pages</a>.
+            </span>
+            <span>
+                Theme designed by <a href="https://github.com/Gaohaoyang">HyG</a>.
+            </span>
+        </p>
+    </div>
+</footer>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <div class="back-to-top">
+    <a href="#top" data-scroll>
+        <i class="fa fa-arrow-up" aria-hidden="true"></i>
+    </a>
+</div>
+
+    <script src=" /js/main.js " charset="utf-8"></script>
+    <script src=" /js/smooth-scroll.min.js " charset="utf-8"></script>
+    <script type="text/javascript">
+      smoothScroll.init({
+        speed: 500, // Integer. How fast to complete the scroll in milliseconds
+        easing: 'easeInOutCubic', // Easing pattern to use
+        offset: 20, // Integer. How far to offset the scrolling anchor location in pixels
+      });
+    </script>
+    <!-- <script src=" /js/scroll.min.js " charset="utf-8"></script> -->
+  </body>
+
+</html>

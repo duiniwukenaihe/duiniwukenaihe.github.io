@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>duiniwukenaihe</title>
+    <meta name="description" content="">
+
+    <link rel="shortcut icon" href="/favicon.ico?" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico?" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_8v3czwksspqlg14i.css">
+    <link rel="stylesheet" href="/css/main.css ">
+    <link rel="canonical" href="http://localhost:4000/page3/">
+    <link rel="alternate" type="application/rss+xml" title="duiniwukenaihe" href="http://localhost:4000/feed.xml ">
+
+
+    <script>
+    // 百度统计代码
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d5fc86dcc214ca5ef6e06cd0c7120d64";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+
+
+</head>
+
+
+  <body>
+
+    <header id="top">
+    <div class="wrapper">
+        <a href="/" class="brand">duiniwukenaihe</a>
+        <small>SRE Engineer(target)</small>
+        <button id="headerMenu" class="menu"><i class="fa fa-bars"></i></button>
+        <nav id="headerNav">
+            <ul>
+                <li>
+                    
+                    <a href="/">
+                    
+                        <i class="fa fa-home"></i>Home
+                    </a>
+                </li>
+
+                
+                    
+                    <li>
+                        
+                        <a href="/archive/">
+                        
+                            <i class="fa fa-archive"></i>Archives
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/category/">
+                        
+                            <i class="fa fa-th-list"></i>Categories
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/tag/">
+                        
+                            <i class="fa fa-tags"></i>Tags
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/collection/">
+                        
+                            <i class="fa fa-bookmark"></i>Collections
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/demo/">
+                        
+                            <i class="fa fa-play"></i>Topic
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/nav/">
+                        
+                            <i class="fa fa-location-arrow"></i>Nav
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/about/">
+                        
+                            <i class="fa fa-heart"></i>About
+                        </a>
+                    </li>
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            </ul>
+        </nav>
+    </div>
+</header>
+
+
+        <div class="page clearfix" index>
+    <div class="left">
+        <h1>Welcome to duiniwukenaihe's Blog!</h1>
+        <small>这里记录着我的运维学习之路</small>
+        <hr>
+        <ul>
+            
+              <li>
+                <h2>
+                  <a class="post-link" href="/2019/09/03/k8s-rook/">kubernetes rook ceph 环境搭建</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-09-03
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
+    
+        <a href="/tag/#rook" title="Tag: rook" rel="tag">rook</a>&nbsp;
+    
+        <a href="/tag/#ceph" title="Tag: ceph" rel="tag">ceph</a>&nbsp;
+    
+        <a href="/tag/#Operator" title="Tag: Operator" rel="tag">Operator</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#节点打标签" id="markdown-toc-节点打标签">节点打标签</a></li>
+  <li><a href="#开始部署rook-operator" id="markdown-toc-开始部署rook-operator">开始部署rook Operator</a></li>
+  <li><a href="#将节点数据盘加入rook集群" id="markdown-toc-将节点数据盘加入rook集群">将节点数据盘加入rook集群</a></li>
+  <li><a href="#安装存储类支持" id="markdown-toc-安装存储类支持">安装存储类支持</a></li>
+  <li><a href="#开启dashboard-外部访问" id="markdown-toc-开启dashboard-外部访问">开启dashboard 外部访问：</a></li>
+  <li><a href="#获取rook-dashboard-密码" id="markdown-toc-获取rook-dashboard-密码">获取rook dashboard 密码</a></li>
+  <li><a href="#登录外部web管理dashboard-https方式nodeport-端口" id="markdown-toc-登录外部web管理dashboard-https方式nodeport-端口">登录外部web管理dashboard https方式+nodeport 端口</a></li>
+</ul>
+
+<p>注： 初始环境为  https://duiniwukenaihe.github.io/2019/09/02/k8s-install/</p>
+
+<p><strong>集群环境：</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.20.13</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.8</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.12</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.6</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.3</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.9</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>注： 操作都在master01操作默认，master03  node01 node02 各除系统盘外挂载一未格式化数据盘 vdb</p>
+
+<p><img src="/assets/images/k8s/vdb1.png" alt="vdb1.png" /></p>
+
+<h2 id="描述背景">描述背景：</h2>
+
+<p>上篇腾讯云高可用k8s环境安装完成后准备入手迁移服务，然后就需要一个StorageClass。常用的一般nfs较多，看网上有rook的ceph方案。然后就常识使用了下。</p>
+
+<p>由于rook选择搭三节点的架构，故将master03去掉标签加入调度：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl taint nodes k8s-master-03 node-role.kubernetes.io/master-
+
+</code></pre></div></div>
+
+<h2 id="节点打标签">节点打标签</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label nodes <span class="o">{</span>k8s-master-03,k8s-node-01,k8s-node-02<span class="o">}</span> ceph-osd<span class="o">=</span>enabled
+
+kubectl label nodes <span class="o">{</span>k8s-master-03,k8s-node-01,k8s-node-02<span class="o">}</span> ceph-mon<span class="o">=</span>enabled
+
+kubectl label nodes k8s-master-03 ceph-mgr<span class="o">=</span>enabled
+
+</code></pre></div></div>
+
+<h2 id="开始部署rook-operator">开始部署rook Operator</h2>
+
+<p><strong>克隆rook github仓库到本地</strong></p>
+
+<p>git clone https://github.com/rook/rook.git</p>
+
+<p>cd rook/cluster/examples/kubernetes/ceph/</p>
+
+<p>kubectl apply  -f common.yaml</p>
+
+<p>创建operator 和agent容器</p>
+
+<p>kubectl apply  -f operator.yaml</p>
+
+<p><strong>cluster.yaml修改</strong></p>
+
+<p>##绑定mon  osd  mgr运行节点</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    mon:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: ceph-mon
+              operator: In
+              values:
+              - enabled
+    osd:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: ceph-osd
+              operator: In
+              values:
+              - enabled
+    mgr:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: ceph-mgr
+              operator: In
+              values:
+              - enabled
+</code></pre></div></div>
+<h2 id="将节点数据盘加入rook集群">将节点数据盘加入rook集群</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  storage: <span class="c"># cluster level storage configuration and selection</span>
+    useAllNodes: <span class="nb">false
+    </span>useAllDevices: <span class="nb">false
+    </span>deviceFilter:
+    location:
+    config:
+      <span class="c"># The default and recommended storeType is dynamically set to bluestore for devices and filestore for directories.</span>
+      <span class="c"># Set the storeType explicitly only if it is required not to use the default.</span>
+      <span class="c"># storeType: bluestore</span>
+      <span class="c"># metadataDevice: "md0" # specify a non-rotational storage so ceph-volume will use it as block db device of bluestore.</span>
+      databaseSizeMB: <span class="s2">"1024"</span> <span class="c"># uncomment if the disks are smaller than 100 GB</span>
+      journalSizeMB: <span class="s2">"1024"</span>  <span class="c"># uncomment if the disks are 20 GB or smaller</span>
+      osdsPerDevice: <span class="s2">"1"</span> <span class="c"># this value can be overridden at the node or device level</span>
+      <span class="c"># encryptedDevice: "true" # the default value for this option is "false"</span>
+<span class="c"># Cluster level list of directories to use for filestore-based OSD storage. If uncommented, this example would create an OSD under the dataDirHostPath.</span>
+    <span class="c">#directories:</span>
+    <span class="c">#- path: /var/lib/rook</span>
+<span class="c"># Individual nodes and their config can be specified as well, but 'useAllNodes' above must be set to false. Then, only the named</span>
+<span class="c"># nodes below will be used as storage resources.  Each node's 'name' field should match their 'kubernetes.io/hostname' label.</span>
+    nodes:
+    - name: <span class="s2">"k8s-master-03"</span>
+      devices:
+      - name: <span class="s2">"vdb"</span>
+    - name: <span class="s2">"k8s-node-01"</span>
+      devices:
+      - name: <span class="s2">"vdb"</span>
+    - name: <span class="s2">"k8s-node-02"</span>
+      devices:
+      - name: <span class="s2">"vdb"</span>
+
+</code></pre></div></div>
+
+<p>kuberctl apply  -f cluster.yaml</p>
+
+<p>kubectl get pods -n rook-ceph -o wide</p>
+
+<p><img src="/assets/images/k8s/rook1.png" alt="rook1.png" /></p>
+
+<p>数据节点  conpleted 完成 在master03  node01 node02 执行lsblk 看到vdb数据盘已经被rook格式化识别。</p>
+
+<p><img src="/assets/images/k8s/rook-lsblk.png" alt="rook1.png" /></p>
+
+<h2 id="安装存储类支持">安装存储类支持</h2>
+
+<p>kubectl apply -f storageclass.yaml</p>
+
+<p><img src="/assets/images/k8s/rook-storageclass.png" alt="rook1.png" /></p>
+
+<h2 id="开启dashboard-外部访问">开启dashboard 外部访问：</h2>
+
+<p>kubectl apply -f dashboard-external-https.yaml</p>
+
+<p>kubectl get svc -n rook-ceph</p>
+
+<p><img src="/assets/images/k8s/rook2.png" alt="rook2.png" /></p>
+
+<h2 id="获取rook-dashboard-密码">获取rook dashboard 密码</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> kubectl <span class="nt">-n</span> rook-ceph get secret rook-ceph-dashboard-password <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">"{['data']['password']}"</span> | <span class="nb">base64</span> <span class="nt">--decode</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> 
+</code></pre></div></div>
+
+<p><img src="/assets/images/k8s/rook-password.png" alt="rook-password.png" /></p>
+
+<h2 id="登录外部web管理dashboard-https方式nodeport-端口">登录外部web管理dashboard https方式+nodeport 端口</h2>
+
+<p><img src="/assets/images/k8s/rook3.png" alt="rook3.png" /></p>
+
+<p>注： rook1.0早先版本体验时候  dashboard 安装完成后会有500报错，后面没有了就没有写，具体解决方法可参考https://blog.csdn.net/dazuiba008/article/details/90205319。如需要tools 客户端 kubectl apply -f toolbox.yaml.</p>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/09/03/k8s-rook/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
+                  <a class="post-link" href="/2019/09/02/k8s-install/">腾讯云高可用k8s环境安装</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-09-02
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    
+<p>腾讯云高可用 k8s 集群安装文档<br />
+注： 参考https://blog.csdn.net/qq_32641153/article/details/90413640</p>
+
+<p><strong>集群环境：</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.20.13</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.8</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.12</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.6</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.3</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.9</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>host如下图：</p>
+
+<p><img src="/assets/images/k8s/k8s-host.png" alt="k8s-host.png" /></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>注： 防火墙 selinux  swap   默认系统镜像已经关闭 最大文件开启个数等已经优化
+<span class="c">#swap</span>
+swapoff <span class="nt">-a</span>
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s1">'s/.*swap.*/#&amp;/'</span> /etc/fstab
+<span class="c">#selinux</span>
+setenforce  0 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/sysconfig/selinux 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/selinux/config 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=permissive/SELINUX=disabled/g"</span> /etc/sysconfig/selinux 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=permissive/SELINUX=disabled/g"</span> /etc/selinux/config 
+
+<span class="c">#调整文件打开数等配置</span>
+<span class="nb">echo</span> <span class="s2">"* soft nofile 65536"</span> <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard nofile 65536"</span> <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* soft nproc 65536"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard nproc 65536"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* soft  memlock  unlimited"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard memlock  unlimited"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+ 
+
+</code></pre></div></div>
+<hr />
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/09/02/k8s-install/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
+                  <a class="post-link" href="/2019/09/02/welcome-to-jekyll/">hello jekyll!</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-09-02
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#jekyll" title="Category: jekyll" rel="category">jekyll</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#jekyll" title="Tag: jekyll" rel="tag">jekyll</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    当年创建 jekyll 时默认的一篇文章，没什么意义，我也一直没删除，留个纪念吧。
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/09/02/welcome-to-jekyll/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+        </ul>
+
+
+
+        <!-- Pagination links -->
+        <div class="pagination">
+          
+            <a href="/index.html" class="previous"><i class="fa fa-angle-double-left"></i></a>
+            <a href="/page2" class="previous"><i class="fa fa-angle-left"></i></a>
+          
+          <span class="page_number ">3/3</span>
+          
+            <span class="next disable"><i class="fa fa-angle-right"></i></span>
+            <span class="next disable"><i class="fa fa-angle-double-right"></i></span>
+          
+        </div>
+    </div>
+    <!-- <button class="anchor"><i class="fa fa-anchor"></i></button> -->
+    <div class="right">
+        <div class="wrap">
+		    <div class="col-md-3 hidden-sm hidden-xs">
+                <div class="side">
+                    <div>
+                        <i class="fa fa-search" aria-hidden="true"></i>
+                        Search
+                     </div>
+                    <div id="site_search">
+  <div class="has-feedback">
+    <input type="text" id="search_box" class="form-control" placeholder="Search...">
+    <span class="glyphicon glyphicon-search form-control-feedback"></span>
+  </div>
+</div>
+
+<ul class="search-ul" id="search_results" recent></ul>
+
+<style>
+  .form-control {
+      display: block;
+      padding: 6px 12px;
+      font-size: 14px;
+      line-height: 1.42857143;
+      color: #555;
+      background-color: #fff;
+      background-image: none;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+      box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+      -webkit-transition: border-color ease-in-out .15s,-webkit-box-shadow ease-in-out .15s;
+      -o-transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+      transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+  }
+  .search-ul {
+    list-style: none;
+    margin: 10px;
+    padding: 5px;
+	font-size: 14px;
+  }
+  .search-ul>li {
+    padding: 5px 0;
+    border-bottom: 1px solid #ccc;
+  }
+  .search-ul>li:last-child {
+    border: 0;
+  }
+  .ais-Highlight {
+    color: #FF6666;
+    font-style: normal;
+    font-weight: bold;
+    text-decoration: underline;
+  }
+</style>
+
+<script src="http://localhost:4000/js/jekyll-search.min.js"></script>
+<script type="text/javascript">
+  SimpleJekyllSearch({
+    searchInput: document.getElementById('search_box'),
+    resultsContainer: document.getElementById('search_results'),
+    json: '/search_data.json',
+    searchResultTemplate: '<li><a href="{url}">{title}</a></li>',
+    noResultsText: 'No results found',
+    limit: 10,
+    fuzzy: false,
+	templateMiddleware: function(prop, value, template) {
+		if (prop === 'title') {
+			var v = document.getElementById('search_box').value;
+			var i = value.toLowerCase().indexOf(v.toLowerCase());
+			var s = value.slice(i, i + v.length);
+            return value.replace(s,'<em class="ais-Highlight">' + s +'</em>')
+        }
+    }
+  });
+</script>
+                </div>
+            </div>
+            <div class="side">
+                <div>
+                    <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
+                    Recent Posts
+                </div>
+                <ul class="content-ul" recent>
+                    
+                        <li><a href="/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a></li>
+                    
+                        <li><a href="/2020/07/22/kubernetes/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a></li>
+                    
+                        <li><a href="/2019/12/27/traefik/">2019-12-27-traefik</a></li>
+                    
+                        <li><a href="/2019/12/05/eck-qustion/">2019-12-05-eck-qustion</a></li>
+                    
+                        <li><a href="/2019/12/03/k8s-jenkins-sonarqube/">2019-12-03-k8s-jenkins-sonarqube</a></li>
+                    
+                        <li><a href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/">2019-11-29-k8s-helm-install-postgresql-sonarqube</a></li>
+                    
+                        <li><a href="/2019/11/26/k8s-install-new/">2019-11-26-k8s-install-new</a></li>
+                    
+                        <li><a href="/2019/11/25/k8s-question2/">2019-11-25-k8s-question2</a></li>
+                    
+                        <li><a href="/2019/11/19/cncf-ali/">k8s-install-jenkins</a></li>
+                    
+                        <li><a href="/2019/11/19/k8s-install-jenkins/">k8s-install-jenkins</a></li>
+                    
+                </ul>
+            </div>
+
+            <!-- Content -->
+            <div class="side ">
+                <div>
+                    <i class="fa fa-th-list"></i>
+                    Categories
+                </div>
+                <ul class="content-ul" cate>
+                    
+                    <li>
+                        <a href="/category/#jekyll" class="categories-list-item" cate="jekyll">
+                            <span class="name">
+                                jekyll
+                            </span>
+                            <span class="badge">1</span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="/category/#kubernetes" class="categories-list-item" cate="kubernetes">
+                            <span class="name">
+                                kubernetes
+                            </span>
+                            <span class="badge">20</span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="/category/#elastic-oparator" class="categories-list-item" cate="elastic-oparator">
+                            <span class="name">
+                                elastic-oparator
+                            </span>
+                            <span class="badge">1</span>
+                        </a>
+                    </li>
+                    
+                    <li>
+                        <a href="/category/#traefik" class="categories-list-item" cate="traefik">
+                            <span class="name">
+                                traefik
+                            </span>
+                            <span class="badge">1</span>
+                        </a>
+                    </li>
+                    
+                </ul>
+            </div>
+            <!-- 其他div框放到这里 -->
+            <div class="side">
+                <div>
+                    <i class="fa fa-tags"></i>
+                    Tags
+                </div>
+                <div class="tags-cloud">
+                    
+                    
+                    
+                    
+
+                    
+
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#jekyll" style="font-size: 9pt; color: #999;">jekyll</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#kubernetes" style="font-size: 18pt; color: #000;">kubernetes</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#rook" style="font-size: 9pt; color: #999;">rook</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#ceph" style="font-size: 9pt; color: #999;">ceph</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#Operator" style="font-size: 10pt; color: #888;">Operator</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#gitlab" style="font-size: 9pt; color: #999;">gitlab</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#docker" style="font-size: 9pt; color: #999;">docker</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#kubernetes扩容" style="font-size: 9pt; color: #999;">kubernetes扩容</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#elasticsearch" style="font-size: 9pt; color: #999;">elasticsearch</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#kubernetes升级" style="font-size: 9pt; color: #999;">kubernetes升级</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#traefik2" style="font-size: 9pt; color: #999;">traefik2</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#elastic" style="font-size: 9pt; color: #999;">elastic</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#fluent-bit" style="font-size: 9pt; color: #999;">fluent-bit</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#Elasticsearch" style="font-size: 9pt; color: #999;">Elasticsearch</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#Elastic" style="font-size: 9pt; color: #999;">Elastic</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#Cloud" style="font-size: 9pt; color: #999;">Cloud</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#on" style="font-size: 10pt; color: #888;">on</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#Kubernetes" style="font-size: 9pt; color: #999;">Kubernetes</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#qustion" style="font-size: 9pt; color: #999;">qustion</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#helm" style="font-size: 10.5pt; color: #777;">helm</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#harbor" style="font-size: 9pt; color: #999;">harbor</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#prometheus-operator" style="font-size: 9pt; color: #999;">prometheus-operator</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#kubernetes1.16" style="font-size: 10pt; color: #888;">kubernetes1.16</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#jenkins" style="font-size: 10.5pt; color: #777;">jenkins</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#question" style="font-size: 9pt; color: #999;">question</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#no" style="font-size: 9pt; color: #999;">no</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#space" style="font-size: 9pt; color: #999;">space</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#left" style="font-size: 9pt; color: #999;">left</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#device" style="font-size: 9pt; color: #999;">device</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#kubernetes1.16.2" style="font-size: 9pt; color: #999;">kubernetes1.16.2</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#kuberadm" style="font-size: 10.5pt; color: #777;">kuberadm</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#postgresql" style="font-size: 9pt; color: #999;">postgresql</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#sonarqube" style="font-size: 10pt; color: #888;">sonarqube</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#elastic-oparator" style="font-size: 9pt; color: #999;">elastic-oparator</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#ECK" style="font-size: 9pt; color: #999;">ECK</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#traefik" style="font-size: 9pt; color: #999;">traefik</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10pt; color: #888;">kubernetes1.18.6</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#高可用" style="font-size: 10pt; color: #888;">高可用</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#ha" style="font-size: 10pt; color: #888;">ha</a>
+                    
+                </div>
+            </div>
+
+            <!-- <div class="side">
+                <div>
+                    <i class="fa fa-external-link"></i>
+                    Links
+                </div>
+                <ul  class="content-ul">
+
+                </ul>
+            </div> -->
+        </div>
+    </div>
+</div>
+<!-- <script src="/js/scroll.min.js " charset="utf-8"></script> -->
+<!-- <script src="/js/pageContent.js " charset="utf-8"></script> -->
+
+
+    <footer class="site-footer">
+
+
+    <div class="wrapper">
+
+        <p class="description">
+             本站记录我成长之路的点点滴滴！ 
+        </p>
+        <p class="contact">
+            Contact me at: 
+            <a href="https://github.com/duiniwukenaihe" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>  
+            <a href="mailto:zhangpeng19871017@hotmail.com" title="email"><i class="fa fa-envelope-o" aria-hidden="true"></i></a>  
+            <a href="http://weibo.com/duiniwukenaihe" title="Weibo"><i class="fa fa-weibo" aria-hidden="true"></i></a>       
+        </p>
+        <p>
+            本站总访问量<span id="busuanzi_value_site_pv"></span>次，本站访客数<span id="busuanzi_value_site_uv"></span>人次，本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        </p>
+        <p class="power">
+            <span>
+                Site powered by <a href="https://jekyllrb.com/">Jekyll</a> & <a href="https://pages.github.com/">Github Pages</a>.
+            </span>
+            <span>
+                Theme designed by <a href="https://github.com/Gaohaoyang">HyG</a>.
+            </span>
+        </p>
+    </div>
+</footer>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <div class="back-to-top">
+    <a href="#top" data-scroll>
+        <i class="fa fa-arrow-up" aria-hidden="true"></i>
+    </a>
+</div>
+
+    <script src=" /js/main.js " charset="utf-8"></script>
+    <script src=" /js/smooth-scroll.min.js " charset="utf-8"></script>
+    <script type="text/javascript">
+      smoothScroll.init({
+        speed: 500, // Integer. How fast to complete the scroll in milliseconds
+        easing: 'easeInOutCubic', // Easing pattern to use
+        offset: 20, // Integer. How far to offset the scrolling anchor location in pixels
+      });
+    </script>
+    <!-- <script src=" /js/scroll.min.js " charset="utf-8"></script> -->
+  </body>
+
+</html>

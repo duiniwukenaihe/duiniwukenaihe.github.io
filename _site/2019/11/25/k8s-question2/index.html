@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>2019-11-25-k8s-question2</title>
+    <meta name="description" content="  描述背景：  创建 Pod 失败，describe pod 看 event 报 no space left on device.集群运行120天左右出现。  prune命令的使用：          1. Prune Images      2. Prune containers      3. prune ...">
+
+    <link rel="shortcut icon" href="/favicon.ico?" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico?" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_8v3czwksspqlg14i.css">
+    <link rel="stylesheet" href="/css/main.css ">
+    <link rel="canonical" href="http://localhost:4000/2019/11/25/k8s-question2/">
+    <link rel="alternate" type="application/rss+xml" title="duiniwukenaihe" href="http://localhost:4000/feed.xml ">
+
+
+    <script>
+    // 百度统计代码
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d5fc86dcc214ca5ef6e06cd0c7120d64";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+
+
+</head>
+
+
+  <body>
+
+    <header id="top">
+    <div class="wrapper">
+        <a href="/" class="brand">duiniwukenaihe</a>
+        <small>SRE Engineer(target)</small>
+        <button id="headerMenu" class="menu"><i class="fa fa-bars"></i></button>
+        <nav id="headerNav">
+            <ul>
+                <li>
+                    
+                    <a href="/">
+                    
+                        <i class="fa fa-home"></i>Home
+                    </a>
+                </li>
+
+                
+                    
+                    <li>
+                        
+                        <a href="/archive/">
+                        
+                            <i class="fa fa-archive"></i>Archives
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/category/">
+                        
+                            <i class="fa fa-th-list"></i>Categories
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/tag/">
+                        
+                            <i class="fa fa-tags"></i>Tags
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/collection/">
+                        
+                            <i class="fa fa-bookmark"></i>Collections
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/demo/">
+                        
+                            <i class="fa fa-play"></i>Topic
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/nav/">
+                        
+                            <i class="fa fa-location-arrow"></i>Nav
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/about/">
+                        
+                            <i class="fa fa-heart"></i>About
+                        </a>
+                    </li>
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            </ul>
+        </nav>
+    </div>
+</header>
+
+
+        <div class="page clearfix" post>
+    <div class="left">
+        <h1>2019-11-25-k8s-question2</h1>
+        <div class="label">
+
+            <div class="label-card">
+                <i class="fa fa-calendar"></i>2019-11-25
+            </div>
+
+            <div class="label-card">
+                <i class="fa fa-user"></i>duiniwukenaihe
+                
+            </div>
+
+            <div class="label-card">
+                
+            </div>
+
+            <div class="label-card">
+            
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+            </div>
+
+            <div class="label-card">
+            
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <!--a href="/tag/#question" title="Tag: question" rel="tag">question</a-->
+        <a href="/tag/#question" title="Tag: question" rel="tag">question</a>&nbsp;
+    
+        <!--a href="/tag/#no" title="Tag: no" rel="tag">no</a-->
+        <a href="/tag/#no" title="Tag: no" rel="tag">no</a>&nbsp;
+    
+        <!--a href="/tag/#space" title="Tag: space" rel="tag">space</a-->
+        <a href="/tag/#space" title="Tag: space" rel="tag">space</a>&nbsp;
+    
+        <!--a href="/tag/#left" title="Tag: left" rel="tag">left</a-->
+        <a href="/tag/#left" title="Tag: left" rel="tag">left</a>&nbsp;
+    
+        <!--a href="/tag/#on" title="Tag: on" rel="tag">on</a-->
+        <a href="/tag/#on" title="Tag: on" rel="tag">on</a>&nbsp;
+    
+        <!--a href="/tag/#device" title="Tag: device" rel="tag">device</a-->
+        <a href="/tag/#device" title="Tag: device" rel="tag">device</a>
+    
+  
+
+</span>
+
+            </div>
+
+        </div>
+        <hr>
+        <article itemscope itemtype="http://schema.org/BlogPosting">
+        <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#创建-pod-失败describe-pod-看-event-报-no-space-left-on-device集群运行120天左右出现" id="markdown-toc-创建-pod-失败describe-pod-看-event-报-no-space-left-on-device集群运行120天左右出现">创建 Pod 失败，describe pod 看 event 报 no space left on device.集群运行120天左右出现。</a></li>
+  <li><a href="#prune命令的使用" id="markdown-toc-prune命令的使用">prune命令的使用：</a>    <ul>
+      <li><a href="#1-prune-images" id="markdown-toc-1-prune-images">1. Prune Images</a></li>
+      <li><a href="#2-prune-containers" id="markdown-toc-2-prune-containers">2. Prune containers</a></li>
+      <li><a href="#3-prune-volumes" id="markdown-toc-3-prune-volumes">3. prune volumes</a></li>
+      <li><a href="#4-prune-networks" id="markdown-toc-4-prune-networks">4. prune networks</a></li>
+      <li><a href="#5-prune-everything" id="markdown-toc-5-prune-everything">5. prune everything</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="描述背景">描述背景：</h1>
+<p>注：记录各种常见问题</p>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.1</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="创建-pod-失败describe-pod-看-event-报-no-space-left-on-device集群运行120天左右出现">创建 Pod 失败，describe pod 看 event 报 no space left on device.集群运行120天左右出现。</h1>
+<blockquote>
+  <p>可参照https://www.bookstack.cn/read/kubernetes-practice-guide/troubleshooting-problems-errors-no-space-left-on-device.md。出现此问题cgroup泄露问题。最笨方法可以用reboot下，或者删除节点重新添加下。瞄了一眼/var/lib/docker/overlay2 下文件有快70G，/var/log/journal/日志也有4-5G。</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>journalctl <span class="nt">--vacuum-size</span><span class="o">=</span>20M
+设置journal 日志最大为20M不保留不必要日志。
+</code></pre></div></div>
+<h1 id="prune命令的使用">prune命令的使用：</h1>
+<blockquote>
+  <p>看了下文档与资料，对于不再使用的镜像容器，存储以及网络资源 docker采取的是被动清理方式。所以自然而然的，默认文件夹下文件会越来越大。docker 也为此提供了prune的命令。</p>
+</blockquote>
+
+<h2 id="1-prune-images">1. Prune Images</h2>
+<blockquote>
+  <p>docker image prune 可以用来清理不再使用的docker镜像。执行docker image prune默认会清除”悬空”镜像。“悬空”镜像，就是既没有标签名也没有容器引用的镜像就叫”悬空”镜像。具体操作如下：</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker image prune
+WARNING! This will remove all dangling images.
+Are you sure you want to <span class="k">continue</span>? <span class="o">[</span>y/N] y
+想要清除所有没有容器引用的镜像，增加一个 <span class="nt">-a</span> 标志就可以搞定：
+<span class="nv">$ </span>docker image prune <span class="nt">-a</span>
+WARNING! This will remove all images without at least one container associated to them.
+Are you sure you want to <span class="k">continue</span>? <span class="o">[</span>y/N] y
+清除操作会提醒你是否真心想要清除对象，默认是选项会是yes；但是如果你嫌提示麻烦，可以通过-f 或者--force标志来进行强制清除。
+更加人性化的是，Docker提供了--filter标志筛选出想要保留的镜像。例如：只清除超过创建时间超过24小时的镜像可以这样来操作：
+<span class="nv">$ </span>docker image prune <span class="nt">-a</span> <span class="nt">--filter</span> <span class="s2">"until=24h"</span>
+ 当然还能够通过其他的表达式来定制我的镜像清理计划。更多的示例参考docker image prune.
+</code></pre></div></div>
+<h2 id="2-prune-containers">2. Prune containers</h2>
+<blockquote>
+  <p>容器启动时没有指定–rm选项，容器停止时是不能够自动清除的。有时候我们无所事事的敲下docker ps -a命令会惊奇的发现，天哪，居然有这么多容器，有运行着的也有停止了的。它们是哪里来的？它们到底还有没有人在关注？这种情况在一个开发环境上尤其常见。即使容器已经停掉了也会占用空间资源。这个时候可以使用docker container prune命令:</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker container prune
+WARNING! This will remove all stopped containers.
+Are you sure you want to <span class="k">continue</span>? <span class="o">[</span>y/N] 
+和镜像清理的情况一样，也会有提示信息告诉你是否继续，默认是yes；如果提示信息烦到了你的话就加上 <span class="nt">-f</span> 或者 <span class="nt">--force</span>标志强制清除就可以了。
+默认情况下docker container prune命令会清理掉所有处于stopped状态的容器；如果不想那么残忍统统都删掉，也可以使用--filter标志来筛选出不希望被清理掉的容器。下面是一个筛选的例子，清除掉所有停掉的容器，但24内创建的除外：
+<span class="nv">$ </span>docker container prune <span class="nt">--filter</span> <span class="s2">"until=24h"</span>
+其他的筛选条件的实现可以参考：docker container prune reference， 这里有更多的详细的例子。
+</code></pre></div></div>
+
+<h2 id="3-prune-volumes">3. prune volumes</h2>
+
+<blockquote>
+  <p>Volumes可被一个或多个容器使用会消耗host端的空间，但它不会自动清理，因为那样就有可能破坏掉有用的数据。</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker volume prune
+WARNING! This will remove all volumes not used by at least one container.
+Are you sure you want to <span class="k">continue</span>? <span class="o">[</span>y/N] y
+和conatiner一样，手动清理Volume时会有提示信息，增加-f 或--force标志可以跳过提示信息直接清理。使用过滤参数--filter来筛选出不希望清理的无用Volume，否则默认会将所有没有使用的volumes都清理掉。下面的例子演示了除lable<span class="o">=</span>keep外的volume外都清理掉<span class="o">(</span>没有引用的volume<span class="o">)</span>：
+<span class="nv">$ </span>docker volume prune <span class="nt">--filter</span> <span class="s2">"label!=keep"</span>
+其他的筛选条件的实现可以参考：docker volume prune reference，这里给出了更多参考示例。
+</code></pre></div></div>
+
+<h2 id="4-prune-networks">4. prune networks</h2>
+
+<blockquote>
+  <p>虽然Docker networks占用的空间不多，但是它会创建iptable 规则、虚拟网桥设备以及路由表项，有洁癖的你看到这么多”僵尸”对象会不会抓狂？当然，我们还是要用清理神器：docker network prune 来清理没有再被任何容器引用的networks：</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker network prune
+ 
+WARNING! This will remove all networks not used by at least one container.
+Are you sure you want to <span class="k">continue</span>? <span class="o">[</span>y/N] y
+ 可以通过 <span class="nt">-f</span> 或者 <span class="nt">--force</span>标志跳过提示信息来强制执行该命令。默认情况会清除所有没有再被引用的networks，如果想要过滤一些特定的networks，可以使用--filter来实现。下面这个例子就是通过--filter来清理没有被引用的、创建超过24小时的networks：
+<span class="nv">$ </span>docker network prune <span class="nt">--filter</span> <span class="s2">"until=24h"</span>
+更多关于docker network的--filter的筛选条件可参考示例：docker network prune reference 。
+</code></pre></div></div>
+
+<h2 id="5-prune-everything">5. prune everything</h2>
+<blockquote>
+  <p>如题，这里要讲的就是清理everything：images ，containers，networks一次性清理操作可以通过docker system prune来搞定。在Docker 17.06.0 以及更早的版本中，这个docker system prune也会将volume一起清理掉；在Docker 17.06.1以及后期的版本中则必须要手动指定–volumes标志才能够清理掉volumes：</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>docker system prune
+ 
+WARNING! This will remove:
+        - all stopped containers
+        - all networks not used by at least one container
+        - all dangling images
+        - all build cache
+Are you sure you want to <span class="k">continue</span>? <span class="o">[</span>y/N] y
+在Docker 17.06.1或更高版本中添加--volumes标志的情况：
+<span class="nv">$ </span>docker system prune <span class="nt">--volumes</span>
+ 
+WARNING! This will remove:
+        - all stopped containers
+        - all networks not used by at least one container
+        - all volumes not used by at least one container
+        - all dangling images
+        - all build cache
+Are you sure you want to <span class="k">continue</span>? <span class="o">[</span>y/N] y
+貌似删除很有限，我的只删除了几百m
+docker system prune <span class="nt">-a</span> 
+WARNING! This will remove:
+        - all stopped containers
+        - all networks not used by at least one container
+        - all volumes not used by at least one container
+        - all dangling images
+        - all build cache
+Are you sure you want to <span class="k">continue</span>? <span class="o">[</span>y/N] y
+这样管用些删除了 12G空间
+</code></pre></div></div>
+<p><img src="/assets/images/qustion/prune.png" alt="prune.png" />
+<img src="/assets/images/qustion/prune1.png" alt="prune1.png" />
+<img src="/assets/images/qustion/prune2.png" alt="prune2.png" /></p>
+
+
+        </article>
+        <hr>
+
+        
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+        
+
+        <div class="post-recent">
+    <div class="pre">
+        
+        <p><strong>上一篇</strong> <a href="/2019/11/19/cncf-ali/">k8s-install-jenkins</a></p>
+        
+    </div>
+    <div class="nex">
+
+        
+        <p><strong>下一篇</strong> <a href="/2019/11/26/k8s-install-new/">2019-11-26-k8s-install-new</a></p>
+        
+    </div>
+</div>
+
+
+        <h2 id="comments">Comments</h2>
+        
+
+
+
+
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script>
+var gitalk = new Gitalk({
+  clientID: 'ec38bbdf8e7fa3dae292',
+  clientSecret: '2fbd28fed67dd309af98565dabc45190938506e2',
+  repo: 'duiniwukenaihe.github.io',
+  owner: 'duiniwukenaihe',
+  admin: ['duiniwukenaihe'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+
+
+
+    </div>
+    <button class="anchor"><i class="fa fa-anchor"></i></button>
+    <div class="right">
+        <div class="wrap">
+
+            <!-- Content -->
+            <div class="side content">
+                <div>
+                    Content
+                </div>
+                <ul id="content-side" class="content-ul">
+                    
+                    <li><a href="#comments">Comments</a></li>
+                </ul>
+            </div>
+            <!-- 其他div框放到这里 -->
+            <!-- <div class="side">bbbb</div> -->
+        </div>
+    </div>
+</div>
+<script>
+/**
+ * target _blank
+ */
+(function() {
+    var aTags = document.querySelectorAll('article a:not([id])')
+    for (var i = 0; i < aTags.length; i++) {
+        aTags[i].setAttribute('target', '_blank')
+    }
+}());
+</script>
+<script src="/js/pageContent.js " charset="utf-8"></script>
+
+
+    <footer class="site-footer">
+
+
+    <div class="wrapper">
+
+        <p class="description">
+             本站记录我成长之路的点点滴滴！ 
+        </p>
+        <p class="contact">
+            Contact me at: 
+            <a href="https://github.com/duiniwukenaihe" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>  
+            <a href="mailto:zhangpeng19871017@hotmail.com" title="email"><i class="fa fa-envelope-o" aria-hidden="true"></i></a>  
+            <a href="http://weibo.com/duiniwukenaihe" title="Weibo"><i class="fa fa-weibo" aria-hidden="true"></i></a>       
+        </p>
+        <p>
+            本站总访问量<span id="busuanzi_value_site_pv"></span>次，本站访客数<span id="busuanzi_value_site_uv"></span>人次，本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        </p>
+        <p class="power">
+            <span>
+                Site powered by <a href="https://jekyllrb.com/">Jekyll</a> & <a href="https://pages.github.com/">Github Pages</a>.
+            </span>
+            <span>
+                Theme designed by <a href="https://github.com/Gaohaoyang">HyG</a>.
+            </span>
+        </p>
+    </div>
+</footer>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <div class="back-to-top">
+    <a href="#top" data-scroll>
+        <i class="fa fa-arrow-up" aria-hidden="true"></i>
+    </a>
+</div>
+
+    <script src=" /js/main.js " charset="utf-8"></script>
+    <script src=" /js/smooth-scroll.min.js " charset="utf-8"></script>
+    <script type="text/javascript">
+      smoothScroll.init({
+        speed: 500, // Integer. How fast to complete the scroll in milliseconds
+        easing: 'easeInOutCubic', // Easing pattern to use
+        offset: 20, // Integer. How far to offset the scrolling anchor location in pixels
+      });
+    </script>
+    <!-- <script src=" /js/scroll.min.js " charset="utf-8"></script> -->
+  </body>
+
+</html>

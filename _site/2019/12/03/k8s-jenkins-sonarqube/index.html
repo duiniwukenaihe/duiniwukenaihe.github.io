@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>2019-12-03-k8s-jenkins-sonarqube</title>
+    <meta name="description" content="  描述背景：  sonarqube配置          1. 禁用SCM传感器      2. 安装 分析插件      2. 生成token        jenkins整合          1. 安装相关插件      2. 连接sonarqube      3. 配置 SonarQube Scanne...">
+
+    <link rel="shortcut icon" href="/favicon.ico?" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico?" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_8v3czwksspqlg14i.css">
+    <link rel="stylesheet" href="/css/main.css ">
+    <link rel="canonical" href="http://localhost:4000/2019/12/03/k8s-jenkins-sonarqube/">
+    <link rel="alternate" type="application/rss+xml" title="duiniwukenaihe" href="http://localhost:4000/feed.xml ">
+
+
+    <script>
+    // 百度统计代码
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d5fc86dcc214ca5ef6e06cd0c7120d64";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+
+
+</head>
+
+
+  <body>
+
+    <header id="top">
+    <div class="wrapper">
+        <a href="/" class="brand">duiniwukenaihe</a>
+        <small>SRE Engineer(target)</small>
+        <button id="headerMenu" class="menu"><i class="fa fa-bars"></i></button>
+        <nav id="headerNav">
+            <ul>
+                <li>
+                    
+                    <a href="/">
+                    
+                        <i class="fa fa-home"></i>Home
+                    </a>
+                </li>
+
+                
+                    
+                    <li>
+                        
+                        <a href="/archive/">
+                        
+                            <i class="fa fa-archive"></i>Archives
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/category/">
+                        
+                            <i class="fa fa-th-list"></i>Categories
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/tag/">
+                        
+                            <i class="fa fa-tags"></i>Tags
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/collection/">
+                        
+                            <i class="fa fa-bookmark"></i>Collections
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/demo/">
+                        
+                            <i class="fa fa-play"></i>Topic
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/nav/">
+                        
+                            <i class="fa fa-location-arrow"></i>Nav
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/about/">
+                        
+                            <i class="fa fa-heart"></i>About
+                        </a>
+                    </li>
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            </ul>
+        </nav>
+    </div>
+</header>
+
+
+        <div class="page clearfix" post>
+    <div class="left">
+        <h1>2019-12-03-k8s-jenkins-sonarqube</h1>
+        <div class="label">
+
+            <div class="label-card">
+                <i class="fa fa-calendar"></i>2019-12-03
+            </div>
+
+            <div class="label-card">
+                <i class="fa fa-user"></i>duiniwukenaihe
+                
+            </div>
+
+            <div class="label-card">
+                
+            </div>
+
+            <div class="label-card">
+            
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+            </div>
+
+            <div class="label-card">
+            
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <!--a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a-->
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
+    
+        <!--a href="/tag/#jenkins" title="Tag: jenkins" rel="tag">jenkins</a-->
+        <a href="/tag/#jenkins" title="Tag: jenkins" rel="tag">jenkins</a>&nbsp;
+    
+        <!--a href="/tag/#sonarqube" title="Tag: sonarqube" rel="tag">sonarqube</a-->
+        <a href="/tag/#sonarqube" title="Tag: sonarqube" rel="tag">sonarqube</a>
+    
+  
+
+</span>
+
+            </div>
+
+        </div>
+        <hr>
+        <article itemscope itemtype="http://schema.org/BlogPosting">
+        <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#sonarqube配置" id="markdown-toc-sonarqube配置">sonarqube配置</a>    <ul>
+      <li><a href="#1-禁用scm传感器" id="markdown-toc-1-禁用scm传感器">1. 禁用SCM传感器</a></li>
+      <li><a href="#2-安装-分析插件" id="markdown-toc-2-安装-分析插件">2. 安装 分析插件</a></li>
+      <li><a href="#2-生成token" id="markdown-toc-2-生成token">2. 生成token</a></li>
+    </ul>
+  </li>
+  <li><a href="#jenkins整合" id="markdown-toc-jenkins整合">jenkins整合</a>    <ul>
+      <li><a href="#1-安装相关插件" id="markdown-toc-1-安装相关插件">1. 安装相关插件</a></li>
+      <li><a href="#2-连接sonarqube" id="markdown-toc-2-连接sonarqube">2. 连接sonarqube</a></li>
+      <li><a href="#3-配置-sonarqube-scanner-插件" id="markdown-toc-3-配置-sonarqube-scanner-插件">3. 配置 SonarQube Scanner 插件</a></li>
+      <li><a href="#4-配置-maven插件" id="markdown-toc-4-配置-maven插件">4. 配置 maven插件</a></li>
+    </ul>
+  </li>
+  <li><a href="#创建pipeline流水线测试项目" id="markdown-toc-创建pipeline流水线测试项目">创建pipeline流水线测试项目</a>    <ul>
+      <li><a href="#1-创建流水线任务" id="markdown-toc-1-创建流水线任务">1. 创建流水线任务</a>        <ul>
+          <li><a href="#2-参数化构建流程-文本参数" id="markdown-toc-2-参数化构建流程-文本参数">2. 参数化构建流程-文本参数</a></li>
+          <li><a href="#3-创建pipeline-脚本-这里都是直接copy过来的" id="markdown-toc-3-创建pipeline-脚本-这里都是直接copy过来的">3. 创建pipeline 脚本 这里都是直接copy过来的</a></li>
+          <li><a href="#4-执行jenkins任务构建" id="markdown-toc-4-执行jenkins任务构建">4. 执行jenkins任务构建</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#登陆sonarqube查看扫描结果" id="markdown-toc-登陆sonarqube查看扫描结果">登陆sonarqube查看扫描结果.</a></li>
+</ul>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.3</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="描述背景">描述背景：</h1>
+<blockquote>
+  <p>示例过程参考http://www.mydlq.club/article/11/超级小豆丁文档进行操作，版本过程略有不同。初衷是没有进过大公司，羡慕大公司的工作流，安装下sonarqube与jenkins集成跑个测试用例自己安慰下自己……
+上一张抄来的流程图</p>
+</blockquote>
+
+<p><img src="/assets/images/sonar/jenkins-sonar1.png" alt="jenkins-sonar1" /></p>
+
+<h1 id="sonarqube配置">sonarqube配置</h1>
+
+<h2 id="1-禁用scm传感器">1. 禁用SCM传感器</h2>
+<blockquote>
+  <p>点击 配置—SCM—Disable the SCM Sensor 将其关闭
+<img src="/assets/images/sonar/jenkins-sonar2.png" alt="jenkins-sonar2" /></p>
+  <h2 id="2-安装-分析插件">2. 安装 分析插件</h2>
+  <p>点击配置-应用市场，搜索安装了java php js的相关插件，还安装了L10n，开始没有安装，pipeline后面编译maven示例的时候报错了，安装还是有必要的</p>
+</blockquote>
+
+<p><img src="/assets/images/sonar/jenkins-sonar3.png" alt="jenkins-sonar3" /></p>
+<h2 id="2-生成token">2. 生成token</h2>
+<blockquote>
+  <p>token 字符串是用于 Jenkins 在执行流水线时候将待检测信息发送到 SonarQube的安全凭证。
+点击右上角头像—我的账号—安全—生成令牌 生成验证的 Token。</p>
+</blockquote>
+
+<p><img src="/assets/images/sonar/jenkins-sonar4.png" alt="jenkins-sonar4" /></p>
+
+<h1 id="jenkins整合">jenkins整合</h1>
+<h2 id="1-安装相关插件">1. 安装相关插件</h2>
+<blockquote>
+
+  <p>Maven Integration plugin</p>
+
+  <p>Pipeline Maven Integration Plugin</p>
+
+  <p>Pipeline Utility Steps</p>
+
+  <p>SonarQube Scanner for Jenkins</p>
+
+  <p>打开 系统管理—插件管理—可选插件 输入 相关插件名称 进行插件筛选，直接安装就Ok了。</p>
+  <h2 id="2-连接sonarqube">2. 连接sonarqube</h2>
+  <p>点击凭据-系统-全局凭证-添加凭据-Secret text，复制sonarqube token到Secret ID,命名为sonar了 我就.
+<img src="/assets/images/sonar/jenkins-sonar5.png" alt="jenkins-sonar5" />
+系统管理-系统配置-SonarQube servers，添加sonarqube service配置。name 随便命名了一个jenkins,server url，由于我的jenkins和sonarqube 在一个namespace 我直接用了service 那么 通信，server authentication 添加了上一步创建的 sonar的secret text。
+<img src="/assets/images/sonar/jenkins-sonar6.png" alt="jenkins-sonar6" /></p>
+  <h2 id="3-配置-sonarqube-scanner-插件">3. 配置 SonarQube Scanner 插件</h2>
+  <p>打开 系统管理—全局工具配置—SonarQube Scanner 输入 Name，选择最新版本点击自动安装即可.
+<img src="/assets/images/sonar/jenkins-sonar7.png" alt="jenkins-sonar7" /></p>
+  <h2 id="4-配置-maven插件">4. 配置 maven插件</h2>
+  <p>打开 系统管理—全局工具配置—Maven 输入 Name，选择最新版本点击自动安装即可.（我的安装的时候一直下不下来包，就直接下载了一个最新版的包copy到了容器中的路径中去.）
+<img src="/assets/images/sonar/jenkins-sonar8.png" alt="jenkins-sonar8" /></p>
+  <h1 id="创建pipeline流水线测试项目">创建pipeline流水线测试项目</h1>
+  <h2 id="1-创建流水线任务">1. 创建流水线任务</h2>
+  <p><img src="/assets/images/sonar/jenkins-sonar9.png" alt="jenkins-sonar9" /></p>
+  <h3 id="2-参数化构建流程-文本参数">2. 参数化构建流程-文本参数</h3>
+  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>名称： sonar_project_properties
+默认值：
+sonar.sources<span class="o">=</span>src
+sonar.language<span class="o">=</span>java
+sonar.sourceEncoding<span class="o">=</span>UTF-8
+sonar.java.binaries<span class="o">=</span>target/classes
+sonar.java.source<span class="o">=</span>1.8
+sonar.java.target<span class="o">=</span>1.8
+</code></pre></div>  </div>
+  <p><img src="/assets/images/sonar/jenkins-sonar10.png" alt="jenkins-sonar10" /></p>
+  <h3 id="3-创建pipeline-脚本-这里都是直接copy过来的">3. 创建pipeline 脚本 这里都是直接copy过来的</h3>
+  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">**</span>// 设置超时时间为10分钟，如果未成功则结束任务
+<span class="nb">timeout</span><span class="o">(</span><span class="nb">time</span>: 600, unit: <span class="s1">'SECONDS'</span><span class="o">)</span> <span class="o">{</span>
+    node <span class="o">()</span> <span class="o">{</span>
+        stage<span class="o">(</span><span class="s1">'Git 拉取阶段'</span><span class="o">){</span>
+            // Git 拉取代码
+            git branch: <span class="s2">"master"</span> ,changelog: <span class="nb">true</span> , url: <span class="s2">"https://github.com/a324670547/springboot-helloworld"</span>
+        <span class="o">}</span>
+        stage<span class="o">(</span><span class="s1">'Maven 编译阶段'</span><span class="o">)</span> <span class="o">{</span>
+            // 设置 Maven 工具,引用先前全局工具配置中设置工具的名称
+            def m3 <span class="o">=</span> tool name: <span class="s1">'maven'</span>
+            // 执行 Maven 命令
+            sh <span class="s2">"</span><span class="k">${</span><span class="nv">m3</span><span class="k">}</span><span class="s2">/bin/mvn -B -e clean install -Dmaven.test.skip=true"</span>
+        <span class="o">}</span>
+        stage<span class="o">(</span><span class="s1">'SonarQube 扫描阶段'</span><span class="o">){</span>
+            // 读取maven变量
+            pom <span class="o">=</span> readMavenPom file: <span class="s2">"./pom.xml"</span>
+            // 创建SonarQube配置文件
+            writeFile file: <span class="s1">'sonar-project.properties'</span>, 
+                      text: <span class="s2">"""sonar.projectKey=</span><span class="k">${</span><span class="nv">pom</span><span class="p">.artifactId</span><span class="k">}</span><span class="s2">:</span><span class="k">${</span><span class="nv">pom</span><span class="p">.version</span><span class="k">}</span><span class="se">\n</span><span class="s2">"""</span>+
+                            <span class="s2">"""sonar.projectName=</span><span class="k">${</span><span class="nv">pom</span><span class="p">.artifactId</span><span class="k">}</span><span class="se">\n</span><span class="s2">"""</span>+
+                            <span class="s2">"""sonar.projectVersion=</span><span class="k">${</span><span class="nv">pom</span><span class="p">.version</span><span class="k">}</span><span class="se">\n</span><span class="s2">"""</span>+
+                            <span class="s2">"""</span><span class="k">${</span><span class="nv">sonar_project_properties</span><span class="k">}</span><span class="s2">"""</span>
+            // 设置 SonarQube 代码扫描工具,引用先前全局工具配置中设置工具的名称
+            def sonarqubeScanner <span class="o">=</span> tool name: <span class="s1">'sonar-scanner'</span>
+            // 设置 SonarQube 环境,其中参数设置为之前系统设置中SonarQuke服务器配置的 Name
+            withSonarQubeEnv<span class="o">(</span><span class="s1">'jenkins'</span><span class="o">)</span> <span class="o">{</span>
+                // 执行代码扫描
+                sh <span class="s2">"</span><span class="k">${</span><span class="nv">sonarqubeScanner</span><span class="k">}</span><span class="s2">/bin/sonar-scanner"</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span><span class="k">**</span>
+</code></pre></div>  </div>
+  <p><img src="/assets/images/sonar/jenkins-sonar11.png" alt="jenkins-sonar11" /></p>
+  <h3 id="4-执行jenkins任务构建">4. 执行jenkins任务构建</h3>
+  <p>点击 Build with Parameters 执行 Jenkins 任务,由于插件安装不完整，sonarqube 少安装了L10n插件，开始失败率 好多次。等待确认成功
+<img src="/assets/images/sonar/jenkins-sonar12.png" alt="jenkins-sonar12" /></p>
+  <h1 id="登陆sonarqube查看扫描结果">登陆sonarqube查看扫描结果.</h1>
+</blockquote>
+
+<p><img src="/assets/images/sonar/jenkins-sonar13.png" alt="jenkins-sonar13" /></p>
+
+<blockquote>
+  <p>总结：流程算是草草完成，还有很多不明白的地方，因为工作环境都是php，也没有成熟的发布流程，对java的maven构建还是很陌生。而且sonarqube的配置还是十分不熟悉。后续先搞明白下sonarqube的各种配置设置参数，系统的看下maven gradle这些主流的java构建工具。</p>
+</blockquote>
+
+        </article>
+        <hr>
+
+        
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                        
+                        <h2 id="similar_posts">Similar Posts</h2>
+                        <ul>
+                        
+                        <li class="relatedPost">
+                            <a href="/2019/12/27/traefik/">2019-12-27-traefik
+                            
+                            </a>
+                        </li>
+                        
+                        
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                        
+                        <li class="relatedPost">
+                            <a href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/">2019-11-29-k8s-helm-install-postgresql-sonarqube
+                            
+                            </a>
+                        </li>
+                        
+                        
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                        
+                        <li class="relatedPost">
+                            <a href="/2019/11/19/cncf-ali/">k8s-install-jenkins
+                            
+                            </a>
+                        </li>
+                        
+                        
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                        
+                        <li class="relatedPost">
+                            <a href="/2019/11/19/k8s-install-jenkins/">k8s-install-jenkins
+                            
+                            </a>
+                        </li>
+                        
+                        
+                    
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                        
+                        <li class="relatedPost">
+                            <a href="/2019/11/05/k8s-install-prometheus-operator/">k8s-install-prometheus-operator
+                            
+                            </a>
+                        </li>
+                        
+                        
+                    
+                
+                    
+                
+                    
+                
+            
+                
+                    
+                
+                    
+                
+                    
+                
+            
+        
+        
+            </ul>
+        
+
+        <div class="post-recent">
+    <div class="pre">
+        
+        <p><strong>上一篇</strong> <a href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/">2019-11-29-k8s-helm-install-postgresql-sonarqube</a></p>
+        
+    </div>
+    <div class="nex">
+
+        
+        <p><strong>下一篇</strong> <a href="/2019/12/05/eck-qustion/">2019-12-05-eck-qustion</a></p>
+        
+    </div>
+</div>
+
+
+        <h2 id="comments">Comments</h2>
+        
+
+
+
+
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script>
+var gitalk = new Gitalk({
+  clientID: 'ec38bbdf8e7fa3dae292',
+  clientSecret: '2fbd28fed67dd309af98565dabc45190938506e2',
+  repo: 'duiniwukenaihe.github.io',
+  owner: 'duiniwukenaihe',
+  admin: ['duiniwukenaihe'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+
+
+
+    </div>
+    <button class="anchor"><i class="fa fa-anchor"></i></button>
+    <div class="right">
+        <div class="wrap">
+
+            <!-- Content -->
+            <div class="side content">
+                <div>
+                    Content
+                </div>
+                <ul id="content-side" class="content-ul">
+                    
+                    <li><a href="#similar_posts">Similar Posts</a></li>
+                    
+                    <li><a href="#comments">Comments</a></li>
+                </ul>
+            </div>
+            <!-- 其他div框放到这里 -->
+            <!-- <div class="side">bbbb</div> -->
+        </div>
+    </div>
+</div>
+<script>
+/**
+ * target _blank
+ */
+(function() {
+    var aTags = document.querySelectorAll('article a:not([id])')
+    for (var i = 0; i < aTags.length; i++) {
+        aTags[i].setAttribute('target', '_blank')
+    }
+}());
+</script>
+<script src="/js/pageContent.js " charset="utf-8"></script>
+
+
+    <footer class="site-footer">
+
+
+    <div class="wrapper">
+
+        <p class="description">
+             本站记录我成长之路的点点滴滴！ 
+        </p>
+        <p class="contact">
+            Contact me at: 
+            <a href="https://github.com/duiniwukenaihe" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>  
+            <a href="mailto:zhangpeng19871017@hotmail.com" title="email"><i class="fa fa-envelope-o" aria-hidden="true"></i></a>  
+            <a href="http://weibo.com/duiniwukenaihe" title="Weibo"><i class="fa fa-weibo" aria-hidden="true"></i></a>       
+        </p>
+        <p>
+            本站总访问量<span id="busuanzi_value_site_pv"></span>次，本站访客数<span id="busuanzi_value_site_uv"></span>人次，本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        </p>
+        <p class="power">
+            <span>
+                Site powered by <a href="https://jekyllrb.com/">Jekyll</a> & <a href="https://pages.github.com/">Github Pages</a>.
+            </span>
+            <span>
+                Theme designed by <a href="https://github.com/Gaohaoyang">HyG</a>.
+            </span>
+        </p>
+    </div>
+</footer>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <div class="back-to-top">
+    <a href="#top" data-scroll>
+        <i class="fa fa-arrow-up" aria-hidden="true"></i>
+    </a>
+</div>
+
+    <script src=" /js/main.js " charset="utf-8"></script>
+    <script src=" /js/smooth-scroll.min.js " charset="utf-8"></script>
+    <script type="text/javascript">
+      smoothScroll.init({
+        speed: 500, // Integer. How fast to complete the scroll in milliseconds
+        easing: 'easeInOutCubic', // Easing pattern to use
+        offset: 20, // Integer. How far to offset the scrolling anchor location in pixels
+      });
+    </script>
+    <!-- <script src=" /js/scroll.min.js " charset="utf-8"></script> -->
+  </body>
+
+</html>

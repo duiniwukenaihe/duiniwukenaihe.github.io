@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>腾讯云高可用k8s环境安装</title>
+    <meta name="description" content="腾讯云高可用 k8s 集群安装文档注： 参考https://blog.csdn.net/qq_32641153/article/details/90413640集群环境：            ip      自定义域名      主机名                  192.168.20.13      m...">
+
+    <link rel="shortcut icon" href="/favicon.ico?" type="image/x-icon">
+    <link rel="icon" href="/favicon.ico?" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="https://at.alicdn.com/t/font_8v3czwksspqlg14i.css">
+    <link rel="stylesheet" href="/css/main.css ">
+    <link rel="canonical" href="http://localhost:4000/2019/09/02/k8s-install/">
+    <link rel="alternate" type="application/rss+xml" title="duiniwukenaihe" href="http://localhost:4000/feed.xml ">
+
+
+    <script>
+    // 百度统计代码
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "//hm.baidu.com/hm.js?d5fc86dcc214ca5ef6e06cd0c7120d64";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+    </script>
+
+
+
+
+</head>
+
+
+  <body>
+
+    <header id="top">
+    <div class="wrapper">
+        <a href="/" class="brand">duiniwukenaihe</a>
+        <small>SRE Engineer(target)</small>
+        <button id="headerMenu" class="menu"><i class="fa fa-bars"></i></button>
+        <nav id="headerNav">
+            <ul>
+                <li>
+                    
+                    <a href="/">
+                    
+                        <i class="fa fa-home"></i>Home
+                    </a>
+                </li>
+
+                
+                    
+                    <li>
+                        
+                        <a href="/archive/">
+                        
+                            <i class="fa fa-archive"></i>Archives
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/category/">
+                        
+                            <i class="fa fa-th-list"></i>Categories
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/tag/">
+                        
+                            <i class="fa fa-tags"></i>Tags
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/collection/">
+                        
+                            <i class="fa fa-bookmark"></i>Collections
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/demo/">
+                        
+                            <i class="fa fa-play"></i>Topic
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/nav/">
+                        
+                            <i class="fa fa-location-arrow"></i>Nav
+                        </a>
+                    </li>
+                    
+                
+                    
+                    <li>
+                        
+                        <a href="/about/">
+                        
+                            <i class="fa fa-heart"></i>About
+                        </a>
+                    </li>
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+                    
+                
+            </ul>
+        </nav>
+    </div>
+</header>
+
+
+        <div class="page clearfix" post>
+    <div class="left">
+        <h1>腾讯云高可用k8s环境安装</h1>
+        <div class="label">
+
+            <div class="label-card">
+                <i class="fa fa-calendar"></i>2019-09-02
+            </div>
+
+            <div class="label-card">
+                <i class="fa fa-user"></i>duiniwukenaihe
+                
+            </div>
+
+            <div class="label-card">
+                
+            </div>
+
+            <div class="label-card">
+            
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+            </div>
+
+            <div class="label-card">
+            
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <!--a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a-->
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>
+    
+  
+
+</span>
+
+            </div>
+
+        </div>
+        <hr>
+        <article itemscope itemtype="http://schema.org/BlogPosting">
+        <ul id="markdown-toc">
+  <li><a href="#haproxy-安装" id="markdown-toc-haproxy-安装">haproxy 安装:</a></li>
+  <li><a href="#kubernetes-install" id="markdown-toc-kubernetes-install">kubernetes install</a></li>
+</ul>
+
+<p>腾讯云高可用 k8s 集群安装文档<br />
+注： 参考https://blog.csdn.net/qq_32641153/article/details/90413640</p>
+
+<p><strong>集群环境：</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.20.13</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.8</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.12</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.6</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.3</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.9</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>host如下图：</p>
+
+<p><img src="/assets/images/k8s/k8s-host.png" alt="k8s-host.png" /></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>注： 防火墙 selinux  swap   默认系统镜像已经关闭 最大文件开启个数等已经优化
+<span class="c">#swap</span>
+swapoff <span class="nt">-a</span>
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s1">'s/.*swap.*/#&amp;/'</span> /etc/fstab
+<span class="c">#selinux</span>
+setenforce  0 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/sysconfig/selinux 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/selinux/config 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=permissive/SELINUX=disabled/g"</span> /etc/sysconfig/selinux 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=permissive/SELINUX=disabled/g"</span> /etc/selinux/config 
+
+<span class="c">#调整文件打开数等配置</span>
+<span class="nb">echo</span> <span class="s2">"* soft nofile 65536"</span> <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard nofile 65536"</span> <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* soft nproc 65536"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard nproc 65536"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* soft  memlock  unlimited"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard memlock  unlimited"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+ 
+
+</code></pre></div></div>
+<hr />
+
+<p><strong>修改主机名：</strong></p>
+
+<p>如下图所示，以此修改主机名:</p>
+
+<p><img src="/assets/images/k8s/set-hostname.png" alt="set-hostname.png" /></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c">##修改 192.168.2.8 服务器</span>
+hostnamectl  set-hostname  k8s-master-01
+  <span class="c">##修改 192.168.2.12 服务器</span>
+hostnamectl  set-hostname  k8s-master-02
+  <span class="c">##修改 192.168.2.6 服务器</span>
+hostnamectl  set-hostname  k8s-master-03
+  <span class="c">##修改 192.168.2.3 服务器</span>
+hostnamectl  set-hostname  k8s-node-01
+  <span class="c">##修改 192.168.2.9 服务器</span>
+hostnamectl  set-hostname  k8s-node-02
+</code></pre></div></div>
+
+<p><strong>系统参数调优,开启ip转发刷新加载配置:</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; /etc/sysctl.d/k8s.conf
+net.ipv4.ip_forward = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<p><img src="/assets/images/k8s/ipv4.png" alt="k8s-host.png" /></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>modprobe br_netfilter
+sysctl <span class="nt">-p</span> /etc/sysctl.d/k8s.conf
+sysctl <span class="nt">-p</span> /etc/sysctl.d/k8s.conf
+</code></pre></div></div>
+<p><img src="/assets/images/k8s/reshen_ipv4.png" alt="k8s-host.png" /></p>
+
+<p><strong>配置docker kubernetes yum 源：</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum-config-manager <span class="nt">--add-repo</span> http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg 
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<p><strong>开始安装基本服务：</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>安装依赖包
+yum <span class="nb">install</span> <span class="nt">-y</span> epel-release
+yum <span class="nb">install</span> <span class="nt">-y</span> yum-utils device-mapper-persistent-data lvm2 net-tools conntrack-tools wget vim  ntpdate libseccomp libtool-ltdl
+安装bash命令提示
+yum <span class="nb">install</span> <span class="nt">-y</span> bash-argsparse bash-completion bash-completion-extras
+
+</code></pre></div></div>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>开启ipvs
+vim /etc/sysconfig/modules/ipvs.modules
+modprobe <span class="nt">--</span> ip_vs
+modprobe <span class="nt">--</span> ip_vs_rr
+modprobe <span class="nt">--</span> ip_vs_wrr
+modprobe <span class="nt">--</span> ip_vs_sh
+modprobe <span class="nt">--</span> nf_conntrack_ipv4
+
+<span class="nb">chmod </span>755 /etc/sysconfig/modules/ipvs.modules <span class="o">&amp;&amp;</span> bash /etc/sysconfig/modules/ipvs.modules <span class="o">&amp;&amp;</span> lsmod | <span class="nb">grep</span> <span class="nt">-e</span> ip_vs <span class="nt">-e</span> nf_conntrack_ipv4
+
+yum <span class="nb">install </span>ipset
+</code></pre></div></div>
+<p><strong>安装docker kubeadm:</strong></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum <span class="nb">install </span>docker-ce <span class="nt">-y</span>
+<span class="c">#配置镜像加速器 </span>
+<span class="nb">sudo mkdir</span> <span class="nt">-p</span> /etc/docker
+<span class="nb">sudo tee</span> /etc/docker/daemon.json <span class="o">&lt;&lt;-</span><span class="sh">'</span><span class="no">EOF</span><span class="sh">'
+{
+  "registry-mirrors": ["https://lrpol8ec.mirror.aliyuncs.com"]
+}
+</span><span class="no">EOF
+</span><span class="nb">sudo </span>systemctl daemon-reload
+<span class="nb">sudo </span>systemctl restart docker
+</code></pre></div></div>
+
+<p><img src="/assets/images/k8s/docker_boost.png" alt="k8s-host.png" /></p>
+
+<p>**安装kubelet  kubeadm  组件: **</p>
+
+<p>#默认最新版本 可选择版本参数</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum <span class="nb">install</span> <span class="nt">-y</span> kubelet kubeadm kubectl <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes
+systemctl <span class="nb">enable </span>kubelet
+</code></pre></div></div>
+
+<p>##安装etcd</p>
+
+<p>默认三台master安装etcd集群</p>
+
+<p>使用cfssl 生产自签名证书</p>
+
+<p>注：master1执行.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
+<span class="nb">chmod</span> +x cfssl_linux-amd64 cfssljson_linux-amd64 cfssl-certinfo_linux-amd64
+<span class="nb">mv </span>cfssl_linux-amd64 /usr/local/bin/cfssl
+<span class="nb">mv </span>cfssljson_linux-amd64 /usr/local/bin/cfssljson
+<span class="nb">mv </span>cfssl-certinfo_linux-amd64 /usr/bin/cfssl-certinfo
+<span class="nb">cd</span> /root/ssl
+
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; ca-config.json 
+{
+  "signing": {
+    "default": {
+      "expiry": "87600h"
+    },
+    "profiles": {
+      "www": {
+         "expiry": "87600h",
+         "usages": [
+            "signing",
+            "key encipherment",
+            "server auth",
+            "client auth"
+        ]
+      }
+    }
+  }
+}
+</span><span class="no">EOF
+</span><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; ca-csr.json 
+{
+    "CN": "etcd CA",
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "CN",
+            "L": "Beijing",
+            "ST": "Beijing"
+        }
+    ]
+}
+</span><span class="no">EOF
+
+</span><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; server-csr.json 
+{
+    "CN": "etcd",
+    "hosts": [
+    "192.168.20.8",
+    "192.168.20.12",
+    "192.168.20.6"
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "CN",
+            "L": "BeiJing",
+            "ST": "BeiJing"
+        }
+    ]
+}
+</span><span class="no">EOF
+</span>cfssl gencert <span class="nt">-initca</span> ca-csr.json | cfssljson <span class="nt">-bare</span> ca -
+cfssl gencert <span class="nt">-ca</span><span class="o">=</span>ca.pem <span class="nt">-ca-key</span><span class="o">=</span>ca-key.pem <span class="nt">-config</span><span class="o">=</span>ca-config.json <span class="nt">-profile</span><span class="o">=</span>www server-csr.json | cfssljson <span class="nt">-bare</span> server
+
+<span class="nb">ls</span> <span class="k">*</span>pem
+
+</code></pre></div></div>
+<p><img src="/assets/images/k8s/cfssl.png" alt="k8s-host.png" /></p>
+
+<p>三台master (etcd节点)</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget https://github.com/coreos/etcd/releases/download/v3.3.13/etcd-v3.3.13-linux-amd64.tar.gz
+
+<span class="nb">tar </span>zxvf etcd-v3.3.13-linux-amd64.tar.gz 
+<span class="nb">cd </span>etcd-v3.3.13-linux-amd64/ 
+<span class="nb">mv </span>etcd etcdctl /usr/bin/  
+<span class="nb">mkdir</span> /var/lib/etcd
+<span class="nb">mkdir</span> /etc/etcd 
+<span class="nb">mkdir </span>cfg ssl 
+vi cfg/etcd 
+<span class="c">#[Member]</span>
+<span class="nv">ETCD_NAME</span><span class="o">=</span><span class="s2">"etcd01"</span>
+<span class="nv">ETCD_DATA_DIR</span><span class="o">=</span><span class="s2">"/var/lib/etcd"</span>
+<span class="nv">ETCD_LISTEN_PEER_URLS</span><span class="o">=</span><span class="s2">"https://192.168.20.8:2380"</span>
+<span class="nv">ETCD_LISTEN_CLIENT_URLS</span><span class="o">=</span><span class="s2">"https://192.168.20.8:2379"</span>
+
+<span class="c">#[Clustering]</span>
+<span class="nv">ETCD_INITIAL_ADVERTISE_PEER_URLS</span><span class="o">=</span><span class="s2">"https://192.168.20.8:2380"</span>
+<span class="nv">ETCD_ADVERTISE_CLIENT_URLS</span><span class="o">=</span><span class="s2">"https://192.168.20.8:2379"</span>
+<span class="nv">ETCD_INITIAL_CLUSTER</span><span class="o">=</span><span class="s2">"etcd01=https://192.168.20.8:2380,etcd02=https://192.168.20.12:2380,etcd03=https://192.168.20.6:2380"</span>
+<span class="nv">ETCD_INITIAL_CLUSTER_TOKEN</span><span class="o">=</span><span class="s2">"etcd-cluster"</span>
+<span class="nv">ETCD_INITIAL_CLUSTER_STATE</span><span class="o">=</span><span class="s2">"new"</span>
+ 
+master1
+<span class="nb">cd</span> /root/ssl
+<span class="nb">cp</span> <span class="k">*</span>.pem /etc/etcd/ssl/
+
+将ssl 证书copy到master2  mater3
+<span class="nb">cd</span> /etc/systemd/system/
+<span class="nb">cat </span>etcd.service
+<span class="o">[</span>Unit]
+<span class="nv">Description</span><span class="o">=</span>etcd server
+<span class="nv">After</span><span class="o">=</span>network.target
+<span class="nv">After</span><span class="o">=</span>network-online.target
+<span class="nv">Wants</span><span class="o">=</span>network-online.target
+
+<span class="o">[</span>Service]
+<span class="nv">Type</span><span class="o">=</span>notify
+<span class="nv">WorkingDirectory</span><span class="o">=</span>/var/lib/etcd/
+<span class="nv">EnvironmentFile</span><span class="o">=</span>/etc/etcd/cfg/etcd
+<span class="nv">ExecStart</span><span class="o">=</span>/usr/bin/etcd <span class="se">\</span>
+  <span class="nt">--name</span><span class="o">=</span>etcd01 <span class="se">\</span>
+  <span class="nt">--cert-file</span><span class="o">=</span>/etc/etcd/ssl/server.pem <span class="se">\</span>
+  <span class="nt">--key-file</span><span class="o">=</span>/etc/etcd/ssl/server-key.pem <span class="se">\</span>
+  <span class="nt">--peer-cert-file</span><span class="o">=</span>/etc/etcd/ssl/server.pem <span class="se">\</span>
+  <span class="nt">--peer-key-file</span><span class="o">=</span>/etc/etcd/ssl/server-key.pem <span class="se">\</span>
+  <span class="nt">--trusted-ca-file</span><span class="o">=</span>/etc/etcd/ssl/ca.pem <span class="se">\</span>
+  <span class="nt">--peer-trusted-ca-file</span><span class="o">=</span>/etc/etcd/ssl/ca.pem
+  <span class="nt">--initial-advertise-peer-urls</span> https://192.168.20.8:2380 <span class="se">\</span>
+  <span class="nt">--listen-peer-urls</span> https://192.168.20.8:2380 <span class="se">\</span>
+  <span class="nt">--listen-client-urls</span> https://192.168.20.8:2379,https://127.0.0.1:2379 <span class="se">\</span>
+  <span class="nt">--advertise-client-urls</span> https://192.168.20.8:2379 <span class="se">\</span>
+  <span class="nt">--initial-cluster-token</span> etcd-cluster-1 <span class="se">\</span>
+  <span class="nt">--initial-cluster</span> <span class="nv">etcd01</span><span class="o">=</span>https://192.168.20.8:2380,etcd02<span class="o">=</span>https://192.168.20.12:2380,etcd03<span class="o">=</span>https://192.168.20.6:2380 <span class="se">\</span>
+  <span class="nt">--initial-cluster-state</span> new <span class="se">\</span>
+  <span class="nt">--initial-cluster-token</span><span class="o">=</span>etcd-cluster <span class="se">\</span>
+  <span class="nt">--data-dir</span><span class="o">=</span>/var/lib/etcd
+<span class="nv">Restart</span><span class="o">=</span>on-failure
+<span class="nv">RestartSec</span><span class="o">=</span>5
+<span class="nv">LimitNOFILE</span><span class="o">=</span>65536
+<span class="o">[</span>Install]
+<span class="nv">WantedBy</span><span class="o">=</span>multi-user.target
+
+</code></pre></div></div>
+<p><img src="/assets/images/k8s/etcd0.png" alt="k8s-host.png" />
+<img src="/assets/images/k8s/etcd1.png" alt="k8s-host.png" />
+<img src="/assets/images/k8s/etcd2.png" alt="k8s-host.png" />
+<img src="/assets/images/k8s/etcd3.png" alt="k8s-host.png" />
+<img src="/assets/images/k8s/etcd.service.png" alt="k8s-host.png" />
+<img src="/assets/images/k8s/etcd_start.png" alt="k8s-host.png" />
+<img src="/assets/images/k8s/etcd-helth.png" alt="k8s-host.png" /></p>
+
+<p>systemctl start etcd 
+发现无法启动看日志
+annot add dependency job for unit rpcbind.socket, ignoring: Unit not found</p>
+
+<p>果断  yum install rpcbind -y,重启etcd服务</p>
+
+<p>systemctl start etcd</p>
+
+<h2 id="haproxy-安装">haproxy 安装:</h2>
+<p>yum install -y haproxy</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; /etc/haproxy/haproxy.cfg
+
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   http://haproxy.1wt.eu/download/1.4/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    tcp
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend kubernetes
+    bind *:8443              #配置端口为8443
+    mode tcp
+    default_backend kubernetes-master
+#---------------------------------------------------------------------
+# static backend for serving up images, stylesheets and such
+#---------------------------------------------------------------------
+backend kubernetes-master           #后端服务器，也就是说访问192.168.255.140:8443会将请求转发到后端的三台，这样就实现了负载均衡
+    balance roundrobin               
+    server master1  192.168.20.8:6443 check maxconn 2000
+    server master2  192.168.20.12:6443 check maxconn 2000
+    server master3  192.168.20.6:6443 check maxconn 2000
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<p><strong>启动服务</strong>
+<code class="language-plaintext highlighter-rouge">bash systemctl enable haproxy &amp;&amp; systemctl start haproxy &amp;&amp; systemctl status haproxy</code></p>
+
+<h2 id="kubernetes-install">kubernetes install</h2>
+<p><strong>负载均衡slb配置监听端口：</strong></p>
+
+<p>注： slb后台配置</p>
+
+<p><img src="/assets/images/k8s/slb1.png" alt="k8s-host.png" /></p>
+
+<p><img src="/assets/images/k8s/slb2.png" alt="k8s-host.png" /></p>
+
+<p><img src="/assets/images/k8s/slb3.png" alt="k8s-host.png" /></p>
+
+<p><strong>master01 生成 kubeadm-config.yaml：</strong></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; kubeadm-config.yaml
+apiServer:
+  certSANs:
+    - k8s-master-01
+    - k8s-master-02
+    - k8s-master-03
+    - master.k8s.io
+    - 192.168.2.8
+    - 192.168.2.12
+    - 192.168.2.6
+    - 192.168.2.13
+    - 127.0.0.1
+  extraArgs:
+    authorization-mode: Node,RBAC
+  timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta1
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controlPlaneEndpoint: "master.k8s.io:6443"
+controllerManager: {}
+dns: 
+  type: CoreDNS
+etcd:
+  external:
+    endpoints:
+    - https://192.168.20.8:2379
+    - https://192.168.20.12:2379
+    - https://192.168.20.6:2379
+    caFile: /etc/etcd//ssl/ca.pem
+    certFile: /etc/etcd/ssl/server.pem
+    keyFile: /etc/etcd/ssl/server-key.pem
+    local:    
+      dataDir: /var/lib/etcd
+imageRepository: registry.aliyuncs.com/google_containers
+kind: ClusterConfiguration
+kubernetesVersion: v1.15.1
+networking: 
+  dnsDomain: cluster.local  
+  podSubnet: 10.20.0.0/16
+  serviceSubnet: 10.120.0.0/16
+scheduler: {}
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<p><img src="/assets/images/k8s/kuberadm-config.png" alt="k8s-host.png" /></p>
+
+<p><strong>master01 init安装：</strong></p>
+
+<p>kubeadm init –config kubeadm-config.yaml</p>
+
+<p><img src="/assets/images/k8s/kubinit.png" alt="k8s-host.png" /></p>
+
+<p><strong>配置flannel 网络：</strong></p>
+
+<p>wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml</p>
+
+<p>kubectl  apply -f kube-flannel.yml</p>
+
+<p><img src="/assets/images/k8s/flannel.png" alt="k8s-host.png" /></p>
+
+<p>将master01 /etc/kubernetes/pki目录下ca* sa* fr* 打包分发到master02,master03 /etc/kubernetes/pki目录下</p>
+
+<p><img src="/assets/images/k8s/copyca.png" alt="k8s-host.png" /></p>
+
+<p><strong>master02,master03加入控制节点：</strong></p>
+
+<p>kubeadm join master.k8s.io:6443 –token mx1ab0.g5oeh08uvi4dzs26     –discovery-token-ca-cert-hash sha256:2cb8e41a15719139df01d806f7c174289dac14843830f91ebfd7b9307b70acec     –control-plane</p>
+
+<p><strong>node01,node02节点执行以下命令加入集群：</strong></p>
+
+<p>kubeadm join master.k8s.io:6443 –token mx1ab0.g5oeh08uvi4dzs26 <br />
+    –discovery-token-ca-cert-hash sha256:2cb8e41a15719139df01d806f7c174289dac14843830f91ebfd7b9307b70acec</p>
+
+<p><strong>kubectl get nodes：</strong></p>
+
+<p><img src="/assets/images/k8s/get-nodes.png" alt="k8s-host.png" /></p>
+
+<p>注：开始默认安装的是1.15.1 但是get nodes没有截图固显示1.15.3为升级后版本</p>
+
+        </article>
+        <hr>
+
+        
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                        
+                        <h2 id="similar_posts">Similar Posts</h2>
+                        <ul>
+                        
+                        <li class="relatedPost">
+                            <a href="/2019/12/27/traefik/">2019-12-27-traefik
+                            
+                            </a>
+                        </li>
+                        
+                        
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                        
+                        <li class="relatedPost">
+                            <a href="/2019/12/03/k8s-jenkins-sonarqube/">2019-12-03-k8s-jenkins-sonarqube
+                            
+                            </a>
+                        </li>
+                        
+                        
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                        
+                        <li class="relatedPost">
+                            <a href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/">2019-11-29-k8s-helm-install-postgresql-sonarqube
+                            
+                            </a>
+                        </li>
+                        
+                        
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+            
+            
+                
+                    
+                
+            
+                
+                    
+                
+            
+        
+        
+            </ul>
+        
+
+        <div class="post-recent">
+    <div class="pre">
+        
+        <p><strong>上一篇</strong> <a href="/2019/09/02/welcome-to-jekyll/">hello jekyll!</a></p>
+        
+    </div>
+    <div class="nex">
+
+        
+        <p><strong>下一篇</strong> <a href="/2019/09/03/k8s-rook/">kubernetes rook ceph 环境搭建</a></p>
+        
+    </div>
+</div>
+
+
+        <h2 id="comments">Comments</h2>
+        
+
+
+
+
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script>
+var gitalk = new Gitalk({
+  clientID: 'ec38bbdf8e7fa3dae292',
+  clientSecret: '2fbd28fed67dd309af98565dabc45190938506e2',
+  repo: 'duiniwukenaihe.github.io',
+  owner: 'duiniwukenaihe',
+  admin: ['duiniwukenaihe'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+
+
+
+    </div>
+    <button class="anchor"><i class="fa fa-anchor"></i></button>
+    <div class="right">
+        <div class="wrap">
+
+            <!-- Content -->
+            <div class="side content">
+                <div>
+                    Content
+                </div>
+                <ul id="content-side" class="content-ul">
+                    
+                    <li><a href="#similar_posts">Similar Posts</a></li>
+                    
+                    <li><a href="#comments">Comments</a></li>
+                </ul>
+            </div>
+            <!-- 其他div框放到这里 -->
+            <!-- <div class="side">bbbb</div> -->
+        </div>
+    </div>
+</div>
+<script>
+/**
+ * target _blank
+ */
+(function() {
+    var aTags = document.querySelectorAll('article a:not([id])')
+    for (var i = 0; i < aTags.length; i++) {
+        aTags[i].setAttribute('target', '_blank')
+    }
+}());
+</script>
+<script src="/js/pageContent.js " charset="utf-8"></script>
+
+
+    <footer class="site-footer">
+
+
+    <div class="wrapper">
+
+        <p class="description">
+             本站记录我成长之路的点点滴滴！ 
+        </p>
+        <p class="contact">
+            Contact me at: 
+            <a href="https://github.com/duiniwukenaihe" title="GitHub"><i class="fa fa-github" aria-hidden="true"></i></a>  
+            <a href="mailto:zhangpeng19871017@hotmail.com" title="email"><i class="fa fa-envelope-o" aria-hidden="true"></i></a>  
+            <a href="http://weibo.com/duiniwukenaihe" title="Weibo"><i class="fa fa-weibo" aria-hidden="true"></i></a>       
+        </p>
+        <p>
+            本站总访问量<span id="busuanzi_value_site_pv"></span>次，本站访客数<span id="busuanzi_value_site_uv"></span>人次，本文总阅读量<span id="busuanzi_value_page_pv"></span>次
+        </p>
+        <p class="power">
+            <span>
+                Site powered by <a href="https://jekyllrb.com/">Jekyll</a> & <a href="https://pages.github.com/">Github Pages</a>.
+            </span>
+            <span>
+                Theme designed by <a href="https://github.com/Gaohaoyang">HyG</a>.
+            </span>
+        </p>
+    </div>
+</footer>
+<script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+    <div class="back-to-top">
+    <a href="#top" data-scroll>
+        <i class="fa fa-arrow-up" aria-hidden="true"></i>
+    </a>
+</div>
+
+    <script src=" /js/main.js " charset="utf-8"></script>
+    <script src=" /js/smooth-scroll.min.js " charset="utf-8"></script>
+    <script type="text/javascript">
+      smoothScroll.init({
+        speed: 500, // Integer. How fast to complete the scroll in milliseconds
+        easing: 'easeInOutCubic', // Easing pattern to use
+        offset: 20, // Integer. How far to offset the scrolling anchor location in pixels
+      });
+    </script>
+    <!-- <script src=" /js/scroll.min.js " charset="utf-8"></script> -->
+  </body>
+
+</html>

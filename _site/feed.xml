@@ -1,0 +1,2904 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>duiniwukenaihe</title>
+    <description></description>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Wed, 22 Jul 2020 20:16:13 +0800</pubDate>
+    <lastBuildDate>Wed, 22 Jul 2020 20:16:13 +0800</lastBuildDate>
+    <generator>Jekyll v4.1.1</generator>
+    
+      <item>
+        <title>2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#背景&quot; id=&quot;markdown-toc-背景&quot;&gt;背景&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#开始&quot; id=&quot;markdown-toc-开始&quot;&gt;开始&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#首先的还是环境初始化master-work节点全部执行&quot; id=&quot;markdown-toc-首先的还是环境初始化master-work节点全部执行&quot;&gt;首先的还是环境初始化，master work节点全部执行&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip&quot; id=&quot;markdown-toc-1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip&quot;&gt;1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名（10.0.4.20为slb负载均衡ip）&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#2-升级linux内核&quot; id=&quot;markdown-toc-2-升级linux内核&quot;&gt;2. 升级linux内核&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#2-关闭swap交换分区&quot; id=&quot;markdown-toc-2-关闭swap交换分区&quot;&gt;2. 关闭swap交换分区&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#3-关闭selinux&quot; id=&quot;markdown-toc-3-关闭selinux&quot;&gt;3. 关闭selinux&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#4--调整文件打开数等配置&quot; id=&quot;markdown-toc-4--调整文件打开数等配置&quot;&gt;4.  调整文件打开数等配置&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#5-开启ip转发优化-网桥等配置&quot; id=&quot;markdown-toc-5-开启ip转发优化-网桥等配置&quot;&gt;5. 开启ip转发优化 网桥等配置&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#6-加载ipvs&quot; id=&quot;markdown-toc-6-加载ipvs&quot;&gt;6. 加载ipvs&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#7-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置&quot; id=&quot;markdown-toc-7-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置&quot;&gt;7. journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志熟虑，最大20m(可根据个人需求设置)&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#8-配置yum源&quot; id=&quot;markdown-toc-8-配置yum源&quot;&gt;8. 配置yum源&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#9-安装基本服务&quot; id=&quot;markdown-toc-9-安装基本服务&quot;&gt;9. 安装基本服务&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#10-安装kubernetes&quot; id=&quot;markdown-toc-10-安装kubernetes&quot;&gt;10. 安装kubernetes&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#master节点操作&quot; id=&quot;markdown-toc-master节点操作&quot;&gt;master节点操作&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#1-master节点安装haproxysh-master01-sh-master-02-sh-master03&quot; id=&quot;markdown-toc-1-master节点安装haproxysh-master01-sh-master-02-sh-master03&quot;&gt;1. master节点安装haproxy（sh-master01 sh-master-02 sh-master03）&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#2-kuberadm-master安装&quot; id=&quot;markdown-toc-2-kuberadm-master安装&quot;&gt;2. kuberadm master安装&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#3-配置flannel插件&quot; id=&quot;markdown-toc-3-配置flannel插件&quot;&gt;3. 配置flannel插件&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#4-work节点加入mastersh-node-01sh-node-05&quot; id=&quot;markdown-toc-4-work节点加入mastersh-node-01sh-node-05&quot;&gt;4. work节点加入master(sh-node-01–sh-node-05)&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#集群搭建成功上下图&quot; id=&quot;markdown-toc-集群搭建成功上下图&quot;&gt;集群搭建成功上下图：&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#后记&quot; id=&quot;markdown-toc-后记&quot;&gt;后记&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1-如果kubeadm-configyaml配置文件忘了设置ipvs了开启下ipvs这里记得在&quot; id=&quot;markdown-toc-1-如果kubeadm-configyaml配置文件忘了设置ipvs了开启下ipvs这里记得在&quot;&gt;1. 如果kubeadm-config.yaml配置文件忘了设置ipvs了开启下ipvs.这里记得在&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+集群配置：
+centos7.7 64位
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.20&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.27&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.46&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.47&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.14&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-04&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.13&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-05&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;背景&quot;&gt;背景&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;线上稳定跑着1.16.8版本kubeadm高可用ha kubernets集群。三台master节点，配置为4核心8G，slb+haproxy 代理6443实现高可用。work节点为5台8核心16g,主要跑了60多个应用300个左右容器。&lt;/li&gt;
+  &lt;li&gt;集群采用了slb代理work节点80 443等端口然后用traefik对外暴露应用。日志采集使用了elastic on kubernetes（eck）收集集群日志保留7天内应用日志。另外还搭建了springboot对外收集前端post埋点日志，入kafka。logstash消费入elasticsearch。kibana展示数据。报警监控系统使用了promethus-oprator，报警alartmanager,企业微信报警。granfna展示。持久化存储开始搭建了rook-ceph1.1集群， 但是在版本升级还有节点异常时出现了各种问题，最终放弃。包括eck等应用都使用了local-storage方式存储，elasticsearch的备份使用了腾讯云对象存储服务cos，定制了elasticsearch镜像添加了相关组件。&lt;/li&gt;
+  &lt;li&gt;项目的更新发布使用了jenkins，集成kubernets。线上环境已经正常运行近一年时间。&lt;/li&gt;
+  &lt;li&gt;想体验下新版本，然后又动手搭建了一套1.18.6测试环境。中间犯了好多错误，比如iptables没有关闭，也更加深入了解了下负载均衡slb代理本地端口的过程。&lt;/li&gt;
+  &lt;li&gt;大致过程与1.16差不多，自己写下日志记录一遍。然后今年想深入集成一下腾讯云的cbs.不要问我为什么不用腾讯云的tke.首先每个slb到现在应该还是只可以挂载一个ssl证书的，业务比较少，我不想管理多个负载均衡，然后负载均衡的策略也比较坑，偶尔tke集群slb测还经常更新。还有上传文件大小限制这样的策略。使用traefik的tcp代理很方便解决这些问题。而且我还是比较喜欢原生不喜欢定制。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+  注：关于环境的初始化和安装可以看下张馆长的文档，真心不错：https://zhangguanzhang.github.io/2019/11/24/kubeadm-base-use/
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;开始&quot;&gt;开始&lt;/h2&gt;
+
+&lt;h3 id=&quot;首先的还是环境初始化master-work节点全部执行&quot;&gt;首先的还是环境初始化，master work节点全部执行&lt;/h3&gt;
+
+&lt;h4 id=&quot;1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip&quot;&gt;1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名（10.0.4.20为slb负载均衡ip）&lt;/h4&gt;
+&lt;h4 id=&quot;2-升级linux内核&quot;&gt;2. 升级linux内核&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;centos7默认内核为3.10版本，一般是建议把内核更新一下。
+&lt;span class=&quot;c&quot;&gt;##导入key&lt;/span&gt;
+rpm &lt;span class=&quot;nt&quot;&gt;--import&lt;/span&gt; https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+&lt;span class=&quot;c&quot;&gt;##添加elrepo源&lt;/span&gt;
+rpm &lt;span class=&quot;nt&quot;&gt;-ivh&lt;/span&gt; https://www.elrepo.org/elrepo-release-7.el7.elrepo.noarch.rpm
+&lt;span class=&quot;c&quot;&gt;##查看可更新kernel版本&lt;/span&gt;
+yum &lt;span class=&quot;nt&quot;&gt;--disablerepo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;*&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--enablerepo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;elrepo-kernel&quot;&lt;/span&gt; list available
+&lt;span class=&quot;c&quot;&gt;##关于kernel的版本 ml（mainline，主线最新版）  lt（长期支持版本）可参照https://www.cnblogs.com/clsn/p/10925653.html。&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;## 安装长期支持版本&lt;/span&gt;
+yum &lt;span class=&quot;nt&quot;&gt;--enablerepo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;elrepo-kernel &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;kernel-lt
+&lt;span class=&quot;c&quot;&gt;## 查看grub2启动选择项&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'$1==&quot;menuentry &quot; {print i++ &quot; : &quot; $2}'&lt;/span&gt; /etc/grub2.cfg
+&lt;span class=&quot;c&quot;&gt;##修改grub2.conf使内核生效&lt;/span&gt;
+grub2-set-default 0
+grub2-mkconfig &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; /boot/grub2/grub.cfg
+reboot
+&lt;span class=&quot;c&quot;&gt;##验证内核&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;uname&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt; 
+&lt;span class=&quot;c&quot;&gt;##删除旧内核&lt;/span&gt;
+package-cleanup &lt;span class=&quot;nt&quot;&gt;--oldkernels&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/kernel1.png&quot; alt=&quot;kernel1&quot; /&gt;
+ &lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/kernel2.png&quot; alt=&quot;kernel2&quot; /&gt;
+ &lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/kernel3.png&quot; alt=&quot;kernel3&quot; /&gt;
+ &lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/kernel4.png&quot; alt=&quot;kerne41&quot; /&gt;
+&lt;h4 id=&quot;2-关闭swap交换分区&quot;&gt;2. 关闭swap交换分区&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;swapoff &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/.*swap.*/#&amp;amp;/'&lt;/span&gt; /etc/fstab
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;3-关闭selinux&quot;&gt;3. 关闭selinux&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;setenforce  0 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=enforcing/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/sysconfig/selinux 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=enforcing/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/selinux/config 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=permissive/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/sysconfig/selinux 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=permissive/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/selinux/config 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;4--调整文件打开数等配置&quot;&gt;4.  调整文件打开数等配置&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* soft nofile 65536&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* hard nofile 65536&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* soft nproc 65536&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* hard nproc 65536&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* soft  memlock  unlimited&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* hard memlock  unlimited&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;5-开启ip转发优化-网桥等配置&quot;&gt;5. 开启ip转发优化 网桥等配置&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; /etc/sysctl.d/k8s.conf
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+net.ipv4.neigh.default.gc_stale_time = 120
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 0
+net.ipv4.conf.default.arp_announce = 2
+net.ipv4.conf.lo.arp_announce = 2
+net.ipv4.conf.all.arp_announce = 2
+net.ipv4.ip_forward = 1
+net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 1024
+net.ipv4.tcp_synack_retries = 2
+# 要求iptables不对bridge的数据进行处理
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-arptables = 1
+net.netfilter.nf_conntrack_max = 2310720
+fs.inotify.max_user_watches=89100
+fs.may_detach_mounts = 1
+fs.file-max = 52706963
+fs.nr_open = 52706963
+vm.overcommit_memory=1
+vm.panic_on_oom=0
+vm.swappiness = 0
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;modprobe br_netfilter
+sysctl &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /etc/sysctl.d/k8s.conf
+sysctl &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /etc/sysctl.d/k8s.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+注意：由于kube-proxy使用ipvs的话为了防止timeout需要设置下tcp参数
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt;&amp;gt; /etc/sysctl.d/k8s.conf
+# https://github.com/moby/moby/issues/31208 
+# ipvsadm -l --timout
+# 修复ipvs模式下长连接timeout问题 小于900即可
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_keepalive_intvl = 30
+net.ipv4.tcp_keepalive_probes = 10
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;sysctl &lt;span class=&quot;nt&quot;&gt;--system&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;6-加载ipvs&quot;&gt;6. 加载ipvs&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+:&amp;gt; /etc/modules-load.d/ipvs.conf
+&lt;span class=&quot;nv&quot;&gt;module&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=(&lt;/span&gt;
+ip_vs
+ip_vs_rr
+ip_vs_wrr
+ip_vs_sh
+nf_conntrack
+br_netfilter
+  &lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;kernel_module &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[@]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+    /sbin/modinfo &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt; filename &lt;span class=&quot;nv&quot;&gt;$kernel_module&lt;/span&gt; |&amp;amp; &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-qv&lt;/span&gt; ERROR &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$kernel_module&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/modules-load.d/ipvs.conf &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; :
+&lt;span class=&quot;k&quot;&gt;done
+&lt;/span&gt;启动该模块管理服务
+systemctl daemon-reload
+systemctl &lt;span class=&quot;nb&quot;&gt;enable&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--now&lt;/span&gt; systemd-modules-load.service
+lsmod | &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;ip_v
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/ipvs.png&quot; alt=&quot;ipvs&quot; /&gt;
+&lt;h4 id=&quot;7-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置&quot;&gt;7. journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志熟虑，最大20m(可根据个人需求设置)&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^\$ModLoad imjournal/#&amp;amp;/'&lt;/span&gt; /etc/rsyslog.conf
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^\$IMJournalStateFile/#&amp;amp;/'&lt;/span&gt; /etc/rsyslog.conf
+
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^#(DefaultLimitCORE)=/\1=100000/'&lt;/span&gt; /etc/systemd/system.conf
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^#(DefaultLimitNOFILE)=/\1=100000/'&lt;/span&gt; /etc/systemd/system.conf
+
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^#(UseDNS )yes/\1no/'&lt;/span&gt; /etc/ssh/sshd_config
+journalctl &lt;span class=&quot;nt&quot;&gt;--vacuum-size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;20M
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;8-配置yum源&quot;&gt;8. 配置yum源&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum-config-manager &lt;span class=&quot;nt&quot;&gt;--add-repo&lt;/span&gt; http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg 
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;9-安装基本服务&quot;&gt;9. 安装基本服务&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;安装依赖包
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; epel-release
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; yum-utils device-mapper-persistent-data lvm2 net-tools conntrack-tools wget vim  ntpdate libseccomp libtool-ltdl
+安装bash命令提示
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; bash-argsparse bash-completion bash-#completion-extras
+安装docker kubeadm:
+yum &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;docker-ce &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#配置镜像加速器 &lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /etc/docker
+&lt;span class=&quot;nb&quot;&gt;sudo tee&lt;/span&gt; /etc/docker/daemon.json &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;'
+{
+  &quot;registry-mirrors&quot;: [&quot;https://lrpol8ec.mirror.aliyuncs.com&quot;],
+  &quot;log-driver&quot;: &quot;json-file&quot;,
+  &quot;log-opts&quot;: {
+    &quot;max-size&quot;: &quot;100m&quot;,
+    &quot;max-file&quot;: &quot;3&quot;
+},
+  &quot;storage-driver&quot;: &quot;overlay2&quot;,
+  &quot;storage-opts&quot;: [
+    &quot;overlay2.override_kernel_check=true&quot;
+  ]
+}
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl daemon-reload
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl restart docker
+添加个日志最多值，否则有的苦了，入坑体验过了。docker要不要开机启动呢？我后面安装rook ceph 开机重新启动了老有错误，因为没有将节点设置为cordon，但是也懒了， 我就没有设置为开机启动。故开机启动后在启动docker了
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;10-安装kubernetes&quot;&gt;10. 安装kubernetes&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;c&quot;&gt;#查看yum源中可支持版本&lt;/span&gt;
+ yum list &lt;span class=&quot;nt&quot;&gt;--showduplicates&lt;/span&gt; kubeadm &lt;span class=&quot;nt&quot;&gt;--disableexcludes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;kubernetes 
+
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; kubelet kubeadm kubectl &lt;span class=&quot;nt&quot;&gt;--disableexcludes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;kubernetes
+&lt;span class=&quot;c&quot;&gt;##可指定自己要安装的版本&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#yum install -y kubelet-1.18.6 kubeadmt-1.18.6  kubectlt-1.18.6  --disableexcludes=kubernetes&lt;/span&gt;
+systemctl &lt;span class=&quot;nb&quot;&gt;enable &lt;/span&gt;kubelet
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;master节点操作&quot;&gt;master节点操作&lt;/h3&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;注：slb内网传统型负载均衡使用了。尝试了两种方式：
+ 1. slb+haproxy slb 绑定三台master6443代理后端haproxy 8443端口。（kubeadm-config.yaml配置文件中controlPlaneEndpoint: &lt;span class=&quot;s2&quot;&gt;&quot;10.0.4.20:6443&quot;&lt;/span&gt;）。
+2. keepalived +haproxy 配置slb地址（三台server设置不同权重，kubeadm-config.yaml配置文件中controlPlaneEndpoint: &lt;span class=&quot;s2&quot;&gt;&quot;10.0.4.20:8443&quot;&lt;/span&gt;）。
+个人来说强迫症 就喜欢6443所以就用了第一种。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;1-master节点安装haproxysh-master01-sh-master-02-sh-master03&quot;&gt;1. master节点安装haproxy（sh-master01 sh-master-02 sh-master03）&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; haproxy
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; /etc/haproxy/haproxy.cfg
+
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   http://haproxy.1wt.eu/download/1.4/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    tcp
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend kubernetes
+    bind *:8443              #配置端口为8443
+    mode tcp
+    default_backend kubernetes
+#---------------------------------------------------------------------
+# static backend for serving up images, stylesheets and such
+#---------------------------------------------------------------------
+backend kubernetes           #后端服务器，也就是说访问192.168.255.140:8443会将请求转发到后端的三台，这样就实现了负载均衡
+    balance roundrobin               
+    server master1  10.0.4.27:6443 check maxconn 2000
+    server master2  10.0.4.46:6443 check maxconn 2000
+    server master3  10.0.4.47:6443 check maxconn 2000
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt; systemctl &lt;span class=&quot;nb&quot;&gt;enable &lt;/span&gt;haproxy &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; systemctl start haproxy &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; systemctl status haproxy
+
+腾讯云slb负载均衡最终还是用了传统型，监听器tcp 6443代理后端三台haproxy 8443端口
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/slb.png&quot; alt=&quot;slb&quot; /&gt;
+  &lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/slb1.png&quot; alt=&quot;slb1&quot; /&gt;
+&lt;h4 id=&quot;2-kuberadm-master安装&quot;&gt;2. kuberadm master安装&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;master1节点
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; kubeadm-config.yaml
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+networking:
+  serviceSubnet: &quot;172.251.0.0/16&quot;                         #设置svc网段
+  podSubnet: &quot;172.252.0.0/16&quot;                             #设置Pod网段
+  dnsDomain: &quot;layabox.sh&quot;
+kubernetesVersion: &quot;v1.18.6&quot;                            #设置安装版本
+controlPlaneEndpoint: &quot;10.0.4.20:6443&quot;             #设置相关API VIP地址
+dns: 
+  type: CoreDNS
+apiServer:
+  certSANs:
+  - sh-master-01
+  - sh-master-02
+  - sh-master-03
+  - sh-master.k8s.io
+  - 127.0.0.1
+  - 10.0.4.27
+  - 10.0.4.46
+  - 10.0.4.47
+  - 10.0.4.20
+  timeoutForControlPlane: 4m0s
+certificatesDir: &quot;/etc/kubernetes/pki&quot;
+imageRepository: &quot;ccr.ccs.tencentyun.com/k8s_containers&quot;  #国内貌似没有最新的镜像库，自己同步到自己镜像仓库了，开始没有将namespace设置为公开，后期无法设置对外，抱歉。
+etcd:
+    local:
+      dataDir: /var/lib/etcd
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+featureGates:
+  SupportIPVSProxyMode: true
+mode: ipvs  #使用ipvs方式
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+
+&lt;/span&gt;kubeadm init &lt;span class=&quot;nt&quot;&gt;--config&lt;/span&gt; kubeadm-config.yaml
+&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube
+&lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\c&lt;/span&gt;p /etc/kubernetes/admin.conf &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube/config
+&lt;span class=&quot;nb&quot;&gt;sudo chown&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-u&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;:&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-g&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube/config
+
+按照输出master02 ，master03节点加入集群
+将master01 /etc/kubernetes/pki目录下ca.&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; sa.&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; front-proxy-ca.&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; etcd/ca&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; 打包分发到master02,master03 /etc/kubernetes/pki目录下 
+ kubeadm &lt;span class=&quot;nb&quot;&gt;join &lt;/span&gt;10.0.4.20:6443 &lt;span class=&quot;nt&quot;&gt;--token&lt;/span&gt; jiprvz.0rkovt1gx3d658j     &lt;span class=&quot;nt&quot;&gt;--discovery-token-ca-cert-hash&lt;/span&gt; sha256:5d631bb4bdce033163037ef21f663c88e058e70c6c362c9c5ccb1a92095     &lt;span class=&quot;nt&quot;&gt;--control-plane&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--certificate-key&lt;/span&gt; 
+然后同master01一样执行一遍下面的命令：
+&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube
+&lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\c&lt;/span&gt;p /etc/kubernetes/admin.conf &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube/config
+&lt;span class=&quot;nb&quot;&gt;sudo chown&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-u&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;:&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-g&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube/config
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/master1.png&quot; alt=&quot;master1&quot; /&gt;
+注： key都胡乱输入的这里没有用自己的。此时任意一台master执行kubectl get nodes  STATUS一列应该都是NOTReady.
+&lt;h4 id=&quot;3-配置flannel插件&quot;&gt;3. 配置flannel插件&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+修改配置文件中Network 为自己设置的子网，我这里是172.252.0.0/16
+kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; kube-flannel.yml
+然后基本发现 master节点都已经redeay
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;4-work节点加入mastersh-node-01sh-node-05&quot;&gt;4. work节点加入master(sh-node-01–sh-node-05)&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubeadm &lt;span class=&quot;nb&quot;&gt;join &lt;/span&gt;192.168.3.9:6443 &lt;span class=&quot;nt&quot;&gt;--token&lt;/span&gt; 3o6dy0.9gbbfuf55xiloe9d &lt;span class=&quot;nt&quot;&gt;--discovery-token-ca-cert-hash&lt;/span&gt; sha256:5d631bb4bdce01dcad51163037ef21f663c88e058e70c6c362c9c5ccb1a92095
+OK集群算是初始搭建完了，不知道跑一遍咋样，我的是正常跑起来了。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+  确认集群节点是否ready。常见问题，集群开启了ipvs，但是我iptables没有关闭，然后节点一直加入不了，看了眼防火墙开着呢没有关闭规则。由于主机都是云主机，就开启了安全组策略，把防火墙都关闭了。如果是其他环境一定记得检查防火墙策略。
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;集群搭建成功上下图&quot;&gt;集群搭建成功上下图：&lt;/h2&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/status.png&quot; alt=&quot;status&quot; /&gt;
+
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/status1.png&quot; alt=&quot;status1&quot; /&gt;
+
+&lt;h2 id=&quot;后记&quot;&gt;后记&lt;/h2&gt;
+&lt;h4 id=&quot;1-如果kubeadm-configyaml配置文件忘了设置ipvs了开启下ipvs这里记得在&quot;&gt;1. 如果kubeadm-config.yaml配置文件忘了设置ipvs了开启下ipvs.这里记得在&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl edit cm kube-proxy &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system
+configmap/kube-proxy edited
+
+&lt;span class=&quot;c&quot;&gt;#修改如下&lt;/span&gt;
+kind: MasterConfiguration
+apiVersion: kubeadm.k8s.io/v1alpha1
+...
+ipvs:
+      excludeCIDRs: null
+      minSyncPeriod: 0s
+      scheduler: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+      syncPeriod: 30s
+    kind: KubeProxyConfiguration
+    metricsBindAddress: 127.0.0.1:10249
+    mode: &lt;span class=&quot;s2&quot;&gt;&quot;ipvs&quot;&lt;/span&gt;                  &lt;span class=&quot;c&quot;&gt;#修改&lt;/span&gt;
+
+kubectl get pod &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system | &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;kube-proxy |awk &lt;span class=&quot;s1&quot;&gt;'{system(&quot;kubectl delete pod &quot;$1&quot; -n kube-system&quot;)}'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  貌似应该就跑起来了，然后后面应该还要做的：
+  &lt;ol&gt;
+    &lt;li&gt;etcd的备份，虽然有三个master节点 数据无价，还是做下etcd的备份要好。&lt;/li&gt;
+    &lt;li&gt;pods 可能都running了 但是最后还是看下日志，肯能有些小的失误，看日志是个好习惯的，老版本糊里糊涂搭建的时候kubernetes插件pod打了一大堆日志 虽然可以使用，但是还是要追求下完美的。由此可见搭建日志采集系统还是很有必要的。&lt;/li&gt;
+    &lt;li&gt;work节点最好打上标签，给服务设置亲和性和反亲和性。资源的调度使用值貌似可以设置的？否则后面有的work会出现pods一直创建中，打标签合理规划资源还是很有必要的。&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Wed, 22 Jul 2020 16:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</guid>
+        
+        <category>kubernetes1.18.6</category>
+        
+        <category>kuberadm</category>
+        
+        <category>高可用</category>
+        
+        <category>ha</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
+    
+      <item>
+        <title>2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#背景&quot; id=&quot;markdown-toc-背景&quot;&gt;背景&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#开始&quot; id=&quot;markdown-toc-开始&quot;&gt;开始&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#首先的还是环境初始化master-work节点全部执行&quot; id=&quot;markdown-toc-首先的还是环境初始化master-work节点全部执行&quot;&gt;首先的还是环境初始化，master work节点全部执行&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip&quot; id=&quot;markdown-toc-1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip&quot;&gt;1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名（10.0.4.20为slb负载均衡ip）&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#2-升级linux内核&quot; id=&quot;markdown-toc-2-升级linux内核&quot;&gt;2. 升级linux内核&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#2-关闭swap交换分区&quot; id=&quot;markdown-toc-2-关闭swap交换分区&quot;&gt;2. 关闭swap交换分区&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#3-关闭selinux&quot; id=&quot;markdown-toc-3-关闭selinux&quot;&gt;3. 关闭selinux&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#4--调整文件打开数等配置&quot; id=&quot;markdown-toc-4--调整文件打开数等配置&quot;&gt;4.  调整文件打开数等配置&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#5-开启ip转发优化-网桥等配置&quot; id=&quot;markdown-toc-5-开启ip转发优化-网桥等配置&quot;&gt;5. 开启ip转发优化 网桥等配置&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#6-加载ipvs&quot; id=&quot;markdown-toc-6-加载ipvs&quot;&gt;6. 加载ipvs&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#7-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置&quot; id=&quot;markdown-toc-7-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置&quot;&gt;7. journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志熟虑，最大20m(可根据个人需求设置)&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#8-配置yum源&quot; id=&quot;markdown-toc-8-配置yum源&quot;&gt;8. 配置yum源&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#9-安装基本服务&quot; id=&quot;markdown-toc-9-安装基本服务&quot;&gt;9. 安装基本服务&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#10-安装kubernetes&quot; id=&quot;markdown-toc-10-安装kubernetes&quot;&gt;10. 安装kubernetes&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#master节点操作&quot; id=&quot;markdown-toc-master节点操作&quot;&gt;master节点操作&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#1-master节点安装haproxysh-master01-sh-master-02-sh-master03&quot; id=&quot;markdown-toc-1-master节点安装haproxysh-master01-sh-master-02-sh-master03&quot;&gt;1. master节点安装haproxy（sh-master01 sh-master-02 sh-master03）&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#2-kuberadm-master安装&quot; id=&quot;markdown-toc-2-kuberadm-master安装&quot;&gt;2. kuberadm master安装&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#3-配置flannel插件&quot; id=&quot;markdown-toc-3-配置flannel插件&quot;&gt;3. 配置flannel插件&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#4-work节点加入mastersh-node-01sh-node-05&quot; id=&quot;markdown-toc-4-work节点加入mastersh-node-01sh-node-05&quot;&gt;4. work节点加入master(sh-node-01–sh-node-05)&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#集群搭建成功上下图&quot; id=&quot;markdown-toc-集群搭建成功上下图&quot;&gt;集群搭建成功上下图：&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#后记&quot; id=&quot;markdown-toc-后记&quot;&gt;后记&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1-如果kubeadm-configyaml配置文件忘了设置ipvs了开启下ipvs这里记得在&quot; id=&quot;markdown-toc-1-如果kubeadm-configyaml配置文件忘了设置ipvs了开启下ipvs这里记得在&quot;&gt;1. 如果kubeadm-config.yaml配置文件忘了设置ipvs了开启下ipvs.这里记得在&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+集群配置：
+centos7.7 64位
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.20&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.27&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.46&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.47&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.14&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-04&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;10.0.4.13&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-05&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;背景&quot;&gt;背景&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;线上稳定跑着1.16.8版本kubeadm高可用ha kubernets集群。三台master节点，配置为4核心8G，slb+haproxy 代理6443实现高可用。work节点为5台8核心16g,主要跑了60多个应用300个左右容器。&lt;/li&gt;
+  &lt;li&gt;集群采用了slb代理work节点80 443等端口然后用traefik对外暴露应用。日志采集使用了elastic on kubernetes（eck）收集集群日志保留7天内应用日志。另外还搭建了springboot对外收集前端post埋点日志，入kafka。logstash消费入elasticsearch。kibana展示数据。报警监控系统使用了promethus-oprator，报警alartmanager,企业微信报警。granfna展示。持久化存储开始搭建了rook-ceph1.1集群， 但是在版本升级还有节点异常时出现了各种问题，最终放弃。包括eck等应用都使用了local-storage方式存储，elasticsearch的备份使用了腾讯云对象存储服务cos，定制了elasticsearch镜像添加了相关组件。&lt;/li&gt;
+  &lt;li&gt;项目的更新发布使用了jenkins，集成kubernets。线上环境已经正常运行近一年时间。&lt;/li&gt;
+  &lt;li&gt;想体验下新版本，然后又动手搭建了一套1.18.6测试环境。中间犯了好多错误，比如iptables没有关闭，也更加深入了解了下负载均衡slb代理本地端口的过程。&lt;/li&gt;
+  &lt;li&gt;大致过程与1.16差不多，自己写下日志记录一遍。然后今年想深入集成一下腾讯云的cbs.不要问我为什么不用腾讯云的tke.首先每个slb到现在应该还是只可以挂载一个ssl证书的，业务比较少，我不想管理多个负载均衡，然后负载均衡的策略也比较坑，偶尔tke集群slb测还经常更新。还有上传文件大小限制这样的策略。使用traefik的tcp代理很方便解决这些问题。而且我还是比较喜欢原生不喜欢定制。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;blockquote&gt;
+  注：关于环境的初始化和安装可以看下张馆长的文档，真心不错：https://zhangguanzhang.github.io/2019/11/24/kubeadm-base-use/
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;开始&quot;&gt;开始&lt;/h2&gt;
+
+&lt;h3 id=&quot;首先的还是环境初始化master-work节点全部执行&quot;&gt;首先的还是环境初始化，master work节点全部执行&lt;/h3&gt;
+
+&lt;h4 id=&quot;1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip&quot;&gt;1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名（10.0.4.20为slb负载均衡ip）&lt;/h4&gt;
+&lt;h4 id=&quot;2-升级linux内核&quot;&gt;2. 升级linux内核&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;centos7默认内核为3.10版本，一般是建议把内核更新一下。
+&lt;span class=&quot;c&quot;&gt;##导入key&lt;/span&gt;
+rpm &lt;span class=&quot;nt&quot;&gt;--import&lt;/span&gt; https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+&lt;span class=&quot;c&quot;&gt;##添加elrepo源&lt;/span&gt;
+rpm &lt;span class=&quot;nt&quot;&gt;-ivh&lt;/span&gt; https://www.elrepo.org/elrepo-release-7.el7.elrepo.noarch.rpm
+&lt;span class=&quot;c&quot;&gt;##查看可更新kernel版本&lt;/span&gt;
+yum &lt;span class=&quot;nt&quot;&gt;--disablerepo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;*&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--enablerepo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;elrepo-kernel&quot;&lt;/span&gt; list available
+&lt;span class=&quot;c&quot;&gt;##关于kernel的版本 ml（mainline，主线最新版）  lt（长期支持版本）可参照https://www.cnblogs.com/clsn/p/10925653.html。&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;## 安装长期支持版本&lt;/span&gt;
+yum &lt;span class=&quot;nt&quot;&gt;--enablerepo&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;elrepo-kernel &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;kernel-lt
+&lt;span class=&quot;c&quot;&gt;## 查看grub2启动选择项&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo awk&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\'&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'$1==&quot;menuentry &quot; {print i++ &quot; : &quot; $2}'&lt;/span&gt; /etc/grub2.cfg
+&lt;span class=&quot;c&quot;&gt;##修改grub2.conf使内核生效&lt;/span&gt;
+grub2-set-default 0
+grub2-mkconfig &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; /boot/grub2/grub.cfg
+reboot
+&lt;span class=&quot;c&quot;&gt;##验证内核&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;uname&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt; 
+&lt;span class=&quot;c&quot;&gt;##删除旧内核&lt;/span&gt;
+package-cleanup &lt;span class=&quot;nt&quot;&gt;--oldkernels&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/kernel1.png&quot; alt=&quot;kernel1&quot; /&gt;
+ &lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/kernel2.png&quot; alt=&quot;kernel2&quot; /&gt;
+ &lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/kernel3.png&quot; alt=&quot;kernel3&quot; /&gt;
+ &lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/kernel4.png&quot; alt=&quot;kerne41&quot; /&gt;
+&lt;h4 id=&quot;2-关闭swap交换分区&quot;&gt;2. 关闭swap交换分区&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;swapoff &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/.*swap.*/#&amp;amp;/'&lt;/span&gt; /etc/fstab
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;3-关闭selinux&quot;&gt;3. 关闭selinux&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;setenforce  0 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=enforcing/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/sysconfig/selinux 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=enforcing/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/selinux/config 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=permissive/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/sysconfig/selinux 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=permissive/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/selinux/config 
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;4--调整文件打开数等配置&quot;&gt;4.  调整文件打开数等配置&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* soft nofile 65536&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* hard nofile 65536&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* soft nproc 65536&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* hard nproc 65536&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* soft  memlock  unlimited&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* hard memlock  unlimited&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;5-开启ip转发优化-网桥等配置&quot;&gt;5. 开启ip转发优化 网桥等配置&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; /etc/sysctl.d/k8s.conf
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+net.ipv4.neigh.default.gc_stale_time = 120
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 0
+net.ipv4.conf.default.arp_announce = 2
+net.ipv4.conf.lo.arp_announce = 2
+net.ipv4.conf.all.arp_announce = 2
+net.ipv4.ip_forward = 1
+net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 1024
+net.ipv4.tcp_synack_retries = 2
+# 要求iptables不对bridge的数据进行处理
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-arptables = 1
+net.netfilter.nf_conntrack_max = 2310720
+fs.inotify.max_user_watches=89100
+fs.may_detach_mounts = 1
+fs.file-max = 52706963
+fs.nr_open = 52706963
+vm.overcommit_memory=1
+vm.panic_on_oom=0
+vm.swappiness = 0
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;modprobe br_netfilter
+sysctl &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /etc/sysctl.d/k8s.conf
+sysctl &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /etc/sysctl.d/k8s.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+注意：由于kube-proxy使用ipvs的话为了防止timeout需要设置下tcp参数
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt;&amp;gt; /etc/sysctl.d/k8s.conf
+# https://github.com/moby/moby/issues/31208 
+# ipvsadm -l --timout
+# 修复ipvs模式下长连接timeout问题 小于900即可
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_keepalive_intvl = 30
+net.ipv4.tcp_keepalive_probes = 10
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;sysctl &lt;span class=&quot;nt&quot;&gt;--system&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;6-加载ipvs&quot;&gt;6. 加载ipvs&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+:&amp;gt; /etc/modules-load.d/ipvs.conf
+&lt;span class=&quot;nv&quot;&gt;module&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=(&lt;/span&gt;
+ip_vs
+ip_vs_rr
+ip_vs_wrr
+ip_vs_sh
+nf_conntrack
+br_netfilter
+  &lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for &lt;/span&gt;kernel_module &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[@]&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;do&lt;/span&gt;
+    /sbin/modinfo &lt;span class=&quot;nt&quot;&gt;-F&lt;/span&gt; filename &lt;span class=&quot;nv&quot;&gt;$kernel_module&lt;/span&gt; |&amp;amp; &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-qv&lt;/span&gt; ERROR &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$kernel_module&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/modules-load.d/ipvs.conf &lt;span class=&quot;o&quot;&gt;||&lt;/span&gt; :
+&lt;span class=&quot;k&quot;&gt;done
+&lt;/span&gt;启动该模块管理服务
+systemctl daemon-reload
+systemctl &lt;span class=&quot;nb&quot;&gt;enable&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--now&lt;/span&gt; systemd-modules-load.service
+lsmod | &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;ip_v
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/ipvs.png&quot; alt=&quot;ipvs&quot; /&gt;
+&lt;h4 id=&quot;7-journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志熟虑最大20m可根据个人需求设置&quot;&gt;7. journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志熟虑，最大20m(可根据个人需求设置)&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^\$ModLoad imjournal/#&amp;amp;/'&lt;/span&gt; /etc/rsyslog.conf
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^\$IMJournalStateFile/#&amp;amp;/'&lt;/span&gt; /etc/rsyslog.conf
+
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^#(DefaultLimitCORE)=/\1=100000/'&lt;/span&gt; /etc/systemd/system.conf
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^#(DefaultLimitNOFILE)=/\1=100000/'&lt;/span&gt; /etc/systemd/system.conf
+
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^#(UseDNS )yes/\1no/'&lt;/span&gt; /etc/ssh/sshd_config
+journalctl &lt;span class=&quot;nt&quot;&gt;--vacuum-size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;20M
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;8-配置yum源&quot;&gt;8. 配置yum源&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum-config-manager &lt;span class=&quot;nt&quot;&gt;--add-repo&lt;/span&gt; http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg 
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;9-安装基本服务&quot;&gt;9. 安装基本服务&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;安装依赖包
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; epel-release
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; yum-utils device-mapper-persistent-data lvm2 net-tools conntrack-tools wget vim  ntpdate libseccomp libtool-ltdl
+安装bash命令提示
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; bash-argsparse bash-completion bash-#completion-extras
+安装docker kubeadm:
+yum &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;docker-ce &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#配置镜像加速器 &lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /etc/docker
+&lt;span class=&quot;nb&quot;&gt;sudo tee&lt;/span&gt; /etc/docker/daemon.json &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;'
+{
+  &quot;registry-mirrors&quot;: [&quot;https://lrpol8ec.mirror.aliyuncs.com&quot;],
+  &quot;log-driver&quot;: &quot;json-file&quot;,
+  &quot;log-opts&quot;: {
+    &quot;max-size&quot;: &quot;100m&quot;,
+    &quot;max-file&quot;: &quot;3&quot;
+},
+  &quot;storage-driver&quot;: &quot;overlay2&quot;,
+  &quot;storage-opts&quot;: [
+    &quot;overlay2.override_kernel_check=true&quot;
+  ]
+}
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl daemon-reload
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl restart docker
+添加个日志最多值，否则有的苦了，入坑体验过了。docker要不要开机启动呢？我后面安装rook ceph 开机重新启动了老有错误，因为没有将节点设置为cordon，但是也懒了， 我就没有设置为开机启动。故开机启动后在启动docker了
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;10-安装kubernetes&quot;&gt;10. 安装kubernetes&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;c&quot;&gt;#查看yum源中可支持版本&lt;/span&gt;
+ yum list &lt;span class=&quot;nt&quot;&gt;--showduplicates&lt;/span&gt; kubeadm &lt;span class=&quot;nt&quot;&gt;--disableexcludes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;kubernetes 
+
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; kubelet kubeadm kubectl &lt;span class=&quot;nt&quot;&gt;--disableexcludes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;kubernetes
+&lt;span class=&quot;c&quot;&gt;##可指定自己要安装的版本&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#yum install -y kubelet-1.18.6 kubeadmt-1.18.6  kubectlt-1.18.6  --disableexcludes=kubernetes&lt;/span&gt;
+systemctl &lt;span class=&quot;nb&quot;&gt;enable &lt;/span&gt;kubelet
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;master节点操作&quot;&gt;master节点操作&lt;/h3&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;注：slb内网传统型负载均衡使用了。尝试了两种方式：
+ 1. slb+haproxy slb 绑定三台master6443代理后端haproxy 8443端口。（kubeadm-config.yaml配置文件中controlPlaneEndpoint: &lt;span class=&quot;s2&quot;&gt;&quot;10.0.4.20:6443&quot;&lt;/span&gt;）。
+2. keepalived +haproxy 配置slb地址（三台server设置不同权重，kubeadm-config.yaml配置文件中controlPlaneEndpoint: &lt;span class=&quot;s2&quot;&gt;&quot;10.0.4.20:8443&quot;&lt;/span&gt;）。
+个人来说强迫症 就喜欢6443所以就用了第一种。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;1-master节点安装haproxysh-master01-sh-master-02-sh-master03&quot;&gt;1. master节点安装haproxy（sh-master01 sh-master-02 sh-master03）&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; haproxy
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; /etc/haproxy/haproxy.cfg
+
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   http://haproxy.1wt.eu/download/1.4/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    tcp
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend kubernetes
+    bind *:8443              #配置端口为8443
+    mode tcp
+    default_backend kubernetes
+#---------------------------------------------------------------------
+# static backend for serving up images, stylesheets and such
+#---------------------------------------------------------------------
+backend kubernetes           #后端服务器，也就是说访问192.168.255.140:8443会将请求转发到后端的三台，这样就实现了负载均衡
+    balance roundrobin               
+    server master1  10.0.4.27:6443 check maxconn 2000
+    server master2  10.0.4.46:6443 check maxconn 2000
+    server master3  10.0.4.47:6443 check maxconn 2000
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt; systemctl &lt;span class=&quot;nb&quot;&gt;enable &lt;/span&gt;haproxy &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; systemctl start haproxy &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; systemctl status haproxy
+
+腾讯云slb负载均衡最终还是用了传统型，监听器tcp 6443代理后端三台haproxy 8443端口
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/slb.png&quot; alt=&quot;slb&quot; /&gt;
+  &lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/slb1.png&quot; alt=&quot;slb1&quot; /&gt;
+&lt;h4 id=&quot;2-kuberadm-master安装&quot;&gt;2. kuberadm master安装&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;master1节点
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; kubeadm-config.yaml
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+networking:
+  serviceSubnet: &quot;172.251.0.0/16&quot;                         #设置svc网段
+  podSubnet: &quot;172.252.0.0/16&quot;                             #设置Pod网段
+  dnsDomain: &quot;layabox.sh&quot;
+kubernetesVersion: &quot;v1.18.6&quot;                            #设置安装版本
+controlPlaneEndpoint: &quot;10.0.4.20:6443&quot;             #设置相关API VIP地址
+dns: 
+  type: CoreDNS
+apiServer:
+  certSANs:
+  - sh-master-01
+  - sh-master-02
+  - sh-master-03
+  - sh-master.k8s.io
+  - 127.0.0.1
+  - 10.0.4.27
+  - 10.0.4.46
+  - 10.0.4.47
+  - 10.0.4.20
+  timeoutForControlPlane: 4m0s
+certificatesDir: &quot;/etc/kubernetes/pki&quot;
+imageRepository: &quot;ccr.ccs.tencentyun.com/k8s_containers&quot;  #国内貌似没有最新的镜像库，自己同步到自己镜像仓库了，开始没有将namespace设置为公开，后期无法设置对外，抱歉。
+etcd:
+    local:
+      dataDir: /var/lib/etcd
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+featureGates:
+  SupportIPVSProxyMode: true
+mode: ipvs  #使用ipvs方式
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+
+&lt;/span&gt;kubeadm init &lt;span class=&quot;nt&quot;&gt;--config&lt;/span&gt; kubeadm-config.yaml
+&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube
+&lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\c&lt;/span&gt;p /etc/kubernetes/admin.conf &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube/config
+&lt;span class=&quot;nb&quot;&gt;sudo chown&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-u&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;:&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-g&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube/config
+
+按照输出master02 ，master03节点加入集群
+将master01 /etc/kubernetes/pki目录下ca.&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; sa.&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; front-proxy-ca.&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; etcd/ca&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; 打包分发到master02,master03 /etc/kubernetes/pki目录下 
+ kubeadm &lt;span class=&quot;nb&quot;&gt;join &lt;/span&gt;10.0.4.20:6443 &lt;span class=&quot;nt&quot;&gt;--token&lt;/span&gt; jiprvz.0rkovt1gx3d658j     &lt;span class=&quot;nt&quot;&gt;--discovery-token-ca-cert-hash&lt;/span&gt; sha256:5d631bb4bdce033163037ef21f663c88e058e70c6c362c9c5ccb1a92095     &lt;span class=&quot;nt&quot;&gt;--control-plane&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--certificate-key&lt;/span&gt; 
+然后同master01一样执行一遍下面的命令：
+&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube
+&lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\c&lt;/span&gt;p /etc/kubernetes/admin.conf &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube/config
+&lt;span class=&quot;nb&quot;&gt;sudo chown&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-u&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;:&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-g&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube/config
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/master1.png&quot; alt=&quot;master1&quot; /&gt;
+注： key都胡乱输入的这里没有用自己的。此时任意一台master执行kubectl get nodes  STATUS一列应该都是NOTReady.
+&lt;h4 id=&quot;3-配置flannel插件&quot;&gt;3. 配置flannel插件&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+修改配置文件中Network 为自己设置的子网，我这里是172.252.0.0/16
+kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; kube-flannel.yml
+然后基本发现 master节点都已经redeay
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;4-work节点加入mastersh-node-01sh-node-05&quot;&gt;4. work节点加入master(sh-node-01–sh-node-05)&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubeadm &lt;span class=&quot;nb&quot;&gt;join &lt;/span&gt;192.168.3.9:6443 &lt;span class=&quot;nt&quot;&gt;--token&lt;/span&gt; 3o6dy0.9gbbfuf55xiloe9d &lt;span class=&quot;nt&quot;&gt;--discovery-token-ca-cert-hash&lt;/span&gt; sha256:5d631bb4bdce01dcad51163037ef21f663c88e058e70c6c362c9c5ccb1a92095
+OK集群算是初始搭建完了，不知道跑一遍咋样，我的是正常跑起来了。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+  确认集群节点是否ready。常见问题，集群开启了ipvs，但是我iptables没有关闭，然后节点一直加入不了，看了眼防火墙开着呢没有关闭规则。由于主机都是云主机，就开启了安全组策略，把防火墙都关闭了。如果是其他环境一定记得检查防火墙策略。
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;集群搭建成功上下图&quot;&gt;集群搭建成功上下图：&lt;/h2&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/status.png&quot; alt=&quot;status&quot; /&gt;
+
+&lt;img src=&quot;/assets/images/2020/07/kubernetes1.18.6/status1.png&quot; alt=&quot;status1&quot; /&gt;
+
+&lt;h2 id=&quot;后记&quot;&gt;后记&lt;/h2&gt;
+&lt;h4 id=&quot;1-如果kubeadm-configyaml配置文件忘了设置ipvs了开启下ipvs这里记得在&quot;&gt;1. 如果kubeadm-config.yaml配置文件忘了设置ipvs了开启下ipvs.这里记得在&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl edit cm kube-proxy &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system
+configmap/kube-proxy edited
+
+&lt;span class=&quot;c&quot;&gt;#修改如下&lt;/span&gt;
+kind: MasterConfiguration
+apiVersion: kubeadm.k8s.io/v1alpha1
+...
+ipvs:
+      excludeCIDRs: null
+      minSyncPeriod: 0s
+      scheduler: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+      syncPeriod: 30s
+    kind: KubeProxyConfiguration
+    metricsBindAddress: 127.0.0.1:10249
+    mode: &lt;span class=&quot;s2&quot;&gt;&quot;ipvs&quot;&lt;/span&gt;                  &lt;span class=&quot;c&quot;&gt;#修改&lt;/span&gt;
+
+kubectl get pod &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system | &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;kube-proxy |awk &lt;span class=&quot;s1&quot;&gt;'{system(&quot;kubectl delete pod &quot;$1&quot; -n kube-system&quot;)}'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  貌似应该就跑起来了，然后后面应该还要做的：
+  &lt;ol&gt;
+    &lt;li&gt;etcd的备份，虽然有三个master节点 数据无价，还是做下etcd的备份要好。&lt;/li&gt;
+    &lt;li&gt;pods 可能都running了 但是最后还是看下日志，肯能有些小的失误，看日志是个好习惯的，老版本糊里糊涂搭建的时候kubernetes插件pod打了一大堆日志 虽然可以使用，但是还是要追求下完美的。由此可见搭建日志采集系统还是很有必要的。&lt;/li&gt;
+    &lt;li&gt;work节点最好打上标签，给服务设置亲和性和反亲和性。资源的调度使用值貌似可以设置的？否则后面有的work会出现pods一直创建中，打标签合理规划资源还是很有必要的。&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Wed, 22 Jul 2020 16:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2020/07/22/kubernetes/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/07/22/kubernetes/</guid>
+        
+        <category>kubernetes1.18.6</category>
+        
+        <category>kuberadm</category>
+        
+        <category>高可用</category>
+        
+        <category>ha</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
+    
+      <item>
+        <title>2019-12-27-traefik</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#描述背景&quot; id=&quot;markdown-toc-描述背景&quot;&gt;描述背景：&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1-mysslcom是个好网站&quot; id=&quot;markdown-toc-1-mysslcom是个好网站&quot;&gt;1. myssl.com是个好网站&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#2-升级traefik配置文件就不详细写了-可以参考httpswanziimposts201912kubernetes-traefik-v21-deploy丸子的文档-基本就是20的traefik-crdyaml配置文件增加traefikservice然后traefik-rbacyaml增加traefikservices的rules&quot; id=&quot;markdown-toc-2-升级traefik配置文件就不详细写了-可以参考httpswanziimposts201912kubernetes-traefik-v21-deploy丸子的文档-基本就是20的traefik-crdyaml配置文件增加traefikservice然后traefik-rbacyaml增加traefikservices的rules&quot;&gt;2. 升级traefik配置文件.就不详细写了 可以参考https://wanzi.im/posts/2019/12/kubernetes-traefik-v2.1-deploy丸子的文档， 基本就是2.0的traefik-crd.yaml配置文件增加TraefikService，然后traefik-rbac.yaml增加traefikservices的rules.&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#3-参照myssl的测试报告配置tlsoption&quot; id=&quot;markdown-toc-3-参照myssl的测试报告配置tlsoption&quot;&gt;3. 参照myssl的测试报告配置TLSOption&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#4-增加个hsts吧&quot; id=&quot;markdown-toc-4-增加个hsts吧&quot;&gt;4 增加个hsts吧&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#5-修改原来的ingressroute配置文件&quot; id=&quot;markdown-toc-5-修改原来的ingressroute配置文件&quot;&gt;5. 修改原来的ingressroute配置文件&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#6-myssl测试一下吧&quot; id=&quot;markdown-toc-6-myssl测试一下吧&quot;&gt;6. myssl测试一下吧&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+集群配置：
+初始集群环境kubeadm 1.16.3
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;自定义域名&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.8&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.10&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.5&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.12&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&quot;描述背景&quot;&gt;描述背景：&lt;/h1&gt;
+&lt;blockquote&gt;
+  traefik2的初始环境https://duiniwukenaihe.github.io/2019/10/17/k8s-traefik2/已经安装，现在的默认版本是2.1 。新版本增加了 TraefikService,的支持，具体可以参考https://wanzi.im/posts/2019/12/kubernetes-traefik-v2.1-deploy/。测试没有充足直接用于了生产环境，然后发现微信小程序中应用出现问题如下图：
+&lt;/blockquote&gt;
+
+&lt;img src=&quot;/assets/images/traefik/error.png&quot; alt=&quot;error&quot; /&gt;
+
+&lt;blockquote&gt;
+  很刺激 查了下 貌似微信小程序支持的tls默认是1.2我的traefik默认的tls是1.3……然后有简单使用的腾讯云api的网关也默认都是1.2的直接指定的后端域名tls1.3的访问也出现这种状况了….。下面还是记录下处理过程吧.
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;1-mysslcom是个好网站&quot;&gt;1. myssl.com是个好网站&lt;/h2&gt;
+&lt;blockquote&gt;
+  证书我都是用的腾讯云的购买的亚洲诚信的。通过这个网站可以查看自己的网站安全等级，另外他还可以给一些安全方面的建议。
+&lt;/blockquote&gt;
+
+&lt;img src=&quot;/assets/images/traefik/myssl.png&quot; alt=&quot;myssl&quot; /&gt;
+
+&lt;blockquote&gt;
+  通过评级测试我的域名仅为B，而且证书支持了tls1.3
+&lt;/blockquote&gt;
+
+&lt;img src=&quot;/assets/images/traefik/bad.png&quot; alt=&quot;bad&quot; /&gt;
+   &lt;img src=&quot;/assets/images/traefik/1.3.png&quot; alt=&quot;1.3&quot; /&gt;
+
+&lt;blockquote&gt;
+  OK,下面先把自己的traefik升级到2.1增加TraefikService的支持吧 .
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;2-升级traefik配置文件就不详细写了-可以参考httpswanziimposts201912kubernetes-traefik-v21-deploy丸子的文档-基本就是20的traefik-crdyaml配置文件增加traefikservice然后traefik-rbacyaml增加traefikservices的rules&quot;&gt;2. 升级traefik配置文件.就不详细写了 可以参考https://wanzi.im/posts/2019/12/kubernetes-traefik-v2.1-deploy丸子的文档， 基本就是2.0的traefik-crd.yaml配置文件增加TraefikService，然后traefik-rbac.yaml增加traefikservices的rules.&lt;/h2&gt;
+
+&lt;h2 id=&quot;3-参照myssl的测试报告配置tlsoption&quot;&gt;3. 参照myssl的测试报告配置TLSOption&lt;/h2&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; | kubectl apply -f -
+apiVersion: traefik.containo.us/v1alpha1
+kind: TLSOption
+metadata:
+  name: mytlsoption
+  namespaces: kube-system
+
+spec:
+  maxVersion: VersionTLS12
+  snistrict: true
+  ciphersuites:
+    - TLS_ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4:!DH:!DHE
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;注：namespace就写kube-system了，哈哈当然其实我写的是release测试的其实.....与文不符哈。
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;4-增加个hsts吧&quot;&gt;4 增加个hsts吧&lt;/h2&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; | kubectl apply -f -
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: hsts
+  namespaces: kube-system
+spec:
+  headers:
+      stsSeconds: 31536000
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;注：默认就先增加下hsts了 其实其他的middleware也可以加下。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;5-修改原来的ingressroute配置文件&quot;&gt;5. 修改原来的ingressroute配置文件&lt;/h2&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;&amp;gt; traefik-dashboard-route-https.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-system
+  name: traefik-dashboard-route-https
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\`&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;traefik.saynaihe.com&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\`&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;)
+      kind: Rule
+      services:
+        - name: traefik
+          port: 8080
+  tls:
+    secretName: all-saynaihe-com
+    options:
+      name: mytlsoption
+      middlewares:
+        - name: hsts
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;
+EOF
+&lt;/span&gt;看别人写的例子tls的配置都写在最下面了 我也就抄写一下了。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;6-myssl测试一下吧&quot;&gt;6. myssl测试一下吧&lt;/h2&gt;
+&lt;img src=&quot;/assets/images/traefik/ok.png&quot; alt=&quot;ok&quot; /&gt;
+   &lt;img src=&quot;/assets/images/traefik/ok1.png&quot; alt=&quot;ok1&quot; /&gt;
+
+&lt;blockquote&gt;
+  以上文图很多不符啊，但是过程就是这样的，可以参考一下。至于PCI DSS不合规，我就忽略了因为咱也不是支付行业，tls1.0也没有必要屏蔽了就这样吧
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Fri, 27 Dec 2019 18:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/12/27/traefik/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/12/27/traefik/</guid>
+        
+        <category>kubernetes</category>
+        
+        <category>traefik</category>
+        
+        
+        <category>traefik</category>
+        
+      </item>
+    
+      <item>
+        <title>2019-12-05-eck-qustion</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#描述背景&quot; id=&quot;markdown-toc-描述背景&quot;&gt;描述背景：&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1-kibana汉化&quot; id=&quot;markdown-toc-1-kibana汉化&quot;&gt;1. kibana汉化&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#kibana创建新用户&quot; id=&quot;markdown-toc-kibana创建新用户&quot;&gt;kibana创建新用户&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+集群配置：
+初始集群环境kubeadm 1.16.3
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;自定义域名&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.8&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.10&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.5&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.12&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&quot;描述背景&quot;&gt;描述背景：&lt;/h1&gt;
+&lt;blockquote&gt;
+  elastic-oparator搭建完成eck, kibana管理界面汉化和建立新用户权限设置。
+
+  初始化环境参考https://duiniwukenaihe.github.io/2019/10/21/k8s-efk/。然后默认把7.4的镜像修改成7.5.0直接升级了一下
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;1-kibana汉化&quot;&gt;1. kibana汉化&lt;/h2&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; | kubectl apply -f -
+apiVersion: kibana.k8s.elastic.co/v1beta1
+kind: Kibana
+metadata:
+  name: kibana
+  namespace: elastic-system
+spec:
+  version: 7.5.0
+  count: 1
+  elasticsearchRef:
+    name: &quot;elastic&quot;
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  podTemplate:
+    spec:
+      containers:
+      - name: kibana
+        env:
+        - name: I18N_LOCALE
+          value: zh-CN
+        resources:
+          requests:
+            memory: 1Gi
+          limits:
+            memory: 2Gi
+        volumeMounts:
+        - name: timezone-volume
+          mountPath: /etc/localtime
+          readOnly: true
+      volumes:
+      - name: timezone-volume
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Shanghai
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+  这样就可以支持中文了
+&lt;/blockquote&gt;
+
+&lt;img src=&quot;/assets/images/efk/chinese.png&quot; alt=&quot;chinese&quot; /&gt;
+
+&lt;h2 id=&quot;kibana创建新用户&quot;&gt;kibana创建新用户&lt;/h2&gt;
+&lt;blockquote&gt;
+  按照官方教程 创建后貌似用户是无法登陆的，New user can’t login kibana。可参考https://discuss.elastic.co/t/new-user-cant-login-kibana/204810。
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; | kubectl apply -f -
+apiVersion: elasticsearch.k8s.elastic.co/v1beta1
+kind: Elasticsearch
+metadata:
+  name: elastic
+  namespace: elastic-system
+spec:
+  version: 7.5.0
+  nodeSets:
+  - name: elastic
+    count: 3
+    config:
+      node.master: true
+      node.data: true
+      node.ingest: true
+      node.store.allow_mmap: false
+      xpack.security.authc.realms:
+        native:
+          native1: 
+            order: 1
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 30Gi
+        storageClassName: rook-ceph-block
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;增加了：
+      xpack.security.authc.realms:
+        native:
+          native1: 
+            order: 1
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/efk/user.png&quot; alt=&quot;user&quot; /&gt;
+&lt;blockquote&gt;
+  其他参考官方文档即可。
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Thu, 05 Dec 2019 10:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/12/05/eck-qustion/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/12/05/eck-qustion/</guid>
+        
+        <category>elastic-oparator</category>
+        
+        <category>ECK</category>
+        
+        
+        <category>elastic-oparator</category>
+        
+      </item>
+    
+      <item>
+        <title>2019-12-03-k8s-jenkins-sonarqube</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#描述背景&quot; id=&quot;markdown-toc-描述背景&quot;&gt;描述背景：&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#sonarqube配置&quot; id=&quot;markdown-toc-sonarqube配置&quot;&gt;sonarqube配置&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1-禁用scm传感器&quot; id=&quot;markdown-toc-1-禁用scm传感器&quot;&gt;1. 禁用SCM传感器&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#2-安装-分析插件&quot; id=&quot;markdown-toc-2-安装-分析插件&quot;&gt;2. 安装 分析插件&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#2-生成token&quot; id=&quot;markdown-toc-2-生成token&quot;&gt;2. 生成token&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#jenkins整合&quot; id=&quot;markdown-toc-jenkins整合&quot;&gt;jenkins整合&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1-安装相关插件&quot; id=&quot;markdown-toc-1-安装相关插件&quot;&gt;1. 安装相关插件&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#2-连接sonarqube&quot; id=&quot;markdown-toc-2-连接sonarqube&quot;&gt;2. 连接sonarqube&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#3-配置-sonarqube-scanner-插件&quot; id=&quot;markdown-toc-3-配置-sonarqube-scanner-插件&quot;&gt;3. 配置 SonarQube Scanner 插件&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#4-配置-maven插件&quot; id=&quot;markdown-toc-4-配置-maven插件&quot;&gt;4. 配置 maven插件&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#创建pipeline流水线测试项目&quot; id=&quot;markdown-toc-创建pipeline流水线测试项目&quot;&gt;创建pipeline流水线测试项目&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1-创建流水线任务&quot; id=&quot;markdown-toc-1-创建流水线任务&quot;&gt;1. 创建流水线任务&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#2-参数化构建流程-文本参数&quot; id=&quot;markdown-toc-2-参数化构建流程-文本参数&quot;&gt;2. 参数化构建流程-文本参数&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#3-创建pipeline-脚本-这里都是直接copy过来的&quot; id=&quot;markdown-toc-3-创建pipeline-脚本-这里都是直接copy过来的&quot;&gt;3. 创建pipeline 脚本 这里都是直接copy过来的&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#4-执行jenkins任务构建&quot; id=&quot;markdown-toc-4-执行jenkins任务构建&quot;&gt;4. 执行jenkins任务构建&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#登陆sonarqube查看扫描结果&quot; id=&quot;markdown-toc-登陆sonarqube查看扫描结果&quot;&gt;登陆sonarqube查看扫描结果.&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+集群配置：
+初始集群环境kubeadm 1.16.3
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;自定义域名&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.8&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.10&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.5&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.12&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&quot;描述背景&quot;&gt;描述背景：&lt;/h1&gt;
+&lt;blockquote&gt;
+  示例过程参考http://www.mydlq.club/article/11/超级小豆丁文档进行操作，版本过程略有不同。初衷是没有进过大公司，羡慕大公司的工作流，安装下sonarqube与jenkins集成跑个测试用例自己安慰下自己……
+上一张抄来的流程图
+&lt;/blockquote&gt;
+
+&lt;img src=&quot;/assets/images/sonar/jenkins-sonar1.png&quot; alt=&quot;jenkins-sonar1&quot; /&gt;
+
+&lt;h1 id=&quot;sonarqube配置&quot;&gt;sonarqube配置&lt;/h1&gt;
+
+&lt;h2 id=&quot;1-禁用scm传感器&quot;&gt;1. 禁用SCM传感器&lt;/h2&gt;
+&lt;blockquote&gt;
+  点击 配置—SCM—Disable the SCM Sensor 将其关闭
+&lt;img src=&quot;/assets/images/sonar/jenkins-sonar2.png&quot; alt=&quot;jenkins-sonar2&quot; /&gt;
+  &lt;h2 id=&quot;2-安装-分析插件&quot;&gt;2. 安装 分析插件&lt;/h2&gt;
+  点击配置-应用市场，搜索安装了java php js的相关插件，还安装了L10n，开始没有安装，pipeline后面编译maven示例的时候报错了，安装还是有必要的
+&lt;/blockquote&gt;
+
+&lt;img src=&quot;/assets/images/sonar/jenkins-sonar3.png&quot; alt=&quot;jenkins-sonar3&quot; /&gt;
+&lt;h2 id=&quot;2-生成token&quot;&gt;2. 生成token&lt;/h2&gt;
+&lt;blockquote&gt;
+  token 字符串是用于 Jenkins 在执行流水线时候将待检测信息发送到 SonarQube的安全凭证。
+点击右上角头像—我的账号—安全—生成令牌 生成验证的 Token。
+&lt;/blockquote&gt;
+
+&lt;img src=&quot;/assets/images/sonar/jenkins-sonar4.png&quot; alt=&quot;jenkins-sonar4&quot; /&gt;
+
+&lt;h1 id=&quot;jenkins整合&quot;&gt;jenkins整合&lt;/h1&gt;
+&lt;h2 id=&quot;1-安装相关插件&quot;&gt;1. 安装相关插件&lt;/h2&gt;
+&lt;blockquote&gt;
+
+  Maven Integration plugin
+
+  Pipeline Maven Integration Plugin
+
+  Pipeline Utility Steps
+
+  SonarQube Scanner for Jenkins
+
+  打开 系统管理—插件管理—可选插件 输入 相关插件名称 进行插件筛选，直接安装就Ok了。
+  &lt;h2 id=&quot;2-连接sonarqube&quot;&gt;2. 连接sonarqube&lt;/h2&gt;
+  点击凭据-系统-全局凭证-添加凭据-Secret text，复制sonarqube token到Secret ID,命名为sonar了 我就.
+&lt;img src=&quot;/assets/images/sonar/jenkins-sonar5.png&quot; alt=&quot;jenkins-sonar5&quot; /&gt;
+系统管理-系统配置-SonarQube servers，添加sonarqube service配置。name 随便命名了一个jenkins,server url，由于我的jenkins和sonarqube 在一个namespace 我直接用了service 那么 通信，server authentication 添加了上一步创建的 sonar的secret text。
+&lt;img src=&quot;/assets/images/sonar/jenkins-sonar6.png&quot; alt=&quot;jenkins-sonar6&quot; /&gt;
+  &lt;h2 id=&quot;3-配置-sonarqube-scanner-插件&quot;&gt;3. 配置 SonarQube Scanner 插件&lt;/h2&gt;
+  打开 系统管理—全局工具配置—SonarQube Scanner 输入 Name，选择最新版本点击自动安装即可.
+&lt;img src=&quot;/assets/images/sonar/jenkins-sonar7.png&quot; alt=&quot;jenkins-sonar7&quot; /&gt;
+  &lt;h2 id=&quot;4-配置-maven插件&quot;&gt;4. 配置 maven插件&lt;/h2&gt;
+  打开 系统管理—全局工具配置—Maven 输入 Name，选择最新版本点击自动安装即可.（我的安装的时候一直下不下来包，就直接下载了一个最新版的包copy到了容器中的路径中去.）
+&lt;img src=&quot;/assets/images/sonar/jenkins-sonar8.png&quot; alt=&quot;jenkins-sonar8&quot; /&gt;
+  &lt;h1 id=&quot;创建pipeline流水线测试项目&quot;&gt;创建pipeline流水线测试项目&lt;/h1&gt;
+  &lt;h2 id=&quot;1-创建流水线任务&quot;&gt;1. 创建流水线任务&lt;/h2&gt;
+  &lt;img src=&quot;/assets/images/sonar/jenkins-sonar9.png&quot; alt=&quot;jenkins-sonar9&quot; /&gt;
+  &lt;h3 id=&quot;2-参数化构建流程-文本参数&quot;&gt;2. 参数化构建流程-文本参数&lt;/h3&gt;
+  &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;名称： sonar_project_properties
+默认值：
+sonar.sources&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;src
+sonar.language&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;java
+sonar.sourceEncoding&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;UTF-8
+sonar.java.binaries&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;target/classes
+sonar.java.source&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1.8
+sonar.java.target&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1.8
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+  &lt;img src=&quot;/assets/images/sonar/jenkins-sonar10.png&quot; alt=&quot;jenkins-sonar10&quot; /&gt;
+  &lt;h3 id=&quot;3-创建pipeline-脚本-这里都是直接copy过来的&quot;&gt;3. 创建pipeline 脚本 这里都是直接copy过来的&lt;/h3&gt;
+  &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;**&lt;/span&gt;// 设置超时时间为10分钟，如果未成功则结束任务
+&lt;span class=&quot;nb&quot;&gt;timeout&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;time&lt;/span&gt;: 600, unit: &lt;span class=&quot;s1&quot;&gt;'SECONDS'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    node &lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        stage&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'Git 拉取阶段'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+            // Git 拉取代码
+            git branch: &lt;span class=&quot;s2&quot;&gt;&quot;master&quot;&lt;/span&gt; ,changelog: &lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt; , url: &lt;span class=&quot;s2&quot;&gt;&quot;https://github.com/a324670547/springboot-helloworld&quot;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        stage&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'Maven 编译阶段'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            // 设置 Maven 工具,引用先前全局工具配置中设置工具的名称
+            def m3 &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; tool name: &lt;span class=&quot;s1&quot;&gt;'maven'&lt;/span&gt;
+            // 执行 Maven 命令
+            sh &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;m3&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/bin/mvn -B -e clean install -Dmaven.test.skip=true&quot;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        stage&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'SonarQube 扫描阶段'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+            // 读取maven变量
+            pom &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; readMavenPom file: &lt;span class=&quot;s2&quot;&gt;&quot;./pom.xml&quot;&lt;/span&gt;
+            // 创建SonarQube配置文件
+            writeFile file: &lt;span class=&quot;s1&quot;&gt;'sonar-project.properties'&lt;/span&gt;, 
+                      text: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&quot;sonar.projectKey=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;pom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.artifactId&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;pom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.version&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;+
+                            &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&quot;sonar.projectName=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;pom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.artifactId&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;+
+                            &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&quot;sonar.projectVersion=&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;pom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.version&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;+
+                            &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;sonar_project_properties&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&quot;&quot;&lt;/span&gt;
+            // 设置 SonarQube 代码扫描工具,引用先前全局工具配置中设置工具的名称
+            def sonarqubeScanner &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; tool name: &lt;span class=&quot;s1&quot;&gt;'sonar-scanner'&lt;/span&gt;
+            // 设置 SonarQube 环境,其中参数设置为之前系统设置中SonarQuke服务器配置的 Name
+            withSonarQubeEnv&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'jenkins'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+                // 执行代码扫描
+                sh &lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;sonarqubeScanner&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;/bin/sonar-scanner&quot;&lt;/span&gt;
+            &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;**&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+  &lt;img src=&quot;/assets/images/sonar/jenkins-sonar11.png&quot; alt=&quot;jenkins-sonar11&quot; /&gt;
+  &lt;h3 id=&quot;4-执行jenkins任务构建&quot;&gt;4. 执行jenkins任务构建&lt;/h3&gt;
+  点击 Build with Parameters 执行 Jenkins 任务,由于插件安装不完整，sonarqube 少安装了L10n插件，开始失败率 好多次。等待确认成功
+&lt;img src=&quot;/assets/images/sonar/jenkins-sonar12.png&quot; alt=&quot;jenkins-sonar12&quot; /&gt;
+  &lt;h1 id=&quot;登陆sonarqube查看扫描结果&quot;&gt;登陆sonarqube查看扫描结果.&lt;/h1&gt;
+&lt;/blockquote&gt;
+
+&lt;img src=&quot;/assets/images/sonar/jenkins-sonar13.png&quot; alt=&quot;jenkins-sonar13&quot; /&gt;
+
+&lt;blockquote&gt;
+  总结：流程算是草草完成，还有很多不明白的地方，因为工作环境都是php，也没有成熟的发布流程，对java的maven构建还是很陌生。而且sonarqube的配置还是十分不熟悉。后续先搞明白下sonarqube的各种配置设置参数，系统的看下maven gradle这些主流的java构建工具。
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Tue, 03 Dec 2019 10:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/12/03/k8s-jenkins-sonarqube/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/12/03/k8s-jenkins-sonarqube/</guid>
+        
+        <category>kubernetes</category>
+        
+        <category>jenkins</category>
+        
+        <category>sonarqube</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
+    
+      <item>
+        <title>2019-11-29-k8s-helm-install-postgresql-sonarqube</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#描述背景&quot; id=&quot;markdown-toc-描述背景&quot;&gt;描述背景：&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#开始安装&quot; id=&quot;markdown-toc-开始安装&quot;&gt;开始安装&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1-git-clone-chart库&quot; id=&quot;markdown-toc-1-git-clone-chart库&quot;&gt;1. git clone chart库&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#2-helm-安装postgresql&quot; id=&quot;markdown-toc-2-helm-安装postgresql&quot;&gt;2. helm 安装postgresql&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#3-helm-安装sonar&quot; id=&quot;markdown-toc-3-helm-安装sonar&quot;&gt;3. helm 安装sonar&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#4-treafik代理-sonar&quot; id=&quot;markdown-toc-4-treafik代理-sonar&quot;&gt;4. treafik代理 sonar&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#5-登录sonar-修改密码设置语言包&quot; id=&quot;markdown-toc-5-登录sonar-修改密码设置语言包&quot;&gt;5. 登录sonar 修改密码设置语言包&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+集群配置：
+初始集群环境kubeadm 1.16.3
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;自定义域名&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.8&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.10&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.5&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.12&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&quot;描述背景&quot;&gt;描述背景：&lt;/h1&gt;
+&lt;blockquote&gt;
+  正常来说helm玩的好应该是直接安装的但是玩的不太好 ，postgresql 和sonarqube分成两部安装的。变量各种用的不熟悉，安装后sonarqube报错什么的， 就分成两步安装了。
+&lt;/blockquote&gt;
+
+&lt;h1 id=&quot;开始安装&quot;&gt;开始安装&lt;/h1&gt;
+&lt;h2 id=&quot;1-git-clone-chart库&quot;&gt;1. git clone chart库&lt;/h2&gt;
+&lt;blockquote&gt;
+  git clone https://github.com/helm/charts
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;2-helm-安装postgresql&quot;&gt;2. helm 安装postgresql&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  cd charts/stable/sonarqube/postgresql
+
+  修改 values.yaml，就设置了用户密码和存储类storageClass。
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;postgresqlPassword: qmVy5wubfmcekZy3
+
+storageClass: &lt;span class=&quot;s2&quot;&gt;&quot;rook-ceph-block&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;img src=&quot;/assets/images/sonar/sonar1.png&quot; alt=&quot;sonar1.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/sonar/sonar2.png&quot; alt=&quot;sonar2.png&quot; /&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;helm &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--name&lt;/span&gt; sonar-postgresql &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; values.yaml &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--namespace&lt;/span&gt; kube-ops
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;img src=&quot;/assets/images/sonar/sonar3.png&quot; alt=&quot;sonar3.png&quot; /&gt;
+
+&lt;blockquote&gt;
+  进入postgresql 创建sonar数据库
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;POSTGRES_PASSWORD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;kubectl get secret &lt;span class=&quot;nt&quot;&gt;--namespace&lt;/span&gt; kube-ops sonar-postgresql &lt;span class=&quot;nt&quot;&gt;-o&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;jsonpath&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;{.data.postgresql-password}&quot;&lt;/span&gt; | &lt;span class=&quot;nb&quot;&gt;base64&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--decode&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;
+
+kubectl run sonar-postgresql-client &lt;span class=&quot;nt&quot;&gt;--rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--tty&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--restart&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;'Never'&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--namespace&lt;/span&gt; kube-ops &lt;span class=&quot;nt&quot;&gt;--image&lt;/span&gt; docker.io/bitnami/postgresql:11.6.0-debian-9-r0 &lt;span class=&quot;nt&quot;&gt;--env&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;PGPASSWORD=&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$POSTGRES_PASSWORD&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--command&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt; psql &lt;span class=&quot;nt&quot;&gt;--host&lt;/span&gt; sonar-postgresql &lt;span class=&quot;nt&quot;&gt;-U&lt;/span&gt; postgres &lt;span class=&quot;nt&quot;&gt;-d&lt;/span&gt; postgres &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; 5432
+
+&lt;span class=&quot;nv&quot;&gt;postgres&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;c&quot;&gt;# CREATE DATABASE sonar；&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+  kubectl delete pods sonar-postgresql-client -n kube-ops 客户端就删除了就是看helm安装的输出试了一下呢。
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;3-helm-安装sonar&quot;&gt;3. helm 安装sonar&lt;/h2&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; ../sonarqube
+&lt;span class=&quot;nb&quot;&gt;rm&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-rf&lt;/span&gt; requirements.yaml
+&lt;span class=&quot;c&quot;&gt;# 不删除的话还要检查依赖charts目录下放postgresql的 chart目录。放上试了几次没有整明白，就分开整了&lt;/span&gt;
+修改values.yaml
+&lt;span class=&quot;c&quot;&gt;#配置storageclass&lt;/span&gt;
+  storageClass: rook-ceph-block
+  accessMode: ReadWriteOnce
+  size: 10Gi
+&lt;span class=&quot;c&quot;&gt;#配置postgresql&lt;/span&gt;
+postgresql:
+  &lt;span class=&quot;c&quot;&gt;# Enable to deploy the PostgreSQL chart&lt;/span&gt;
+  enabled: &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;  
+  &lt;span class=&quot;c&quot;&gt;# To use an external PostgreSQL instance, set enabled to false and uncomment&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# the line below:&lt;/span&gt;
+  postgresServer: &lt;span class=&quot;s2&quot;&gt;&quot;sonar-postgresql&quot;&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# To use an external secret for the password for an external PostgreSQL&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# instance, set enabled to false and provide the name of the secret on the&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# line below:&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# postgresPasswordSecret: &quot;&quot;&lt;/span&gt;
+  postgresUser: &lt;span class=&quot;s2&quot;&gt;&quot;postgres&quot;&lt;/span&gt;
+  postgresPassword: &lt;span class=&quot;s2&quot;&gt;&quot;qmVy5wubfmcekZy3&quot;&lt;/span&gt;
+  postgresDatabase: &lt;span class=&quot;s2&quot;&gt;&quot;sonar&quot;&lt;/span&gt;
+  &lt;span class=&quot;c&quot;&gt;# Specify the TCP port that PostgreSQL should use&lt;/span&gt;
+  service:
+    port: 5432
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+  helm install –name sonar -f values.yaml . –namespace kube-ops
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl get pods &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-ops
+
+kubectl get svc &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-ops
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/sonar/sonar4.png&quot; alt=&quot;sonar4.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/sonar/sonar5.png&quot; alt=&quot;sonar5.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/sonar/sonar6.png&quot; alt=&quot;sonar6.png&quot; /&gt;
+&lt;h2 id=&quot;4-treafik代理-sonar&quot;&gt;4. treafik代理 sonar&lt;/h2&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; sonarqube-https.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: sonar-sonarqube-https
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\`&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;sonarqube.sainaihe.com&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\`&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;)
+      kind: Rule
+      services:
+        - name: sonar-sonarqube
+          port: 9000
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; sonarqube-https.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/sonar/sonar7.png&quot; alt=&quot;sonar7.png&quot; /&gt;
+&lt;h2 id=&quot;5-登录sonar-修改密码设置语言包&quot;&gt;5. 登录sonar 修改密码设置语言包&lt;/h2&gt;
+&lt;img src=&quot;/assets/images/sonar/sonar8.png&quot; alt=&quot;sonar8.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/sonar/sonar9.png&quot; alt=&quot;sonar9.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/sonar/sonar10.png&quot; alt=&quot;sonar10.png&quot; /&gt;
+&lt;blockquote&gt;
+  ok安装完成了，有时间整下和jenkins的结合跑个例子。
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Fri, 29 Nov 2019 10:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/11/29/k8s-helm-install-postgresql-sonarqube/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/11/29/k8s-helm-install-postgresql-sonarqube/</guid>
+        
+        <category>kubernetes</category>
+        
+        <category>helm</category>
+        
+        <category>postgresql</category>
+        
+        <category>sonarqube</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
+    
+      <item>
+        <title>2019-11-26-k8s-install-new</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#背景&quot; id=&quot;markdown-toc-背景&quot;&gt;背景&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#开始&quot; id=&quot;markdown-toc-开始&quot;&gt;开始&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#首先的还是环境初始化master-work节点全部执行&quot; id=&quot;markdown-toc-首先的还是环境初始化master-work节点全部执行&quot;&gt;首先的还是环境初始化，master work节点全部执行&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#1-关闭swap&quot; id=&quot;markdown-toc-1-关闭swap&quot;&gt;1. 关闭swap&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#2-关闭selinux&quot; id=&quot;markdown-toc-2-关闭selinux&quot;&gt;2. 关闭selinux&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#4-开启ip转发&quot; id=&quot;markdown-toc-4-开启ip转发&quot;&gt;4. 开启ip转发&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#5-加载ipvs&quot; id=&quot;markdown-toc-5-加载ipvs&quot;&gt;5. 加载ipvs&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#6-journal-日志相关这里因为后面吃亏了-日志没有做切割保存查看问题太麻烦了&quot; id=&quot;markdown-toc-6-journal-日志相关这里因为后面吃亏了-日志没有做切割保存查看问题太麻烦了&quot;&gt;6. journal 日志相关这里因为后面吃亏了 日志没有做切割保存，查看问题太麻烦了&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#7-配置yum源&quot; id=&quot;markdown-toc-7-配置yum源&quot;&gt;7. 配置yum源&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#8-安装基本服务&quot; id=&quot;markdown-toc-8-安装基本服务&quot;&gt;8. 安装基本服务&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#9-安装kubernetes&quot; id=&quot;markdown-toc-9-安装kubernetes&quot;&gt;9. 安装kubernetes&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#master节点操作&quot; id=&quot;markdown-toc-master节点操作&quot;&gt;master节点操作&lt;/a&gt;        &lt;ul&gt;
+          &lt;li&gt;&lt;a href=&quot;#1-master节点安装haproxy&quot; id=&quot;markdown-toc-1-master节点安装haproxy&quot;&gt;1. master节点安装haproxy&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#2-kuberadm-master安装&quot; id=&quot;markdown-toc-2-kuberadm-master安装&quot;&gt;2. kuberadm master安装&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#3-配置flannel插件&quot; id=&quot;markdown-toc-3-配置flannel插件&quot;&gt;3. 配置flannel插件&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#4-work节点加入master&quot; id=&quot;markdown-toc-4-work节点加入master&quot;&gt;4. work节点加入master&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href=&quot;#5-配置文件忘了设置ipvs了开启下ipvs这里记得在&quot; id=&quot;markdown-toc-5-配置文件忘了设置ipvs了开启下ipvs这里记得在&quot;&gt;5. 配置文件忘了设置ipvs了开启下ipvs.这里记得在&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+集群配置：
+centos7.6
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;自定义域名&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.9&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.10&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.5&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.12&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;背景&quot;&gt;背景&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  前面192.168.20.13这几台机器是用kubeadm1.15 搭建过 kubernetes的，后续出现了很多问题。开始的规划很不完善，后面就重新搭建了记录下：首先说下原来的不满意的地方：
+
+  &lt;ol&gt;
+    &lt;li&gt;etcd自建外部挂载，个人对etcd不是很懂，版本升级兼容问题各种解决毕竟费劲，更主要的是都上容器了，我为什么不把etcd教给容器呢？当然了存储还是挂载master主机目录的。&lt;/li&gt;
+    &lt;li&gt;腾讯云的slb了 还使用了haproxy，开始使用应用型负载均衡代理，后而且后面出现了各种诡异的问题，比如证书之类的。个人觉得问题应该简单化。&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  注：https://zhangguanzhang.github.io/2019/11/24/kubeadm-base-use/很多可以参考下馆长写的文章比较详细。
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;开始&quot;&gt;开始&lt;/h2&gt;
+
+&lt;h3 id=&quot;首先的还是环境初始化master-work节点全部执行&quot;&gt;首先的还是环境初始化，master work节点全部执行&lt;/h3&gt;
+&lt;blockquote&gt;
+  默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名
+  &lt;h4 id=&quot;1-关闭swap&quot;&gt;1. 关闭swap&lt;/h4&gt;
+  &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;swapoff &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/.*swap.*/#&amp;amp;/'&lt;/span&gt; /etc/fstab
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+  &lt;h4 id=&quot;2-关闭selinux&quot;&gt;2. 关闭selinux&lt;/h4&gt;
+  &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;setenforce  0 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=enforcing/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/sysconfig/selinux 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=enforcing/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/selinux/config 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=permissive/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/sysconfig/selinux 
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-i&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;s/^SELINUX=permissive/SELINUX=disabled/g&quot;&lt;/span&gt; /etc/selinux/config 
+ &lt;span class=&quot;sb&quot;&gt;```&lt;/span&gt;bash
+&lt;span class=&quot;c&quot;&gt;#### 3. 调整文件打开数等配置&lt;/span&gt;
+ &lt;span class=&quot;sb&quot;&gt;```&lt;/span&gt;bash
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* soft nofile 65536&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* hard nofile 65536&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* soft nproc 65536&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* hard nproc 65536&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* soft  memlock  unlimited&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;* hard memlock  unlimited&quot;&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; /etc/security/limits.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+  &lt;h4 id=&quot;4-开启ip转发&quot;&gt;4. 开启ip转发&lt;/h4&gt;
+  &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; /etc/sysctl.d/k8s.conf
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+net.ipv4.neigh.default.gc_stale_time = 120
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 0
+net.ipv4.conf.default.arp_announce = 2
+net.ipv4.conf.lo.arp_announce = 2
+net.ipv4.conf.all.arp_announce = 2
+net.ipv4.ip_forward = 1
+net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 1024
+net.ipv4.tcp_synack_retries = 2
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_keepalive_intvl = 30
+net.ipv4.tcp_keepalive_probes = 10
+# 要求iptables不对bridge的数据进行处理
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-arptables = 1
+net.netfilter.nf_conntrack_max = 2310720
+fs.inotify.max_user_watches=89100
+fs.may_detach_mounts = 1
+fs.file-max = 52706963
+fs.nr_open = 52706963
+vm.overcommit_memory=1
+vm.panic_on_oom=0
+vm.swappiness = 0
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;modprobe br_netfilter
+sysctl &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /etc/sysctl.d/k8s.conf
+sysctl &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /etc/sysctl.d/k8s.conf
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;5-加载ipvs&quot;&gt;5. 加载ipvs&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;vim /etc/sysconfig/modules/ipvs.modules
+modprobe &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt; ip_vs
+modprobe &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt; ip_vs_rr
+modprobe &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt; ip_vs_wrr
+modprobe &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt; ip_vs_sh
+modprobe &lt;span class=&quot;nt&quot;&gt;--&lt;/span&gt; nf_conntrack_ipv4
+&lt;span class=&quot;nb&quot;&gt;chmod &lt;/span&gt;755 /etc/sysconfig/modules/ipvs.modules &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; bash /etc/sysconfig/modules/ipvs.modules &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; lsmod | &lt;span class=&quot;nb&quot;&gt;grep&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; ip_vs &lt;span class=&quot;nt&quot;&gt;-e&lt;/span&gt; nf_conntrack_ipv4
+yum &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;ipset
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;6-journal-日志相关这里因为后面吃亏了-日志没有做切割保存查看问题太麻烦了&quot;&gt;6. journal 日志相关这里因为后面吃亏了 日志没有做切割保存，查看问题太麻烦了&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^\$ModLoad imjournal/#&amp;amp;/'&lt;/span&gt; /etc/rsyslog.conf
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^\$IMJournalStateFile/#&amp;amp;/'&lt;/span&gt; /etc/rsyslog.conf
+
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^#(DefaultLimitCORE)=/\1=100000/'&lt;/span&gt; /etc/systemd/system.conf
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^#(DefaultLimitNOFILE)=/\1=100000/'&lt;/span&gt; /etc/systemd/system.conf
+
+&lt;span class=&quot;nb&quot;&gt;sed&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-ri&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'s/^#(UseDNS )yes/\1no/'&lt;/span&gt; /etc/ssh/sshd_config
+journalctl &lt;span class=&quot;nt&quot;&gt;--vacuum-size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;20M
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;7-配置yum源&quot;&gt;7. 配置yum源&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum-config-manager &lt;span class=&quot;nt&quot;&gt;--add-repo&lt;/span&gt; http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg 
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;8-安装基本服务&quot;&gt;8. 安装基本服务&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;安装依赖包
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; epel-release
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; yum-utils device-mapper-persistent-data lvm2 net-tools conntrack-tools wget vim  ntpdate libseccomp libtool-ltdl
+安装bash命令提示
+yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; bash-argsparse bash-completion bash-#completion-extras
+安装docker kubeadm:
+yum &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;docker-ce &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#配置镜像加速器 &lt;/span&gt;
+&lt;span class=&quot;nb&quot;&gt;sudo mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /etc/docker
+&lt;span class=&quot;nb&quot;&gt;sudo tee&lt;/span&gt; /etc/docker/daemon.json &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;-&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;'
+{
+  &quot;registry-mirrors&quot;: [&quot;https://lrpol8ec.mirror.aliyuncs.com&quot;],
+  &quot;log-driver&quot;: &quot;json-file&quot;,
+  &quot;log-opts&quot;: {
+    &quot;max-size&quot;: &quot;100m&quot;,
+    &quot;max-file&quot;: &quot;3&quot;
+}
+}
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl daemon-reload
+&lt;span class=&quot;nb&quot;&gt;sudo &lt;/span&gt;systemctl restart docker
+添加个日志最多值，否则有的苦了，入坑体验过了。docker要不要开机启动呢？我后面安装rook ceph 开机重新启动了老有错误，因为没有将节点设置为cordon，但是也懒了， 我就没有设置为开机启动。故开机启动后在启动docker了
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;9-安装kubernetes&quot;&gt;9. 安装kubernetes&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; kubelet kubeadm kubectl &lt;span class=&quot;nt&quot;&gt;--disableexcludes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;kubernetes
+systemctl &lt;span class=&quot;nb&quot;&gt;enable &lt;/span&gt;kubelet
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;master节点操作&quot;&gt;master节点操作&lt;/h3&gt;
+&lt;h4 id=&quot;1-master节点安装haproxy&quot;&gt;1. master节点安装haproxy&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;yum &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-y&lt;/span&gt; haproxy
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; /etc/haproxy/haproxy.cfg
+
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   http://haproxy.1wt.eu/download/1.4/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    tcp
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend kubernetes
+    bind *:8443              #配置端口为8443
+    mode tcp
+    default_backend kubernetes-master
+#---------------------------------------------------------------------
+# static backend for serving up images, stylesheets and such
+#---------------------------------------------------------------------
+backend kubernetes-master           #后端服务器，也就是说访问192.168.255.140:8443会将请求转发到后端的三台，这样就实现了负载均衡
+    balance roundrobin               
+    server master1  192.168.3.10:6443 check maxconn 2000
+    server master2  192.168.3.5:6443 check maxconn 2000
+    server master3  192.168.3.12:6443 check maxconn 2000
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt; systemctl &lt;span class=&quot;nb&quot;&gt;enable &lt;/span&gt;haproxy &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; systemctl start haproxy &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; systemctl status haproxy
+
+腾讯云slb负载均衡最终还是用了传统型，监听器tcp 6443代理后端三台haproxy 8443端口
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;2-kuberadm-master安装&quot;&gt;2. kuberadm master安装&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;master1节点
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; kubeadm-config.yaml
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: v1.16.2
+apiServer:
+  certSANs:
+    - k8s-master-01
+    - k8s-master-02
+    - k8s-master-03
+    - k8s-master-04
+    - master.k8s.io
+    - 192.168.3.10
+    - 192.168.3.5
+    - 192.168.3.12
+    - 192.168.3.9
+    - 192.168.3.3
+    - 127.0.0.1
+controlPlaneEndpoint: &quot;192.168.3.9:6443&quot;
+controllerManager: {}
+dns: 
+  type: CoreDNS
+etcd:
+    local:
+      dataDir: /var/lib/etcd
+imageRepository: registry.aliyuncs.com/google_containers
+networking:
+  podSubnet: 10.30.0.0/16
+  serviceSubnet: 10.31.0.0/16
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; kubeadm-config.yaml
+现在最新的是1.16.3，安装的时候是1.16.2就用了默认配置文件了。网络规划不会弄，这样貌似有点很差劲，因为以后想弄联邦集群，后面再想解决方法吧。另外腾讯云曾经开源过一个tencentcloud-cloud-controller-manager，其实很多可以打通的，但是试用了下 坑多的样子没有跑通，放弃了
+kubeadm init &lt;span class=&quot;nt&quot;&gt;--config&lt;/span&gt; initconfig.yaml
+&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube
+&lt;span class=&quot;nb&quot;&gt;sudo&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\c&lt;/span&gt;p /etc/kubernetes/admin.conf &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube/config
+&lt;span class=&quot;nb&quot;&gt;sudo chown&lt;/span&gt; &lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-u&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;:&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-g&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;$HOME&lt;/span&gt;/.kube/config
+
+按照输出master02 ，master03节点加入集群
+ kubeadm &lt;span class=&quot;nb&quot;&gt;join &lt;/span&gt;192.168.3.9:6443 &lt;span class=&quot;nt&quot;&gt;--token&lt;/span&gt; jiprvz.0rkovt1gx3d658j     &lt;span class=&quot;nt&quot;&gt;--discovery-token-ca-cert-hash&lt;/span&gt; sha256:5d631bb4bdce033163037ef21f663c88e058e70c6c362c9c5ccb1a92095     &lt;span class=&quot;nt&quot;&gt;--control-plane&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--certificate-key&lt;/span&gt; 0eaa7e5f8efbdc8d381fb329c28c49f87af284fecc0c9443501e81f3cdc4
+将master01 /etc/kubernetes/pki目录下ca&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; sa&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; fr&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; etcd 打包分发到master02,master03 /etc/kubernetes/pki目录下 
+注： key都胡乱输入的这里没有用自己的，复制pki这部忘了 老的版本都复制来，记得这个版本我没有复制key的？可以安装流程自己看看
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;3-配置flannel插件&quot;&gt;3. 配置flannel插件&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+修改配置文件中Network 为自己设置的子网，我这里是10.30.0.0/16
+kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; kube-flannel.yml
+然后基本发现 master节点都已经redeay
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;4-work节点加入master&quot;&gt;4. work节点加入master&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubeadm &lt;span class=&quot;nb&quot;&gt;join &lt;/span&gt;192.168.3.9:6443 &lt;span class=&quot;nt&quot;&gt;--token&lt;/span&gt; 3o6dy0.9gbbfuf55xiloe9d &lt;span class=&quot;nt&quot;&gt;--discovery-token-ca-cert-hash&lt;/span&gt; sha256:5d631bb4bdce01dcad51163037ef21f663c88e058e70c6c362c9c5ccb1a92095
+OK集群算是初始搭建完了，不知道跑一遍咋样，我的是正常跑起来了。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;5-配置文件忘了设置ipvs了开启下ipvs这里记得在&quot;&gt;5. 配置文件忘了设置ipvs了开启下ipvs.这里记得在&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl edit cm kube-proxy &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system
+configmap/kube-proxy edited
+
+&lt;span class=&quot;c&quot;&gt;#修改如下&lt;/span&gt;
+kind: MasterConfiguration
+apiVersion: kubeadm.k8s.io/v1alpha1
+...
+ipvs:
+      excludeCIDRs: null
+      minSyncPeriod: 0s
+      scheduler: &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;
+      syncPeriod: 30s
+    kind: KubeProxyConfiguration
+    metricsBindAddress: 127.0.0.1:10249
+    mode: &lt;span class=&quot;s2&quot;&gt;&quot;ipvs&quot;&lt;/span&gt;                  &lt;span class=&quot;c&quot;&gt;#修改&lt;/span&gt;
+
+kubectl get pod &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system | &lt;span class=&quot;nb&quot;&gt;grep &lt;/span&gt;kube-proxy |awk &lt;span class=&quot;s1&quot;&gt;'{system(&quot;kubectl delete pod &quot;$1&quot; -n kube-system&quot;)}'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;blockquote&gt;
+  貌似应该就跑起来了，然后后面应该还要做的：
+  &lt;ol&gt;
+    &lt;li&gt;etcd的备份，虽然有三个master节点 数据无价，还是做下etcd的备份要好。&lt;/li&gt;
+    &lt;li&gt;pods 可能都running了 但是最后还是看下日志，肯能有些小的失误，看日志是个好习惯的，老版本糊里糊涂搭建的时候kubernetes插件pod打了一大堆日志 虽然可以使用，但是还是要追求下完美的。由此可见搭建日志采集系统还是很有必要的。&lt;/li&gt;
+    &lt;li&gt;work节点最好打上标签，不是服务设置亲和性和反亲和性。资源的调度使用值貌似可以设置的？否则后面有的work会出现pods一直创建中，打标签合理规划资源还是很有必要的。&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Tue, 26 Nov 2019 10:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/11/26/k8s-install-new/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/11/26/k8s-install-new/</guid>
+        
+        <category>kubernetes1.16.2</category>
+        
+        <category>kuberadm</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
+    
+      <item>
+        <title>2019-11-25-k8s-question2</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#描述背景&quot; id=&quot;markdown-toc-描述背景&quot;&gt;描述背景：&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#创建-pod-失败describe-pod-看-event-报-no-space-left-on-device集群运行120天左右出现&quot; id=&quot;markdown-toc-创建-pod-失败describe-pod-看-event-报-no-space-left-on-device集群运行120天左右出现&quot;&gt;创建 Pod 失败，describe pod 看 event 报 no space left on device.集群运行120天左右出现。&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#prune命令的使用&quot; id=&quot;markdown-toc-prune命令的使用&quot;&gt;prune命令的使用：&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1-prune-images&quot; id=&quot;markdown-toc-1-prune-images&quot;&gt;1. Prune Images&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#2-prune-containers&quot; id=&quot;markdown-toc-2-prune-containers&quot;&gt;2. Prune containers&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#3-prune-volumes&quot; id=&quot;markdown-toc-3-prune-volumes&quot;&gt;3. prune volumes&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#4-prune-networks&quot; id=&quot;markdown-toc-4-prune-networks&quot;&gt;4. prune networks&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#5-prune-everything&quot; id=&quot;markdown-toc-5-prune-everything&quot;&gt;5. prune everything&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;描述背景&quot;&gt;描述背景：&lt;/h1&gt;
+注：记录各种常见问题
+
+集群配置：
+初始集群环境kubeadm 1.16.1
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;自定义域名&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.8&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.10&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.5&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.12&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&quot;创建-pod-失败describe-pod-看-event-报-no-space-left-on-device集群运行120天左右出现&quot;&gt;创建 Pod 失败，describe pod 看 event 报 no space left on device.集群运行120天左右出现。&lt;/h1&gt;
+&lt;blockquote&gt;
+  可参照https://www.bookstack.cn/read/kubernetes-practice-guide/troubleshooting-problems-errors-no-space-left-on-device.md。出现此问题cgroup泄露问题。最笨方法可以用reboot下，或者删除节点重新添加下。瞄了一眼/var/lib/docker/overlay2 下文件有快70G，/var/log/journal/日志也有4-5G。
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;journalctl &lt;span class=&quot;nt&quot;&gt;--vacuum-size&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;20M
+设置journal 日志最大为20M不保留不必要日志。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h1 id=&quot;prune命令的使用&quot;&gt;prune命令的使用：&lt;/h1&gt;
+&lt;blockquote&gt;
+  看了下文档与资料，对于不再使用的镜像容器，存储以及网络资源 docker采取的是被动清理方式。所以自然而然的，默认文件夹下文件会越来越大。docker 也为此提供了prune的命令。
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;1-prune-images&quot;&gt;1. Prune Images&lt;/h2&gt;
+&lt;blockquote&gt;
+  docker image prune 可以用来清理不再使用的docker镜像。执行docker image prune默认会清除”悬空”镜像。“悬空”镜像，就是既没有标签名也没有容器引用的镜像就叫”悬空”镜像。具体操作如下：
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker image prune
+WARNING! This will remove all dangling images.
+Are you sure you want to &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;? &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;y/N] y
+想要清除所有没有容器引用的镜像，增加一个 &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt; 标志就可以搞定：
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker image prune &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt;
+WARNING! This will remove all images without at least one container associated to them.
+Are you sure you want to &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;? &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;y/N] y
+清除操作会提醒你是否真心想要清除对象，默认是选项会是yes；但是如果你嫌提示麻烦，可以通过-f 或者--force标志来进行强制清除。
+更加人性化的是，Docker提供了--filter标志筛选出想要保留的镜像。例如：只清除超过创建时间超过24小时的镜像可以这样来操作：
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker image prune &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--filter&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;until=24h&quot;&lt;/span&gt;
+ 当然还能够通过其他的表达式来定制我的镜像清理计划。更多的示例参考docker image prune.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;2-prune-containers&quot;&gt;2. Prune containers&lt;/h2&gt;
+&lt;blockquote&gt;
+  容器启动时没有指定–rm选项，容器停止时是不能够自动清除的。有时候我们无所事事的敲下docker ps -a命令会惊奇的发现，天哪，居然有这么多容器，有运行着的也有停止了的。它们是哪里来的？它们到底还有没有人在关注？这种情况在一个开发环境上尤其常见。即使容器已经停掉了也会占用空间资源。这个时候可以使用docker container prune命令:
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker container prune
+WARNING! This will remove all stopped containers.
+Are you sure you want to &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;? &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;y/N] 
+和镜像清理的情况一样，也会有提示信息告诉你是否继续，默认是yes；如果提示信息烦到了你的话就加上 &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; 或者 &lt;span class=&quot;nt&quot;&gt;--force&lt;/span&gt;标志强制清除就可以了。
+默认情况下docker container prune命令会清理掉所有处于stopped状态的容器；如果不想那么残忍统统都删掉，也可以使用--filter标志来筛选出不希望被清理掉的容器。下面是一个筛选的例子，清除掉所有停掉的容器，但24内创建的除外：
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker container prune &lt;span class=&quot;nt&quot;&gt;--filter&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;until=24h&quot;&lt;/span&gt;
+其他的筛选条件的实现可以参考：docker container prune reference， 这里有更多的详细的例子。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;3-prune-volumes&quot;&gt;3. prune volumes&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  Volumes可被一个或多个容器使用会消耗host端的空间，但它不会自动清理，因为那样就有可能破坏掉有用的数据。
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker volume prune
+WARNING! This will remove all volumes not used by at least one container.
+Are you sure you want to &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;? &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;y/N] y
+和conatiner一样，手动清理Volume时会有提示信息，增加-f 或--force标志可以跳过提示信息直接清理。使用过滤参数--filter来筛选出不希望清理的无用Volume，否则默认会将所有没有使用的volumes都清理掉。下面的例子演示了除lable&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;keep外的volume外都清理掉&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;没有引用的volume&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;：
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker volume prune &lt;span class=&quot;nt&quot;&gt;--filter&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;label!=keep&quot;&lt;/span&gt;
+其他的筛选条件的实现可以参考：docker volume prune reference，这里给出了更多参考示例。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;4-prune-networks&quot;&gt;4. prune networks&lt;/h2&gt;
+
+&lt;blockquote&gt;
+  虽然Docker networks占用的空间不多，但是它会创建iptable 规则、虚拟网桥设备以及路由表项，有洁癖的你看到这么多”僵尸”对象会不会抓狂？当然，我们还是要用清理神器：docker network prune 来清理没有再被任何容器引用的networks：
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker network prune
+ 
+WARNING! This will remove all networks not used by at least one container.
+Are you sure you want to &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;? &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;y/N] y
+ 可以通过 &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; 或者 &lt;span class=&quot;nt&quot;&gt;--force&lt;/span&gt;标志跳过提示信息来强制执行该命令。默认情况会清除所有没有再被引用的networks，如果想要过滤一些特定的networks，可以使用--filter来实现。下面这个例子就是通过--filter来清理没有被引用的、创建超过24小时的networks：
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker network prune &lt;span class=&quot;nt&quot;&gt;--filter&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;until=24h&quot;&lt;/span&gt;
+更多关于docker network的--filter的筛选条件可参考示例：docker network prune reference 。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;5-prune-everything&quot;&gt;5. prune everything&lt;/h2&gt;
+&lt;blockquote&gt;
+  如题，这里要讲的就是清理everything：images ，containers，networks一次性清理操作可以通过docker system prune来搞定。在Docker 17.06.0 以及更早的版本中，这个docker system prune也会将volume一起清理掉；在Docker 17.06.1以及后期的版本中则必须要手动指定–volumes标志才能够清理掉volumes：
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker system prune
+ 
+WARNING! This will remove:
+        - all stopped containers
+        - all networks not used by at least one container
+        - all dangling images
+        - all build cache
+Are you sure you want to &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;? &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;y/N] y
+在Docker 17.06.1或更高版本中添加--volumes标志的情况：
+&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;docker system prune &lt;span class=&quot;nt&quot;&gt;--volumes&lt;/span&gt;
+ 
+WARNING! This will remove:
+        - all stopped containers
+        - all networks not used by at least one container
+        - all volumes not used by at least one container
+        - all dangling images
+        - all build cache
+Are you sure you want to &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;? &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;y/N] y
+貌似删除很有限，我的只删除了几百m
+docker system prune &lt;span class=&quot;nt&quot;&gt;-a&lt;/span&gt; 
+WARNING! This will remove:
+        - all stopped containers
+        - all networks not used by at least one container
+        - all volumes not used by at least one container
+        - all dangling images
+        - all build cache
+Are you sure you want to &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;? &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;y/N] y
+这样管用些删除了 12G空间
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/qustion/prune.png&quot; alt=&quot;prune.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/qustion/prune1.png&quot; alt=&quot;prune1.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/qustion/prune2.png&quot; alt=&quot;prune2.png&quot; /&gt;
+
+</description>
+        <pubDate>Mon, 25 Nov 2019 10:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/11/25/k8s-question2/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/11/25/k8s-question2/</guid>
+        
+        <category>question</category>
+        
+        <category>no</category>
+        
+        <category>space</category>
+        
+        <category>left</category>
+        
+        <category>on</category>
+        
+        <category>device</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
+    
+      <item>
+        <title>k8s-install-jenkins</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#描述背景&quot; id=&quot;markdown-toc-描述背景&quot;&gt;描述背景：&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#安装jenkins&quot; id=&quot;markdown-toc-安装jenkins&quot;&gt;安装jenkins&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#登陆jenkins初始化配置&quot; id=&quot;markdown-toc-登陆jenkins初始化配置&quot;&gt;登陆jenkins。初始化配置&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;描述背景&quot;&gt;描述背景：&lt;/h1&gt;
+注：kubernetes基本环境搭建完成，存储rook-ceph，rbd方式。代码仓库gitlab,容器仓库harbor,监控prometheus，负载方式都用了内部clusterip然后 traefik代理的方式。为了完善工具链，容器中搭建jenkins工具。
+
+集群配置：
+初始集群环境kubeadm 1.16.1
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;自定义域名&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.8&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.10&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.5&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.12&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&quot;安装jenkins&quot;&gt;安装jenkins&lt;/h1&gt;
+&lt;blockquote&gt;
+  &lt;ol&gt;
+    &lt;li&gt;建立命名空间
+      &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create namespace kube-ops
+注：后续所有工具类应用程序都创建在此命名空间内。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;      &lt;/div&gt;
+      &lt;hr /&gt;
+    &lt;/li&gt;
+    &lt;li&gt;创建ServiceAccount &amp;amp; ClusterRoleBinding&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;注：都是用的默认的，权限的管理还没有深入进行学习下。
+
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; rabc.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: jenkins2
+rules:
+  - apiGroups: [&quot;extensions&quot;, &quot;apps&quot;]
+    resources: [&quot;deployments&quot;]
+    verbs: [&quot;create&quot;, &quot;delete&quot;, &quot;get&quot;, &quot;list&quot;, &quot;watch&quot;, &quot;patch&quot;, &quot;update&quot;]
+  - apiGroups: [&quot;&quot;]
+    resources: [&quot;services&quot;]
+    verbs: [&quot;create&quot;, &quot;delete&quot;, &quot;get&quot;, &quot;list&quot;, &quot;watch&quot;, &quot;patch&quot;, &quot;update&quot;]
+  - apiGroups: [&quot;&quot;]
+    resources: [&quot;pods&quot;]
+    verbs: [&quot;create&quot;,&quot;delete&quot;,&quot;get&quot;,&quot;list&quot;,&quot;patch&quot;,&quot;update&quot;,&quot;watch&quot;]
+  - apiGroups: [&quot;&quot;]
+    resources: [&quot;pods/exec&quot;]
+    verbs: [&quot;create&quot;,&quot;delete&quot;,&quot;get&quot;,&quot;list&quot;,&quot;patch&quot;,&quot;update&quot;,&quot;watch&quot;]
+  - apiGroups: [&quot;&quot;]
+    resources: [&quot;pods/log&quot;]
+    verbs: [&quot;get&quot;,&quot;list&quot;,&quot;watch&quot;]
+  - apiGroups: [&quot;&quot;]
+    resources: [&quot;secrets&quot;]
+    verbs: [&quot;get&quot;]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: jenkins2
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jenkins2
+subjects:
+  - kind: ServiceAccount
+    name: jenkins2
+    namespace: kube-ops
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; rabc.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  3.deployment jenkins
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; jenkins.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: opspvc
+  labels:
+    app: jenkins2
+  namespace: kube-ops
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+spec:
+  selector:
+    matchLabels:
+      app: jenkins2
+  template:
+    metadata:
+      labels:
+        app: jenkins2
+    spec:
+      terminationGracePeriodSeconds: 10
+      serviceAccountName: jenkins2
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: web
+          protocol: TCP
+        - containerPort: 50000
+          name: agent
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /login
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        readinessProbe:
+          httpGet:
+            path: /login
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        volumeMounts:
+        - name: jenkinshome
+          subPath: jenkins2
+          mountPath: /var/jenkins_home
+        env:
+        - name: LIMITS_MEMORY
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+              divisor: 1Mi
+        - name: JAVA_OPTS
+          value: -Xmx&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;LIMITS_MEMORY&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;m -XshowSettings:vm -Dhudson.slaves.NodeProvisioner.initialDelay=0 -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85 -Duser.timezone=Asia/Shanghai
+      securityContext:
+        fsGroup: 1000
+      volumes:
+      - name: jenkinshome
+        persistentVolumeClaim:
+          claimName: opspvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+  labels:
+    app: jenkins2
+spec:
+  selector:
+    app: jenkins2
+  ports:
+  - name: web
+    port: 8080
+    targetPort: web
+  - name: agent
+    port: 50000
+    targetPort: agent
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; jenkins.yaml
+注： kubernetes 1.16 取消了extensions/v1beta1 api，使用apps/v1。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/jenkins/deployment.png&quot; alt=&quot;deployment.png&quot; /&gt;
+&lt;blockquote&gt;
+  4.traefik对外暴露服务
+  &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; ingress.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: jenkins2-https
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\`&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;jenkins.sainaihe.com&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\`&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;)
+      kind: Rule
+      services:
+        - name: jenkins2
+          port: 8080
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; ingress.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+  &lt;img src=&quot;/assets/images/jenkins/ingressroute.png&quot; alt=&quot;ingressroute.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/jenkins/traefik.png&quot; alt=&quot;traefik.png&quot; /&gt;
+  &lt;h2 id=&quot;登陆jenkins初始化配置&quot;&gt;登陆jenkins。初始化配置&lt;/h2&gt;
+  &lt;ol&gt;
+    &lt;li&gt;访问 https://jenkins.saynaihe.com,出现：
+&lt;img src=&quot;/assets/images/jenkins/jenkins1.png&quot; alt=&quot;jenkins1.png&quot; /&gt;
+获取初始密码
+      &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl &lt;span class=&quot;nb&quot;&gt;exec&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; jenkins2-9f55b98b6-xtffb &lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /var/jenkins_home/secrets/initialAdminPassword &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-ops
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;      &lt;/div&gt;
+      &lt;img src=&quot;/assets/images/jenkins/jenkins2.png&quot; alt=&quot;jenkins2.png&quot; /&gt;
+    &lt;/li&gt;
+    &lt;li&gt;设置管理员账号密码，进入登陆界面
+&lt;img src=&quot;/assets/images/jenkins/jenkins3.png&quot; alt=&quot;jenkins3.png&quot; /&gt;&lt;/li&gt;
+    &lt;li&gt;安装插件，安装了中文插件，pipeline，gitlab,git,github 参数化插件等，看个人需要安装吧。
+&lt;img src=&quot;/assets/images/jenkins/jenkins4.png&quot; alt=&quot;jenkins4.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/jenkins/jenkins5.png&quot; alt=&quot;jenkins5.png&quot; /&gt;
+注：因为国外源不稳定 国内有其他备用源可以切换比如清华的源。jenkins中文社区有篇文章：https://mp.weixin.qq.com/s/rqx93WI0UEvzqaFrt84i8A可以参考。&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Tue, 19 Nov 2019 14:00:33 +0800</pubDate>
+        <link>http://localhost:4000/2019/11/19/cncf-ali/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/11/19/cncf-ali/</guid>
+        
+        <category>kubernetes1.16</category>
+        
+        <category>jenkins</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
+    
+      <item>
+        <title>k8s-install-jenkins</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#描述背景&quot; id=&quot;markdown-toc-描述背景&quot;&gt;描述背景：&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#安装jenkins&quot; id=&quot;markdown-toc-安装jenkins&quot;&gt;安装jenkins&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#登陆jenkins初始化配置&quot; id=&quot;markdown-toc-登陆jenkins初始化配置&quot;&gt;登陆jenkins。初始化配置&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h1 id=&quot;描述背景&quot;&gt;描述背景：&lt;/h1&gt;
+注：kubernetes基本环境搭建完成，存储rook-ceph，rbd方式。代码仓库gitlab,容器仓库harbor,监控prometheus，负载方式都用了内部clusterip然后 traefik代理的方式。为了完善工具链，容器中搭建jenkins工具。
+
+集群配置：
+初始集群环境kubeadm 1.16.1
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;自定义域名&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.8&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.10&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.5&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.12&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;master03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node01.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node02.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;node03.k8s.io&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h1 id=&quot;安装jenkins&quot;&gt;安装jenkins&lt;/h1&gt;
+&lt;blockquote&gt;
+  &lt;ol&gt;
+    &lt;li&gt;建立命名空间
+      &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create namespace kube-ops
+注：后续所有工具类应用程序都创建在此命名空间内。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;      &lt;/div&gt;
+      &lt;hr /&gt;
+    &lt;/li&gt;
+    &lt;li&gt;创建ServiceAccount &amp;amp; ClusterRoleBinding&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;注：都是用的默认的，权限的管理还没有深入进行学习下。
+
+&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; rabc.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: jenkins2
+rules:
+  - apiGroups: [&quot;extensions&quot;, &quot;apps&quot;]
+    resources: [&quot;deployments&quot;]
+    verbs: [&quot;create&quot;, &quot;delete&quot;, &quot;get&quot;, &quot;list&quot;, &quot;watch&quot;, &quot;patch&quot;, &quot;update&quot;]
+  - apiGroups: [&quot;&quot;]
+    resources: [&quot;services&quot;]
+    verbs: [&quot;create&quot;, &quot;delete&quot;, &quot;get&quot;, &quot;list&quot;, &quot;watch&quot;, &quot;patch&quot;, &quot;update&quot;]
+  - apiGroups: [&quot;&quot;]
+    resources: [&quot;pods&quot;]
+    verbs: [&quot;create&quot;,&quot;delete&quot;,&quot;get&quot;,&quot;list&quot;,&quot;patch&quot;,&quot;update&quot;,&quot;watch&quot;]
+  - apiGroups: [&quot;&quot;]
+    resources: [&quot;pods/exec&quot;]
+    verbs: [&quot;create&quot;,&quot;delete&quot;,&quot;get&quot;,&quot;list&quot;,&quot;patch&quot;,&quot;update&quot;,&quot;watch&quot;]
+  - apiGroups: [&quot;&quot;]
+    resources: [&quot;pods/log&quot;]
+    verbs: [&quot;get&quot;,&quot;list&quot;,&quot;watch&quot;]
+  - apiGroups: [&quot;&quot;]
+    resources: [&quot;secrets&quot;]
+    verbs: [&quot;get&quot;]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: jenkins2
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jenkins2
+subjects:
+  - kind: ServiceAccount
+    name: jenkins2
+    namespace: kube-ops
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; rabc.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  3.deployment jenkins
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; jenkins.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: opspvc
+  labels:
+    app: jenkins2
+  namespace: kube-ops
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+spec:
+  selector:
+    matchLabels:
+      app: jenkins2
+  template:
+    metadata:
+      labels:
+        app: jenkins2
+    spec:
+      terminationGracePeriodSeconds: 10
+      serviceAccountName: jenkins2
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: web
+          protocol: TCP
+        - containerPort: 50000
+          name: agent
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /login
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        readinessProbe:
+          httpGet:
+            path: /login
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        volumeMounts:
+        - name: jenkinshome
+          subPath: jenkins2
+          mountPath: /var/jenkins_home
+        env:
+        - name: LIMITS_MEMORY
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+              divisor: 1Mi
+        - name: JAVA_OPTS
+          value: -Xmx&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;LIMITS_MEMORY&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;m -XshowSettings:vm -Dhudson.slaves.NodeProvisioner.initialDelay=0 -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85 -Duser.timezone=Asia/Shanghai
+      securityContext:
+        fsGroup: 1000
+      volumes:
+      - name: jenkinshome
+        persistentVolumeClaim:
+          claimName: opspvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+  labels:
+    app: jenkins2
+spec:
+  selector:
+    app: jenkins2
+  ports:
+  - name: web
+    port: 8080
+    targetPort: web
+  - name: agent
+    port: 50000
+    targetPort: agent
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; jenkins.yaml
+注： kubernetes 1.16 取消了extensions/v1beta1 api，使用apps/v1。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;img src=&quot;/assets/images/jenkins/deployment.png&quot; alt=&quot;deployment.png&quot; /&gt;
+&lt;blockquote&gt;
+  4.traefik对外暴露服务
+  &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; ingress.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: jenkins2-https
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\`&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;jenkins.sainaihe.com&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\`&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;)
+      kind: Rule
+      services:
+        - name: jenkins2
+          port: 8080
+&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
+&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; ingress.yaml
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
+  &lt;img src=&quot;/assets/images/jenkins/ingressroute.png&quot; alt=&quot;ingressroute.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/jenkins/traefik.png&quot; alt=&quot;traefik.png&quot; /&gt;
+  &lt;h2 id=&quot;登陆jenkins初始化配置&quot;&gt;登陆jenkins。初始化配置&lt;/h2&gt;
+  &lt;ol&gt;
+    &lt;li&gt;访问 https://jenkins.saynaihe.com,出现：
+&lt;img src=&quot;/assets/images/jenkins/jenkins1.png&quot; alt=&quot;jenkins1.png&quot; /&gt;
+获取初始密码
+      &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl &lt;span class=&quot;nb&quot;&gt;exec&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; jenkins2-9f55b98b6-xtffb &lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /var/jenkins_home/secrets/initialAdminPassword &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-ops
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;      &lt;/div&gt;
+      &lt;img src=&quot;/assets/images/jenkins/jenkins2.png&quot; alt=&quot;jenkins2.png&quot; /&gt;
+    &lt;/li&gt;
+    &lt;li&gt;设置管理员账号密码，进入登陆界面
+&lt;img src=&quot;/assets/images/jenkins/jenkins3.png&quot; alt=&quot;jenkins3.png&quot; /&gt;&lt;/li&gt;
+    &lt;li&gt;安装插件，安装了中文插件，pipeline，gitlab,git,github 参数化插件等，看个人需要安装吧。
+&lt;img src=&quot;/assets/images/jenkins/jenkins4.png&quot; alt=&quot;jenkins4.png&quot; /&gt;
+&lt;img src=&quot;/assets/images/jenkins/jenkins5.png&quot; alt=&quot;jenkins5.png&quot; /&gt;
+注：因为国外源不稳定 国内有其他备用源可以切换比如清华的源。jenkins中文社区有篇文章：https://mp.weixin.qq.com/s/rqx93WI0UEvzqaFrt84i8A可以参考。&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Tue, 19 Nov 2019 14:00:33 +0800</pubDate>
+        <link>http://localhost:4000/2019/11/19/k8s-install-jenkins/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/11/19/k8s-install-jenkins/</guid>
+        
+        <category>kubernetes1.16</category>
+        
+        <category>jenkins</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
+    
+  </channel>
+</rss>
