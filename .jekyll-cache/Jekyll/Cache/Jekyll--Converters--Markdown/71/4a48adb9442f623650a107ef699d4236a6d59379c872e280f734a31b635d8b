@@ -1,0 +1,71 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#1网桥配置问题sd_journal_get_cursor-failed-cannot-assign-requested-address--v8240-34el7" id="markdown-toc-1网桥配置问题sd_journal_get_cursor-failed-cannot-assign-requested-address--v8240-34el7">1.网桥配置问题：sd_journal_get_cursor() failed: ‘Cannot assign requested address’  [v8.24.0-34.el7]</a></li>
+</ul>
+
+<h1 id="描述背景">描述背景：</h1>
+<p>注：记录各种常见问题</p>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.1</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="1网桥配置问题sd_journal_get_cursor-failed-cannot-assign-requested-address--v8240-34el7">1.网桥配置问题：sd_journal_get_cursor() failed: ‘Cannot assign requested address’  [v8.24.0-34.el7]</h1>
+<p><img src="/assets/images/qustion/bridge.png" alt="bridge.png" /></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubernetes 集群中有内部同一namespace下通信用的直接连service的方式有一service下pod访问另外一service无法访问。但是访问其他同一命名空间下都是没有问题的，kubectl get pod <span class="nt">-o</span> wide  看到此pod位于node-07.node-07节点执行journalctl  看日志中有sd_journal_get_cursor<span class="o">()</span> failed: <span class="s1">'Cannot assign requested address'</span>  <span class="o">[</span>v8.24.0-34.el7]，百度了下https://blog.csdn.net/wkb342814892/article/details/79543984应该是没有开启网桥转发：
+modprobe br_netfilter
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+</span><span class="no">EOF
+</span>sysctl <span class="nt">-p</span> /etc/sysctl.d/k8s.conf
+<span class="nb">ls</span> /proc/sys/net/bridge
+</code></pre></div></div>
+<p>OK问题解决</p>
+:ET

@@ -1,0 +1,433 @@
+I"k<ul id="markdown-toc">
+  <li><a href="#背景" id="markdown-toc-背景">背景</a></li>
+  <li><a href="#开始" id="markdown-toc-开始">开始</a>    <ul>
+      <li><a href="#首先的还是环境初始化master-work节点全部执行" id="markdown-toc-首先的还是环境初始化master-work节点全部执行">首先的还是环境初始化，master work节点全部执行</a>        <ul>
+          <li><a href="#1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip" id="markdown-toc-1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip">1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名（10.0.4.20为slb负载均衡ip）</a></li>
+          <li><a href="#2-升级linux内核" id="markdown-toc-2-升级linux内核">2. 升级linux内核</a></li>
+          <li><a href="#2-关闭swap交换分区" id="markdown-toc-2-关闭swap交换分区">2. 关闭swap交换分区</a></li>
+          <li><a href="#3-关闭selinux" id="markdown-toc-3-关闭selinux">3. 关闭selinux</a></li>
+          <li><a href="#4-开启ip转发优化-网桥等配置" id="markdown-toc-4-开启ip转发优化-网桥等配置">4. 开启ip转发优化 网桥等配置</a></li>
+          <li><a href="#5-加载ipvs" id="markdown-toc-5-加载ipvs">5. 加载ipvs</a></li>
+          <li><a href="#6-journal-日志相关这里因为后面吃亏了-日志没有做切割保存查看问题太麻烦了" id="markdown-toc-6-journal-日志相关这里因为后面吃亏了-日志没有做切割保存查看问题太麻烦了">6. journal 日志相关这里因为后面吃亏了 日志没有做切割保存，查看问题太麻烦了</a></li>
+          <li><a href="#7-配置yum源" id="markdown-toc-7-配置yum源">7. 配置yum源</a></li>
+          <li><a href="#8-安装基本服务" id="markdown-toc-8-安装基本服务">8. 安装基本服务</a></li>
+          <li><a href="#9-安装kubernetes" id="markdown-toc-9-安装kubernetes">9. 安装kubernetes</a></li>
+        </ul>
+      </li>
+      <li><a href="#master节点操作" id="markdown-toc-master节点操作">master节点操作</a>        <ul>
+          <li><a href="#1-master节点安装haproxy" id="markdown-toc-1-master节点安装haproxy">1. master节点安装haproxy</a></li>
+          <li><a href="#2-kuberadm-master安装" id="markdown-toc-2-kuberadm-master安装">2. kuberadm master安装</a></li>
+          <li><a href="#3-配置flannel插件" id="markdown-toc-3-配置flannel插件">3. 配置flannel插件</a></li>
+          <li><a href="#4-work节点加入master" id="markdown-toc-4-work节点加入master">4. work节点加入master</a></li>
+          <li><a href="#5-配置文件忘了设置ipvs了开启下ipvs这里记得在" id="markdown-toc-5-配置文件忘了设置ipvs了开启下ipvs这里记得在">5. 配置文件忘了设置ipvs了开启下ipvs.这里记得在</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<p>集群配置：
+centos7.7 64位</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">10.0.4.20</td>
+      <td style="text-align: center">vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">10.0.4.27</td>
+      <td style="text-align: center">sh-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">10.0.4.46</td>
+      <td style="text-align: center">sh-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">10.0.4.47</td>
+      <td style="text-align: center">sh-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">10.0.4.14</td>
+      <td style="text-align: center">sh-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">10.0.4.2</td>
+      <td style="text-align: center">sh-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">10.0.4.6</td>
+      <td style="text-align: center">sh-node-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">10.0.4.4</td>
+      <td style="text-align: center">sh-node-04</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">10.0.4.13</td>
+      <td style="text-align: center">sh-node-05</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="背景">背景</h2>
+
+<ol>
+  <li>线上稳定跑着1.16.8版本kubeadm高可用ha kubernets集群。三台master节点，配置为4核心8G，slb+haproxy 代理6443实现高可用。work节点为5台8核心16g,主要跑了60多个应用300个左右容器。</li>
+  <li>集群采用了slb代理work节点80 443等端口然后用traefik对外暴露应用。日志采集使用了elastic on kubernetes（eck）收集集群日志保留7天内应用日志。另外还搭建了springboot对外收集前端post埋点日志，入kafka。logstash消费入elasticsearch。kibana展示数据。报警监控系统使用了promethus-oprator，报警alartmanager,企业微信报警。granfna展示。持久化存储开始搭建了rook-ceph1.1集群， 但是在版本升级还有节点异常时出现了各种问题，最终放弃。包括eck等应用都使用了local-storage方式存储，elasticsearch的备份使用了腾讯云对象存储服务cos，定制了elasticsearch镜像添加了相关组件。</li>
+  <li>项目的更新发布使用了jenkins，集成kubernets。线上环境已经正常运行近一年时间。</li>
+  <li>想体验下新版本，然后又动手搭建了一套1.18.6测试环境。中间犯了好多错误，比如iptables没有关闭，也更加深入了解了下负载均衡slb代理本地端口的过程。</li>
+  <li>大致过程与1.16差不多，自己写下日志记录一遍。然后今年想深入集成一下腾讯云的cbs.不要问我为什么不用腾讯云的tke.首先每个slb到现在应该还是只可以挂载一个ssl证书的，业务比较少，我不想管理多个负载均衡，然后负载均衡的策略也比较坑，偶尔tke集群slb测还经常更新。还有上传文件大小限制这样的策略。使用traefik的tcp代理很方便解决这些问题。而且我还是比较喜欢原生不喜欢定制。</li>
+</ol>
+
+<blockquote>
+  <p>注：关于环境的初始化和安装可以看下张馆长的文档，真心不错：https://zhangguanzhang.github.io/2019/11/24/kubeadm-base-use/</p>
+</blockquote>
+
+<h2 id="开始">开始</h2>
+
+<h3 id="首先的还是环境初始化master-work节点全部执行">首先的还是环境初始化，master work节点全部执行</h3>
+<h4 id="1-默认主机名已经与集群配置中对应hostnamectl--set-hostname设置过主机名100420为slb负载均衡ip">1. 默认主机名已经与集群配置中对应，hostnamectl  set-hostname设置过主机名（10.0.4.20为slb负载均衡ip）</h4>
+<h4 id="2-升级linux内核">2. 升级linux内核</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>centos7默认内核为3.10版本，一般是建议把内核更新一下。
+<span class="c">##导入key</span>
+rpm <span class="nt">--import</span> https://www.elrepo.org/RPM-GPG-KEY-elrepo.org
+<span class="c">##添加elrepo源</span>
+rpm <span class="nt">-ivh</span> https://www.elrepo.org/elrepo-release-7.el7.elrepo.noarch.rpm
+<span class="c">##查看可更新kernel版本</span>
+yum <span class="nt">--disablerepo</span><span class="o">=</span><span class="s2">"*"</span> <span class="nt">--enablerepo</span><span class="o">=</span><span class="s2">"elrepo-kernel"</span> list available
+<span class="c">##关于kernel的版本 ml（mainline，主线最新版）  lt（长期支持版本）可参照https://www.cnblogs.com/clsn/p/10925653.html。</span>
+<span class="c">## 安装长期支持版本</span>
+yum <span class="nt">--enablerepo</span><span class="o">=</span>elrepo-kernel <span class="nt">-y</span> <span class="nb">install </span>kernel-lt
+<span class="c">## 查看grub2启动选择项</span>
+<span class="nb">sudo awk</span> <span class="nt">-F</span><span class="se">\'</span> <span class="s1">'$1=="menuentry " {print i++ " : " $2}'</span> /etc/grub2.cfg
+<span class="c">##修改grub2.conf使内核生效</span>
+grub2-set-default 0
+grub2-mkconfig <span class="nt">-o</span> /boot/grub2/grub.cfg
+reboot
+<span class="c">##验证内核</span>
+<span class="nb">uname</span> <span class="nt">-a</span> 
+<span class="c">##删除旧内核</span>
+package-cleanup <span class="nt">--oldkernels</span>
+</code></pre></div></div>
+<p><img src="/assets/images/2020/07/kubernetes1.18.6/kernel1.png" alt="kernel1" />
+ <img src="/assets/images/2020/07/kubernetes1.18.6/kernel2.png" alt="kernel2" />
+ <img src="/assets/images/2020/07/kubernetes1.18.6/kernel3.png" alt="kernel3" />
+ <img src="/assets/images/2020/07/kubernetes1.18.6/kernel4.png" alt="kerne41" /></p>
+<h4 id="2-关闭swap交换分区">2. 关闭swap交换分区</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swapoff <span class="nt">-a</span>
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s1">'s/.*swap.*/#&amp;/'</span> /etc/fstab
+</code></pre></div></div>
+<h4 id="3-关闭selinux">3. 关闭selinux</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>setenforce  0 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/sysconfig/selinux 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/selinux/config 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=permissive/SELINUX=disabled/g"</span> /etc/sysconfig/selinux 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=permissive/SELINUX=disabled/g"</span> /etc/selinux/config 
+ <span class="sb">```</span>bash
+<span class="c">#### 3. 调整文件打开数等配置</span>
+ <span class="sb">```</span>bash
+<span class="nb">echo</span> <span class="s2">"* soft nofile 65536"</span> <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard nofile 65536"</span> <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* soft nproc 65536"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard nproc 65536"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* soft  memlock  unlimited"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard memlock  unlimited"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+</code></pre></div></div>
+<h4 id="4-开启ip转发优化-网桥等配置">4. 开启ip转发优化 网桥等配置</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; /etc/sysctl.d/k8s.conf
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+net.ipv4.neigh.default.gc_stale_time = 120
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 0
+net.ipv4.conf.default.arp_announce = 2
+net.ipv4.conf.lo.arp_announce = 2
+net.ipv4.conf.all.arp_announce = 2
+net.ipv4.ip_forward = 1
+net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 1024
+net.ipv4.tcp_synack_retries = 2
+# 要求iptables不对bridge的数据进行处理
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-arptables = 1
+net.netfilter.nf_conntrack_max = 2310720
+fs.inotify.max_user_watches=89100
+fs.may_detach_mounts = 1
+fs.file-max = 52706963
+fs.nr_open = 52706963
+vm.overcommit_memory=1
+vm.panic_on_oom=0
+vm.swappiness = 0
+</span><span class="no">EOF
+</span>modprobe br_netfilter
+sysctl <span class="nt">-p</span> /etc/sysctl.d/k8s.conf
+sysctl <span class="nt">-p</span> /etc/sysctl.d/k8s.conf
+</code></pre></div></div>
+<p>注意：由于kube-proxy使用ipvs的话为了防止timeout需要设置下tcp参数</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;&gt; /etc/sysctl.d/k8s.conf
+# https://github.com/moby/moby/issues/31208 
+# ipvsadm -l --timout
+# 修复ipvs模式下长连接timeout问题 小于900即可
+net.ipv4.tcp_keepalive_time = 600
+net.ipv4.tcp_keepalive_intvl = 30
+net.ipv4.tcp_keepalive_probes = 10
+</span><span class="no">EOF
+</span>sysctl <span class="nt">--system</span>
+</code></pre></div></div>
+<h4 id="5-加载ipvs">5. 加载ipvs</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+:&gt; /etc/modules-load.d/ipvs.conf
+<span class="nv">module</span><span class="o">=(</span>
+ip_vs
+ip_vs_rr
+ip_vs_wrr
+ip_vs_sh
+nf_conntrack
+br_netfilter
+  <span class="o">)</span>
+<span class="k">for </span>kernel_module <span class="k">in</span> <span class="k">${</span><span class="nv">module</span><span class="p">[@]</span><span class="k">}</span><span class="p">;</span><span class="k">do</span>
+    /sbin/modinfo <span class="nt">-F</span> filename <span class="nv">$kernel_module</span> |&amp; <span class="nb">grep</span> <span class="nt">-qv</span> ERROR <span class="o">&amp;&amp;</span> <span class="nb">echo</span> <span class="nv">$kernel_module</span> <span class="o">&gt;&gt;</span> /etc/modules-load.d/ipvs.conf <span class="o">||</span> :
+<span class="k">done
+</span>启动该模块管理服务
+systemctl daemon-reload
+systemctl <span class="nb">enable</span> <span class="nt">--now</span> systemd-modules-load.service
+
+ lsmod | <span class="nb">grep </span>ip_v
+ ip_vs_sh               16384  0 
+ip_vs_wrr              16384  0 
+ip_vs_rr               16384  4 
+ip_vs                 147456  10 ip_vs_rr,ip_vs_sh,ip_vs_wrr
+nf_conntrack          114688  9 ip_vs,nf_nat,nf_nat_ipv4,nf_nat_ipv6,xt_conntrack,nf_nat_masquerade_ipv4,nf_conntrack_netlink,nf_conntrack_ipv4,nf_conntrack_ipv6
+libcrc32c              16384  1 ip_vs
+</code></pre></div></div>
+
+<h4 id="6-journal-日志相关这里因为后面吃亏了-日志没有做切割保存查看问题太麻烦了">6. journal 日志相关这里因为后面吃亏了 日志没有做切割保存，查看问题太麻烦了</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">sed</span> <span class="nt">-ri</span> <span class="s1">'s/^\$ModLoad imjournal/#&amp;/'</span> /etc/rsyslog.conf
+<span class="nb">sed</span> <span class="nt">-ri</span> <span class="s1">'s/^\$IMJournalStateFile/#&amp;/'</span> /etc/rsyslog.conf
+
+<span class="nb">sed</span> <span class="nt">-ri</span> <span class="s1">'s/^#(DefaultLimitCORE)=/\1=100000/'</span> /etc/systemd/system.conf
+<span class="nb">sed</span> <span class="nt">-ri</span> <span class="s1">'s/^#(DefaultLimitNOFILE)=/\1=100000/'</span> /etc/systemd/system.conf
+
+<span class="nb">sed</span> <span class="nt">-ri</span> <span class="s1">'s/^#(UseDNS )yes/\1no/'</span> /etc/ssh/sshd_config
+journalctl <span class="nt">--vacuum-size</span><span class="o">=</span>20M
+</code></pre></div></div>
+<h4 id="7-配置yum源">7. 配置yum源</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum-config-manager <span class="nt">--add-repo</span> http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
+enabled=1
+gpgcheck=1
+repo_gpgcheck=1
+gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg 
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<h4 id="8-安装基本服务">8. 安装基本服务</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>安装依赖包
+yum <span class="nb">install</span> <span class="nt">-y</span> epel-release
+yum <span class="nb">install</span> <span class="nt">-y</span> yum-utils device-mapper-persistent-data lvm2 net-tools conntrack-tools wget vim  ntpdate libseccomp libtool-ltdl
+安装bash命令提示
+yum <span class="nb">install</span> <span class="nt">-y</span> bash-argsparse bash-completion bash-#completion-extras
+安装docker kubeadm:
+yum <span class="nb">install </span>docker-ce <span class="nt">-y</span>
+<span class="c">#配置镜像加速器 </span>
+<span class="nb">sudo mkdir</span> <span class="nt">-p</span> /etc/docker
+<span class="nb">sudo tee</span> /etc/docker/daemon.json <span class="o">&lt;&lt;-</span><span class="sh">'</span><span class="no">EOF</span><span class="sh">'
+{
+  "registry-mirrors": ["https://lrpol8ec.mirror.aliyuncs.com"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "3"
+},
+  "storage-driver": "overlay2",
+  "storage-opts": [
+    "overlay2.override_kernel_check=true"
+  ]
+}
+</span><span class="no">EOF
+</span><span class="nb">sudo </span>systemctl daemon-reload
+<span class="nb">sudo </span>systemctl restart docker
+添加个日志最多值，否则有的苦了，入坑体验过了。docker要不要开机启动呢？我后面安装rook ceph 开机重新启动了老有错误，因为没有将节点设置为cordon，但是也懒了， 我就没有设置为开机启动。故开机启动后在启动docker了
+</code></pre></div></div>
+<h4 id="9-安装kubernetes">9. 安装kubernetes</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum <span class="nb">install</span> <span class="nt">-y</span> kubelet kubeadm kubectl <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes
+systemctl <span class="nb">enable </span>kubelet
+</code></pre></div></div>
+
+<h3 id="master节点操作">master节点操作</h3>
+<h4 id="1-master节点安装haproxy">1. master节点安装haproxy</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum <span class="nb">install</span> <span class="nt">-y</span> haproxy
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; /etc/haproxy/haproxy.cfg
+
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   http://haproxy.1wt.eu/download/1.4/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    tcp
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend kubernetes
+    bind *:8443              #配置端口为8443
+    mode tcp
+    default_backend kubernetes-master
+#---------------------------------------------------------------------
+# static backend for serving up images, stylesheets and such
+#---------------------------------------------------------------------
+backend kubernetes-master           #后端服务器，也就是说访问192.168.255.140:8443会将请求转发到后端的三台，这样就实现了负载均衡
+    balance roundrobin               
+    server master1  10.0.4.27:6443 check maxconn 2000
+    server master2  10.0.4.46:6443 check maxconn 2000
+    server master3  10.0.4.47:6443 check maxconn 2000
+</span><span class="no">EOF
+</span> systemctl <span class="nb">enable </span>haproxy <span class="o">&amp;&amp;</span> systemctl start haproxy <span class="o">&amp;&amp;</span> systemctl status haproxy
+
+腾讯云slb负载均衡最终还是用了传统型，监听器tcp 6443代理后端三台haproxy 8443端口
+</code></pre></div></div>
+<h4 id="2-kuberadm-master安装">2. kuberadm master安装</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>master1节点
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; kubeadm-config.yaml
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: ClusterConfiguration
+kubernetesVersion: v1.16.2
+apiServer:
+  certSANs:
+    - k8s-master-01
+    - k8s-master-02
+    - k8s-master-03
+    - k8s-master-04
+    - master.k8s.io
+    - 192.168.3.10
+    - 192.168.3.5
+    - 192.168.3.12
+    - 192.168.3.9
+    - 192.168.3.3
+    - 127.0.0.1
+controlPlaneEndpoint: "192.168.3.9:6443"
+controllerManager: {}
+dns: 
+  type: CoreDNS
+etcd:
+    local:
+      dataDir: /var/lib/etcd
+imageRepository: registry.aliyuncs.com/google_containers
+networking:
+  podSubnet: 10.30.0.0/16
+  serviceSubnet: 10.31.0.0/16
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> kubeadm-config.yaml
+现在最新的是1.16.3，安装的时候是1.16.2就用了默认配置文件了。网络规划不会弄，这样貌似有点很差劲，因为以后想弄联邦集群，后面再想解决方法吧。另外腾讯云曾经开源过一个tencentcloud-cloud-controller-manager，其实很多可以打通的，但是试用了下 坑多的样子没有跑通，放弃了
+kubeadm init <span class="nt">--config</span> initconfig.yaml
+<span class="nb">mkdir</span> <span class="nt">-p</span> <span class="nv">$HOME</span>/.kube
+<span class="nb">sudo</span> <span class="se">\c</span>p /etc/kubernetes/admin.conf <span class="nv">$HOME</span>/.kube/config
+<span class="nb">sudo chown</span> <span class="si">$(</span><span class="nb">id</span> <span class="nt">-u</span><span class="si">)</span>:<span class="si">$(</span><span class="nb">id</span> <span class="nt">-g</span><span class="si">)</span> <span class="nv">$HOME</span>/.kube/config
+
+按照输出master02 ，master03节点加入集群
+ kubeadm <span class="nb">join </span>192.168.3.9:6443 <span class="nt">--token</span> jiprvz.0rkovt1gx3d658j     <span class="nt">--discovery-token-ca-cert-hash</span> sha256:5d631bb4bdce033163037ef21f663c88e058e70c6c362c9c5ccb1a92095     <span class="nt">--control-plane</span> <span class="nt">--certificate-key</span> 0eaa7e5f8efbdc8d381fb329c28c49f87af284fecc0c9443501e81f3cdc4
+将master01 /etc/kubernetes/pki目录下ca<span class="k">*</span> sa<span class="k">*</span> fr<span class="k">*</span> etcd 打包分发到master02,master03 /etc/kubernetes/pki目录下 
+注： key都胡乱输入的这里没有用自己的，复制pki这部忘了 老的版本都复制来，记得这个版本我没有复制key的？可以安装流程自己看看
+</code></pre></div></div>
+<h4 id="3-配置flannel插件">3. 配置flannel插件</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+修改配置文件中Network 为自己设置的子网，我这里是10.30.0.0/16
+kubectl apply <span class="nt">-f</span> kube-flannel.yml
+然后基本发现 master节点都已经redeay
+</code></pre></div></div>
+<h4 id="4-work节点加入master">4. work节点加入master</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm <span class="nb">join </span>192.168.3.9:6443 <span class="nt">--token</span> 3o6dy0.9gbbfuf55xiloe9d <span class="nt">--discovery-token-ca-cert-hash</span> sha256:5d631bb4bdce01dcad51163037ef21f663c88e058e70c6c362c9c5ccb1a92095
+OK集群算是初始搭建完了，不知道跑一遍咋样，我的是正常跑起来了。
+</code></pre></div></div>
+<h4 id="5-配置文件忘了设置ipvs了开启下ipvs这里记得在">5. 配置文件忘了设置ipvs了开启下ipvs.这里记得在</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl edit cm kube-proxy <span class="nt">-n</span> kube-system
+configmap/kube-proxy edited
+
+<span class="c">#修改如下</span>
+kind: MasterConfiguration
+apiVersion: kubeadm.k8s.io/v1alpha1
+...
+ipvs:
+      excludeCIDRs: null
+      minSyncPeriod: 0s
+      scheduler: <span class="s2">""</span>
+      syncPeriod: 30s
+    kind: KubeProxyConfiguration
+    metricsBindAddress: 127.0.0.1:10249
+    mode: <span class="s2">"ipvs"</span>                  <span class="c">#修改</span>
+
+kubectl get pod <span class="nt">-n</span> kube-system | <span class="nb">grep </span>kube-proxy |awk <span class="s1">'{system("kubectl delete pod "$1" -n kube-system")}'</span>
+</code></pre></div></div>
+<blockquote>
+  <p>貌似应该就跑起来了，然后后面应该还要做的：</p>
+  <ol>
+    <li>etcd的备份，虽然有三个master节点 数据无价，还是做下etcd的备份要好。</li>
+    <li>pods 可能都running了 但是最后还是看下日志，肯能有些小的失误，看日志是个好习惯的，老版本糊里糊涂搭建的时候kubernetes插件pod打了一大堆日志 虽然可以使用，但是还是要追求下完美的。由此可见搭建日志采集系统还是很有必要的。</li>
+    <li>work节点最好打上标签，不是服务设置亲和性和反亲和性。资源的调度使用值貌似可以设置的？否则后面有的work会出现pods一直创建中，打标签合理规划资源还是很有必要的。</li>
+  </ol>
+</blockquote>
+:ET

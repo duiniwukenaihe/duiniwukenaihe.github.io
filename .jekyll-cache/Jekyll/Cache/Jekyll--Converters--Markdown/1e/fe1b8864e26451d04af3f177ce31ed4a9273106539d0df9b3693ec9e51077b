@@ -1,0 +1,196 @@
+I"$<ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#节点打标签" id="markdown-toc-节点打标签">节点打标签</a></li>
+  <li><a href="#开始部署rook-operator" id="markdown-toc-开始部署rook-operator">开始部署rook Operator</a></li>
+  <li><a href="#将节点数据盘加入rook集群" id="markdown-toc-将节点数据盘加入rook集群">将节点数据盘加入rook集群</a></li>
+  <li><a href="#安装存储类支持" id="markdown-toc-安装存储类支持">安装存储类支持</a></li>
+  <li><a href="#开启dashboard-外部访问" id="markdown-toc-开启dashboard-外部访问">开启dashboard 外部访问：</a></li>
+  <li><a href="#获取rook-dashboard-密码" id="markdown-toc-获取rook-dashboard-密码">获取rook dashboard 密码</a></li>
+  <li><a href="#登录外部web管理dashboard-https方式nodeport-端口" id="markdown-toc-登录外部web管理dashboard-https方式nodeport-端口">登录外部web管理dashboard https方式+nodeport 端口</a></li>
+</ul>
+
+<p>注： 初始环境为  https://duiniwukenaihe.github.io/2019/09/02/k8s-install/</p>
+
+<p><strong>集群环境：</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.20.13</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.8</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.12</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.6</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.3</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.9</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>注： 操作都在master01操作默认，master03  node01 node02 各除系统盘外挂载一未格式化数据盘 vdb</p>
+
+<p><img src="/assets/images/k8s/vdb1.png" alt="vdb1.png" /></p>
+
+<h2 id="描述背景">描述背景：</h2>
+
+<p>上篇腾讯云高可用k8s环境安装完成后准备入手迁移服务，然后就需要一个StorageClass。常用的一般nfs较多，看网上有rook的ceph方案。然后就常识使用了下。</p>
+
+<p>由于rook选择搭三节点的架构，故将master03去掉标签加入调度：</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl taint nodes k8s-master-03 node-role.kubernetes.io/master-
+
+</code></pre></div></div>
+
+<h2 id="节点打标签">节点打标签</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label nodes <span class="o">{</span>k8s-master-03,k8s-node-01,k8s-node-02<span class="o">}</span> ceph-osd<span class="o">=</span>enabled
+
+kubectl label nodes <span class="o">{</span>k8s-master-03,k8s-node-01,k8s-node-02<span class="o">}</span> ceph-mon<span class="o">=</span>enabled
+
+kubectl label nodes k8s-master-03 ceph-mgr<span class="o">=</span>enabled
+
+</code></pre></div></div>
+
+<h2 id="开始部署rook-operator">开始部署rook Operator</h2>
+
+<p><strong>克隆rook github仓库到本地</strong></p>
+
+<p>git clone https://github.com/rook/rook.git</p>
+
+<p>cd rook/cluster/examples/kubernetes/ceph/</p>
+
+<p>kubectl apply  -f common.yaml</p>
+
+<p>创建operator 和agent容器</p>
+
+<p>kubectl apply  -f operator.yaml</p>
+
+<p><strong>cluster.yaml修改</strong></p>
+
+<p>##绑定mon  osd  mgr运行节点</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    mon:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: ceph-mon
+              operator: In
+              values:
+              - enabled
+    osd:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: ceph-osd
+              operator: In
+              values:
+              - enabled
+    mgr:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: ceph-mgr
+              operator: In
+              values:
+              - enabled
+</code></pre></div></div>
+<h2 id="将节点数据盘加入rook集群">将节点数据盘加入rook集群</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  storage: <span class="c"># cluster level storage configuration and selection</span>
+    useAllNodes: <span class="nb">false
+    </span>useAllDevices: <span class="nb">false
+    </span>deviceFilter:
+    location:
+    config:
+      <span class="c"># The default and recommended storeType is dynamically set to bluestore for devices and filestore for directories.</span>
+      <span class="c"># Set the storeType explicitly only if it is required not to use the default.</span>
+      <span class="c"># storeType: bluestore</span>
+      <span class="c"># metadataDevice: "md0" # specify a non-rotational storage so ceph-volume will use it as block db device of bluestore.</span>
+      databaseSizeMB: <span class="s2">"1024"</span> <span class="c"># uncomment if the disks are smaller than 100 GB</span>
+      journalSizeMB: <span class="s2">"1024"</span>  <span class="c"># uncomment if the disks are 20 GB or smaller</span>
+      osdsPerDevice: <span class="s2">"1"</span> <span class="c"># this value can be overridden at the node or device level</span>
+      <span class="c"># encryptedDevice: "true" # the default value for this option is "false"</span>
+<span class="c"># Cluster level list of directories to use for filestore-based OSD storage. If uncommented, this example would create an OSD under the dataDirHostPath.</span>
+    <span class="c">#directories:</span>
+    <span class="c">#- path: /var/lib/rook</span>
+<span class="c"># Individual nodes and their config can be specified as well, but 'useAllNodes' above must be set to false. Then, only the named</span>
+<span class="c"># nodes below will be used as storage resources.  Each node's 'name' field should match their 'kubernetes.io/hostname' label.</span>
+    nodes:
+    - name: <span class="s2">"k8s-master-03"</span>
+      devices:
+      - name: <span class="s2">"vdb"</span>
+    - name: <span class="s2">"k8s-node-01"</span>
+      devices:
+      - name: <span class="s2">"vdb"</span>
+    - name: <span class="s2">"k8s-node-02"</span>
+      devices:
+      - name: <span class="s2">"vdb"</span>
+
+</code></pre></div></div>
+
+<p>kuberctl apply  -f cluster.yaml</p>
+
+<p>kubectl get pods -n rook-ceph -o wide</p>
+
+<p><img src="/assets/images/k8s/rook1.png" alt="rook1.png" /></p>
+
+<p>数据节点  conpleted 完成 在master03  node01 node02 执行lsblk 看到vdb数据盘已经被rook格式化识别。</p>
+
+<p><img src="/assets/images/k8s/rook-lsblk.png" alt="rook1.png" /></p>
+
+<h2 id="安装存储类支持">安装存储类支持</h2>
+
+<p>kubectl apply -f storageclass.yaml</p>
+
+<p><img src="/assets/images/k8s/rook-storageclass.png" alt="rook1.png" /></p>
+
+<h2 id="开启dashboard-外部访问">开启dashboard 外部访问：</h2>
+
+<p>kubectl apply -f dashboard-external-https.yaml</p>
+
+<p>kubectl get svc -n rook-ceph</p>
+
+<p><img src="/assets/images/k8s/rook2.png" alt="rook2.png" /></p>
+
+<h2 id="获取rook-dashboard-密码">获取rook dashboard 密码</h2>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> kubectl <span class="nt">-n</span> rook-ceph get secret rook-ceph-dashboard-password <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">"{['data']['password']}"</span> | <span class="nb">base64</span> <span class="nt">--decode</span> <span class="o">&amp;&amp;</span> <span class="nb">echo</span> 
+</code></pre></div></div>
+
+<p><img src="/assets/images/k8s/rook-password.png" alt="rook-password.png" /></p>
+
+<h2 id="登录外部web管理dashboard-https方式nodeport-端口">登录外部web管理dashboard https方式+nodeport 端口</h2>
+
+<p><img src="/assets/images/k8s/rook3.png" alt="rook3.png" /></p>
+
+<p>注： rook1.0早先版本体验时候  dashboard 安装完成后会有500报错，后面没有了就没有写，具体解决方法可参考https://blog.csdn.net/dazuiba008/article/details/90205319。如需要tools 客户端 kubectl apply -f toolbox.yaml.</p>
+:ET

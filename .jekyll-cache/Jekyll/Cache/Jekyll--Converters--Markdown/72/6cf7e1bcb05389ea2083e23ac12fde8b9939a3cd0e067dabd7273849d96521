@@ -1,0 +1,425 @@
+I"�0<ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#环境搭建" id="markdown-toc-环境搭建">环境搭建：</a></li>
+  <li><a href="#备份原有docker-gitlab环境项目备份" id="markdown-toc-备份原有docker-gitlab环境项目备份">备份原有docker gitlab环境项目备份:</a></li>
+</ul>
+
+<h1 id="描述背景">描述背景：</h1>
+<blockquote>
+  <p>早前公司代码管理采用的docker compose搭建的gitlab管理。为完成资源优化，高可用。现在将环境迁移到kubernetes集群环境中。compose 文件基本是基于https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml进行修改的，修改了gitlab images twang2218/gitlab-ce-zh:latest 中文版镜像.gitlab  postgresql  redis都挂载本地目录为/data/docker/相对应目录下 端口映射80映射到主机10080  22 映射到10022主机端口。</p>
+</blockquote>
+
+<p>如下图：</p>
+
+<p><img src="/assets/images/gitlab/gitlab1.png" alt="gitlab1.png" /></p>
+
+<blockquote>
+  <p>gitlab 主要涉及Redis、Postgresql、Gitlab三个应用，现在基于kubernetes 先搭建gitlab初始化环境：</p>
+
+  <p>注： 个人存储使用了rook的ceph，所以持久化存储都采用了rook ceph.</p>
+</blockquote>
+
+<h1 id="环境搭建">环境搭建：</h1>
+
+<blockquote>
+  <p>1 . gitlab redis 应用搭建</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  gitlab-redis.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitlab-redis
+  namespace: kube-ops
+  labels:
+    name: redis
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: kube-ops
+  labels:
+    name: redis
+spec:
+  selector:
+    matchLabels:
+      name: redis
+  template:
+    metadata:
+      name: redis
+      labels:
+        name: redis
+    spec:
+      containers:
+      - name: redis
+        image: sameersbn/redis
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: redis
+          containerPort: 6379
+        volumeMounts:
+        - mountPath: /var/lib/redis
+          name: gitlab-redis
+        livenessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - redis-cli
+            - ping
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+      volumes:
+      - name: gitlab-redis
+        persistentVolumeClaim:
+          claimName: gitlab-redis
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: kube-ops
+  labels:
+    name: redis
+spec:
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: redis
+  selector:
+    name: redis
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> kubectl apply <span class="nt">-f</span> gitlab-redis.yaml
+</code></pre></div></div>
+<blockquote>
+  <p>2 . gitlab  portgresql 环境搭建</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;gitlab-postgresql.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitlab-postgresql
+  namespace: kube-ops
+  labels:
+    name: postgresql
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgresql
+  namespace: kube-ops
+  labels:
+    name: postgresql
+spec:
+spec:
+  selector:
+    matchLabels:
+      name: postgresql
+  template:
+    metadata:
+      name: postgresql
+      labels:
+        name: postgresql
+    spec:
+      containers:
+      - name: postgresql
+        image: sameersbn/postgresql:10
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DB_USER
+          value: gitlab
+        - name: DB_PASS
+          value: passw0rd
+        - name: DB_NAME
+          value: gitlab_production
+        - name: DB_EXTENSION
+          value: pg_trgm
+        ports:
+        - name: postgres
+          containerPort: 5432
+        volumeMounts:
+        - mountPath: /var/lib/postgresql
+          name: gitlab-postgresql
+        livenessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -h
+            - localhost
+            - -U
+            - postgres
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+        readinessProbe:
+          exec:
+            command:
+            - pg_isready
+            - -h
+            - localhost
+            - -U
+            - postgres
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+      volumes:
+      - name: gitlab-postgresql
+        persistentVolumeClaim:
+          claimName: gitlab-postgresql
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: kube-ops
+  labels:
+    name: postgresql
+spec:
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: postgres
+  selector:
+    name: postgresql
+</span><span class="no">
+EOF
+</span></code></pre></div></div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> kubectl apply <span class="nt">-f</span> gitlab-postgresql.yaml
+</code></pre></div></div>
+<blockquote>
+  <p>3 . gitlab 应用搭建</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;gitlab.yaml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitlab
+  labels:
+    app: gitlab
+  namespace: kube-ops
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gitlab
+  namespace: kube-ops
+  labels:
+    name: gitlab
+spec:
+spec:
+  selector:
+    matchLabels:
+      name: gitlab
+  template:
+    metadata:
+      name: gitlab
+      labels:
+        name: gitlab
+    spec:
+      containers:
+      - name: gitlab
+        image: twang2218/gitlab-ce-zh:10.8.3
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        - name: GITLAB_TIMEZONE
+          value: Beijing
+        - name: GITLAB_SECRETS_DB_KEY_BASE
+          value: long-and-random-alpha-numeric-string
+        - name: GITLAB_SECRETS_SECRET_KEY_BASE
+          value: long-and-random-alpha-numeric-string
+        - name: GITLAB_SECRETS_OTP_KEY_BASE
+          value: long-and-random-alpha-numeric-string
+        - name: GITLAB_ROOT_PASSWORD
+          value: admin321
+        - name: GITLAB_ROOT_EMAIL
+          value: zhangpeng19871017@hotmail.com
+        - name: GITLAB_HOST
+          value: gitlab.zhangpeng.com
+        - name: GITLAB_PORT
+          value: "80"
+        - name: GITLAB_SSH_PORT
+          value: "22"
+        - name: GITLAB_NOTIFY_ON_BROKEN_BUILDS
+          value: "true"
+        - name: GITLAB_NOTIFY_PUSHER
+          value: "false"
+        - name: GITLAB_BACKUP_SCHEDULE
+          value: daily
+        - name: GITLAB_BACKUP_TIME
+          value: 01:00
+        - name: DB_TYPE
+          value: postgres
+        - name: DB_HOST
+          value: postgresql
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: gitlab
+        - name: DB_PASS
+          value: passw0rd
+        - name: DB_NAME
+          value: gitlab_production
+        - name: REDIS_HOST
+          value: redis
+        - name: REDIS_PORT
+          value: "6379"
+        ports:
+        - name: http
+          containerPort: 80
+        - name: ssh
+          containerPort: 22
+        volumeMounts:
+        - mountPath: /var/opt/gitlab
+          name: gitlab
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 180
+          timeoutSeconds: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          timeoutSeconds: 1
+      volumes:
+      - name: gitlab
+        persistentVolumeClaim:
+          claimName: gitlab
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitlab
+  namespace: kube-ops
+  labels:
+    name: gitlab
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+    - name: ssh
+      port: 22
+      targetPort: ssh
+  selector:
+    name: gitlab
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> gitlab.yaml
+</code></pre></div></div>
+
+<blockquote>
+  <p>等待gitlab 容器状态 running &amp; kubectl get svc -n kube-ops</p>
+</blockquote>
+
+<p><img src="/assets/images/gitlab/gitlab2.png" alt="gitlab2.png" /></p>
+
+<blockquote>
+  <p>4 .  访问主机ip+svc 对外暴露端口验证
+<img src="/assets/images/gitlab/gitlab3.png" alt="gitlab3.png" /></p>
+</blockquote>
+
+<h1 id="备份原有docker-gitlab环境项目备份">备份原有docker gitlab环境项目备份:</h1>
+
+<blockquote>
+  <p>主要参考：https://blog.csdn.net/ygqygq2/article/details/85007910#21__15</p>
+</blockquote>
+
+<blockquote>
+  <p>1 . 进入gitlab容器，备份仓库：</p>
+  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker <span class="nb">exec</span> <span class="nt">-it</span> f80f368d857c bash
+gitlab-rake gitlab:backup:create
+</code></pre></div>  </div>
+  <p><img src="/assets/images/gitlab/gitlab4.png" alt="gitlab4.png" />
+<img src="/assets/images/gitlab/gitlab_back1.png" alt="gitlabback1.png" /></p>
+</blockquote>
+
+<blockquote>
+  <p>2 . 进入宿主机挂载的对应目录发现备份文件生成&amp;将备份文件copy 到kubernetes集群中master节点</p>
+</blockquote>
+
+<blockquote>
+  <p>cd /data/docker/gitlab/data/backups</p>
+</blockquote>
+
+<p><img src="/assets/images/gitlab/gitlab_back2.png" alt="gitlabback2.png" /></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl <span class="nb">cp </span>1567739719_2019_09_06_10.8.3_gitlab_backup.tar gitlab-78b9f67956-s9nmr:/var/opt/gitlab/backups <span class="nt">-n</span> kube-ops 
+kubectl <span class="nb">exec</span> <span class="nt">-it</span> gitlab-78b9f67956-s9nmr bash <span class="nt">-n</span> kube-ops
+gitlab-rake gitlab:backup:restore
+
+</code></pre></div></div>
+<blockquote>
+  <p>出现以下报错。看日志发现docker compose 环境下gitlab版本为10.8.3 。kubernetes集群版本gitlab image 为11.1.4.这也是比较推荐用详细版本号不要用latest版本的原因。</p>
+</blockquote>
+
+<p><img src="/assets/images/gitlab/gitlab_back3.png" alt="gitlabback3.png" /></p>
+
+<blockquote>
+  <p>修改gitlab.yaml 文件gitlab image 版本号  &amp;  kubectl apply gitlab.yaml ,出现下图所示还原完成</p>
+</blockquote>
+
+<p><img src="/assets/images/gitlab/gitlab_back4.png" alt="gitlabback3.png" /></p>
+
+<blockquote>
+  <p>用原有账号密码登录验证项目完整导入
+<img src="/assets/images/gitlab/gitlab5.png" alt="gitlab5.png" />
+域名代理方式用了腾讯云的slb
+<img src="/assets/images/gitlab/gitlab_https.png" alt="gitlab_https.png" />
+<img src="/assets/images/gitlab/gitlab_ssh.png" alt="gitlab_ssh.png" /></p>
+</blockquote>
+
+<blockquote>
+  <p>域名方式验证
+<img src="/assets/images/gitlab/gitlab6.png" alt="gitlab6.png" /></p>
+</blockquote>
+
+<blockquote>
+  <p>找一台服务器:</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh-keygen <span class="nt">-t</span> rsa <span class="nt">-C</span> <span class="s2">"zhangpeng@k8s-node1.com"</span>
+
+添加ssh key 到gitlab  验证ssh访问ok
+</code></pre></div></div>
+<p><img src="/assets/images/gitlab/gitlab_ssh1.png" alt="gitlab_ssh.png" /></p>
+
+<blockquote>
+  <p>注： 特别鸣谢阳明大佬，很多东西都是从阳明大佬博客借鉴的，https://www.qikqiak.com/post/gitlab-install-on-k8s/大佬的文章很全。自己写是为了加强自己的记忆</p>
+</blockquote>
+:ET

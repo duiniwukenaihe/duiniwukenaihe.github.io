@@ -1,0 +1,177 @@
+I"z"<ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#开始安装" id="markdown-toc-开始安装">开始安装</a>    <ul>
+      <li><a href="#1-git-clone-chart库" id="markdown-toc-1-git-clone-chart库">1. git clone chart库</a></li>
+      <li><a href="#2-helm-安装postgresql" id="markdown-toc-2-helm-安装postgresql">2. helm 安装postgresql</a></li>
+      <li><a href="#3-helm-安装sonar" id="markdown-toc-3-helm-安装sonar">3. helm 安装sonar</a></li>
+      <li><a href="#4-treafik代理-sonar" id="markdown-toc-4-treafik代理-sonar">4. treafik代理 sonar</a></li>
+      <li><a href="#5-登录sonar-修改密码设置语言包" id="markdown-toc-5-登录sonar-修改密码设置语言包">5. 登录sonar 修改密码设置语言包</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.3</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="描述背景">描述背景：</h1>
+<blockquote>
+  <p>正常来说helm玩的好应该是直接安装的但是玩的不太好 ，postgresql 和sonarqube分成两部安装的。变量各种用的不熟悉，安装后sonarqube报错什么的， 就分成两步安装了。</p>
+</blockquote>
+
+<h1 id="开始安装">开始安装</h1>
+<h2 id="1-git-clone-chart库">1. git clone chart库</h2>
+<blockquote>
+  <p>git clone https://github.com/helm/charts</p>
+</blockquote>
+
+<h2 id="2-helm-安装postgresql">2. helm 安装postgresql</h2>
+
+<blockquote>
+  <p>cd charts/stable/sonarqube/postgresql</p>
+
+  <p>修改 values.yaml，就设置了用户密码和存储类storageClass。</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>postgresqlPassword: qmVy5wubfmcekZy3
+
+storageClass: <span class="s2">"rook-ceph-block"</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/sonar/sonar1.png" alt="sonar1.png" />
+<img src="/assets/images/sonar/sonar2.png" alt="sonar2.png" /></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm <span class="nb">install</span> <span class="nt">--name</span> sonar-postgresql <span class="nt">-f</span> values.yaml <span class="nb">.</span> <span class="nt">--namespace</span> kube-ops
+</code></pre></div></div>
+
+<p><img src="/assets/images/sonar/sonar3.png" alt="sonar3.png" /></p>
+
+<blockquote>
+  <p>进入postgresql 创建sonar数据库</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="si">$(</span>kubectl get secret <span class="nt">--namespace</span> kube-ops sonar-postgresql <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">"{.data.postgresql-password}"</span> | <span class="nb">base64</span> <span class="nt">--decode</span><span class="si">)</span>
+
+kubectl run sonar-postgresql-client <span class="nt">--rm</span> <span class="nt">--tty</span> <span class="nt">-i</span> <span class="nt">--restart</span><span class="o">=</span><span class="s1">'Never'</span> <span class="nt">--namespace</span> kube-ops <span class="nt">--image</span> docker.io/bitnami/postgresql:11.6.0-debian-9-r0 <span class="nt">--env</span><span class="o">=</span><span class="s2">"PGPASSWORD=</span><span class="nv">$POSTGRES_PASSWORD</span><span class="s2">"</span> <span class="nt">--command</span> <span class="nt">--</span> psql <span class="nt">--host</span> sonar-postgresql <span class="nt">-U</span> postgres <span class="nt">-d</span> postgres <span class="nt">-p</span> 5432
+
+<span class="nv">postgres</span><span class="o">=</span><span class="c"># CREATE DATABASE sonar；</span>
+</code></pre></div></div>
+<blockquote>
+  <p>kubectl delete pods sonar-postgresql-client -n kube-ops 客户端就删除了就是看helm安装的输出试了一下呢。</p>
+</blockquote>
+
+<h2 id="3-helm-安装sonar">3. helm 安装sonar</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> ../sonarqube
+<span class="nb">rm</span> <span class="nt">-rf</span> requirements.yaml
+<span class="c"># 不删除的话还要检查依赖charts目录下放postgresql的 chart目录。放上试了几次没有整明白，就分开整了</span>
+修改values.yaml
+<span class="c">#配置storageclass</span>
+  storageClass: rook-ceph-block
+  accessMode: ReadWriteOnce
+  size: 10Gi
+<span class="c">#配置postgresql</span>
+postgresql:
+  <span class="c"># Enable to deploy the PostgreSQL chart</span>
+  enabled: <span class="nb">false</span>  
+  <span class="c"># To use an external PostgreSQL instance, set enabled to false and uncomment</span>
+  <span class="c"># the line below:</span>
+  postgresServer: <span class="s2">"sonar-postgresql"</span>
+  <span class="c"># To use an external secret for the password for an external PostgreSQL</span>
+  <span class="c"># instance, set enabled to false and provide the name of the secret on the</span>
+  <span class="c"># line below:</span>
+  <span class="c"># postgresPasswordSecret: ""</span>
+  postgresUser: <span class="s2">"postgres"</span>
+  postgresPassword: <span class="s2">"qmVy5wubfmcekZy3"</span>
+  postgresDatabase: <span class="s2">"sonar"</span>
+  <span class="c"># Specify the TCP port that PostgreSQL should use</span>
+  service:
+    port: 5432
+
+</code></pre></div></div>
+<blockquote>
+  <p>helm install –name sonar -f values.yaml . –namespace kube-ops</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods <span class="nt">-n</span> kube-ops
+
+kubectl get svc <span class="nt">-n</span> kube-ops
+</code></pre></div></div>
+<p><img src="/assets/images/sonar/sonar4.png" alt="sonar4.png" />
+<img src="/assets/images/sonar/sonar5.png" alt="sonar5.png" />
+<img src="/assets/images/sonar/sonar6.png" alt="sonar6.png" /></p>
+<h2 id="4-treafik代理-sonar">4. treafik代理 sonar</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; sonarqube-https.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: sonar-sonarqube-https
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(</span><span class="se">\`</span><span class="sh">sonarqube.sainaihe.com</span><span class="se">\`</span><span class="sh">)
+      kind: Rule
+      services:
+        - name: sonar-sonarqube
+          port: 9000
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> sonarqube-https.yaml
+</code></pre></div></div>
+<p><img src="/assets/images/sonar/sonar7.png" alt="sonar7.png" /></p>
+<h2 id="5-登录sonar-修改密码设置语言包">5. 登录sonar 修改密码设置语言包</h2>
+<p><img src="/assets/images/sonar/sonar8.png" alt="sonar8.png" />
+<img src="/assets/images/sonar/sonar9.png" alt="sonar9.png" />
+<img src="/assets/images/sonar/sonar10.png" alt="sonar10.png" /></p>
+<blockquote>
+  <p>ok安装完成了，有时间整下和jenkins的结合跑个例子。</p>
+</blockquote>
+:ET

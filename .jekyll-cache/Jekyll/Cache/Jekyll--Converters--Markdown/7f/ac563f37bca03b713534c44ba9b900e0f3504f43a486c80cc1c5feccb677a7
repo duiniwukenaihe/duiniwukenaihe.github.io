@@ -1,0 +1,75 @@
+I"�
+<p>腾讯云高可用 k8s 集群安装文档<br />
+注： 参考https://blog.csdn.net/qq_32641153/article/details/90413640</p>
+
+<p><strong>集群环境：</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.20.13</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.8</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.12</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.6</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.3</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.2.9</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>host如下图：</p>
+
+<p><img src="/assets/images/k8s/k8s-host.png" alt="k8s-host.png" /></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>注： 防火墙 selinux  swap   默认系统镜像已经关闭 最大文件开启个数等已经优化
+<span class="c">#swap</span>
+swapoff <span class="nt">-a</span>
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s1">'s/.*swap.*/#&amp;/'</span> /etc/fstab
+<span class="c">#selinux</span>
+setenforce  0 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/sysconfig/selinux 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=enforcing/SELINUX=disabled/g"</span> /etc/selinux/config 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=permissive/SELINUX=disabled/g"</span> /etc/sysconfig/selinux 
+<span class="nb">sed</span> <span class="nt">-i</span> <span class="s2">"s/^SELINUX=permissive/SELINUX=disabled/g"</span> /etc/selinux/config 
+
+<span class="c">#调整文件打开数等配置</span>
+<span class="nb">echo</span> <span class="s2">"* soft nofile 65536"</span> <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard nofile 65536"</span> <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* soft nproc 65536"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard nproc 65536"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* soft  memlock  unlimited"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+<span class="nb">echo</span> <span class="s2">"* hard memlock  unlimited"</span>  <span class="o">&gt;&gt;</span> /etc/security/limits.conf
+ 
+
+</code></pre></div></div>
+<hr />
+:ET

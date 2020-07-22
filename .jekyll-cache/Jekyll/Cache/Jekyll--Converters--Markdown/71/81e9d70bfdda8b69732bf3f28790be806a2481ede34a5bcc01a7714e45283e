@@ -1,0 +1,84 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#安装helm2" id="markdown-toc-安装helm2">安装Helm2</a></li>
+</ul>
+
+<h1 id="描述背景">描述背景：</h1>
+<p>注：记录各种常见问题</p>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.1</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="安装helm2">安装Helm2</h1>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm 现在大版本有2和3两个版本，个人安装了helm2版本的1.15.1
+<span class="nv">version</span><span class="o">=</span>v2.15.1
+wget https://get.helm.sh/helm-<span class="k">${</span><span class="nv">version</span><span class="k">}</span><span class="nt">-linux-amd64</span>.tar.gz
+<span class="nb">tar</span> <span class="nt">-zxvf</span> helm-<span class="k">*</span><span class="nt">-linux-amd64</span>.tar.gz
+<span class="nb">cp </span>linux-amd64/helm /usr/local/bin/helm
+<span class="c">#安装tiller</span>
+helm init <span class="nt">--tiller-image</span><span class="o">=</span>gcr.azk8s.cn/kubernetes-helm/tiller:<span class="k">${</span><span class="nv">version</span><span class="k">}</span>
+<span class="c">#查看helm版本</span>
+helm version <span class="nt">--short</span>
+Client: v2.15.1+gcf1de4f
+Server: v2.15.1+gcf1de4f
+但是kubernetes 1.16.2安装貌似会有权限问题的，执行以下命令：
+
+kubectl <span class="nt">-n</span> kube-system create serviceaccount tiller
+kubectl create clusterrolebinding tiller <span class="nt">--clusterrole</span> cluster-admin <span class="nt">--serviceaccount</span><span class="o">=</span>kube-system:tiller
+helm init <span class="nt">--tiller-image</span><span class="o">=</span>gcr.azk8s.cn/kubernetes-helm/tiller:<span class="k">${</span><span class="nv">version</span><span class="k">}</span> <span class="nt">--service-account</span> tiller <span class="nt">--upgrade</span>
+<span class="o">[</span>root@k8s-master-03 ~]# kubectl <span class="nt">-n</span> kube-system get all | <span class="nb">grep </span>tiller
+pod/tiller-deploy-76858c97cd-sgmf6          1/1     Running   1          2d6h
+service/tiller-deploy             ClusterIP   10.31.70.242    &lt;none&gt;        44134/TCP                          2d6h
+deployment.apps/tiller-deploy   1/1     1            1           2d6h
+replicaset.apps/tiller-deploy-76858c97cd   1         1         1       2d6h
+
+</code></pre></div></div>
+:ET

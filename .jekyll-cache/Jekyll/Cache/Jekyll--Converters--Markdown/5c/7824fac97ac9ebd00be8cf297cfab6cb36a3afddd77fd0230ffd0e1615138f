@@ -1,0 +1,100 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+</ul>
+
+<h2 id="描述背景">描述背景：</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>已经搭建完的k8s集群只有两个worker节点，现在增加work节点到集群。原有集群机器：
+
+|  ip           | 自定义域名         |    主机名 |
+|  :----:       |     :----:        |   :----:  |
+|                |  master.k8s.io    |  k8s-vip  |
+|192.168.0.195    |  master01.k8s.io  |  k8s-master-01|
+|192.168.0.197   |  master02.k8s.io  |  k8s-master-02| 
+|192.168.0.198   |  master03.k8s.io  |  k8s-master-03|
+|192.168.0.199    |  node01.k8s.io    |  k8s-node-01|
+|192.168.0.202    |  node02.k8s.io    |  k8s-node-02|
+|192.168.0.108    |  node03.k8s.io    |  k8s-node-03|
+|192.168.0.111    |  node04.k8s.io    |  k8s-node-04|
+|192.168.0.115    |  node05.k8s.io    |  k8s-node-05|
+
+ 
+初始集群参照 https://duiniwukenaihe.github.io/2019/09/18/k8s-expanded/ 由于上周kubernetes1.15.3爆出漏洞，决定将集群升级为1.16.0 。
+
+
+</code></pre></div></div>
+<p>#升级master节点</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">##k8s-master-01节点操作</span>
+yum list <span class="nt">--showduplicates</span> kubeadm <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes <span class="c">#查看yum源中可支持版本</span>
+  
+yum <span class="nb">install  </span>kubeadm-1.16.0 kubectl-1.16.0 <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes。我这里懒人方式直接yum update了
+kubeadm version
+kubeadm upgrade plan <span class="nt">--certificate-renewal</span><span class="o">=</span><span class="nb">false</span> <span class="c"># 如果不加-certificate-renewal=false将重新生成证书</span>
+kubeadm upgrade apply v1.16.0
+systemctl daemon-reload
+systemctl restart kubelet
+</code></pre></div></div>
+<p><img src="/assets/images/k8s/k8s-update1.png" alt="k8s-update1.png" /> 
+<img src="/assets/images/k8s/k8s-update3.png" alt="k8s-update3.png" /></p>
+
+<p>##发现 master节点一直not ready
+<img src="/assets/images/k8s/k8s-update2.png" alt="k8s-update2.png" /></p>
+
+<p>参照：
+https://github.com/coreos/flannel/pull/1181/commits/2be363419f0cf6a497235a457f6511df396685d4</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; /etc/cni/net.d/10-flannel.conflist
+{
+  "name": "cbr0",
+  "cniVersion": "0.2.0",
+  "plugins": [
+    {
+      "type": "flannel",
+      "delegate": {
+        "hairpinMode": true,
+        "isDefaultGateway": true
+      }
+    },
+    {
+      "type": "portmap",
+      "capabilities": {
+        "portMappings": true
+      }
+    }
+  ]
+}
+</span><span class="no">EOF
+</span></code></pre></div></div>
+
+<p>最好还是修改下kube-flannel.yml</p>
+
+<p><img src="/assets/images/k8s/k8s-update5.png" alt="k8s-update5.png" /></p>
+
+<p>kubectl apply -f kube-flannel.yml</p>
+
+<p>##依次升级其他master02 master03节点</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum <span class="nb">install  </span>kubeadm-1.16.0 kubectl-1.16.0 <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes
+kubeadm upgrade apply v1.16.0
+systemctl daemon-reload
+systemctl restart kubelet
+</code></pre></div></div>
+
+<p>##worker nodes 节点升级</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c">#在master01节点依次将worker节点设置为不可调用</span>
+kubectl drain <span class="nv">$node</span> <span class="nt">--ignore-daemonsets</span>
+yum <span class="nb">install  </span>kubeadm-1.16.0 kubectl-1.16.0 <span class="nt">--disableexcludes</span><span class="o">=</span>kubernetes
+systemctl daemon-reload
+systemctl restart kubelet
+systemctl status kubelet
+kubectl uncordon <span class="nv">$node</span>
+</code></pre></div></div>
+<p>work节点以此升级</p>
+
+<p>##查看集群##
+kubectl get nodes
+<img src="/assets/images/k8s/k8s-update4.png" alt="k8s-update4.png" /></p>
+
+<p>注：碰到的问题 早前yaml文件apiVersion用的是extensions/v1beta1 ，1,16要修改为apps/v1beta1。具体看https://kubernetes.io/zh/docs/concepts/workloads/controllers/deployment/</p>
+:ET

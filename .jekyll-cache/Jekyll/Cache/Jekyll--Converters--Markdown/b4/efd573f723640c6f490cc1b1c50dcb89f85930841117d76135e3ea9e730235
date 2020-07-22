@@ -1,0 +1,14 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+</ul>
+
+<h2 id="描述背景">描述背景：</h2>
+
+<p>公司内部做了一套elasticsearch集群，开始主要是用来收集前端客户端报错。然后用 elastalert进行微信报警，后来由于mysql数据库写的比较烂无法查询用户信息统计，客户端埋点数据也收集了一份用做数据分析。</p>
+
+<p>先看下索引的mapping吧，开始早先用的是5版本的有多个type，后来升级为6就保留了1个type。7版本貌似type取消了。索引格式为 项目名_渠道_年月份</p>
+
+<p>GET *_wx_201909/_mapping</p>
+
+<p>具体的就不贴了。简单说下mapping：</p>
+:ET

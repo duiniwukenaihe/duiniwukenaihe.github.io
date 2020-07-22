@@ -1,0 +1,26 @@
+I"ò<ul id="markdown-toc">
+  <li><a href="#comments" id="markdown-toc-comments">Comments</a></li>
+</ul>
+
+<h2 id="comments">Comments</h2>
+
+<div id="gitalk-container"></div>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css" />
+
+<script src="https://cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+
+<script>
+var gitalk = new Gitalk({
+  clientID: 'ec38bbdf8e7fa3dae292',
+  clientSecret: '2fbd28fed67dd309af98565dabc45190938506e2',
+  repo: 'duiniwukenaihe.github.io',
+  owner: 'duiniwukenaihe',
+  admin: ['duiniwukenaihe'],
+  id: location.pathname,      // Ensure uniqueness and length less than 50
+  distractionFreeMode: false  // Facebook-like distraction free mode
+})
+
+gitalk.render('gitalk-container')
+</script>
+
+:ET

@@ -1,0 +1,157 @@
+I"c<ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a>    <ul>
+      <li><a href="#1-kibana汉化" id="markdown-toc-1-kibana汉化">1. kibana汉化</a></li>
+      <li><a href="#kibana创建新用户" id="markdown-toc-kibana创建新用户">kibana创建新用户</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.3</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="描述背景">描述背景：</h1>
+<blockquote>
+  <p>elastic-oparator搭建完成eck, kibana管理界面汉化和建立新用户权限设置。</p>
+
+  <p>初始化环境参考https://duiniwukenaihe.github.io/2019/10/21/k8s-efk/。然后默认把7.4的镜像修改成7.5.0直接升级了一下</p>
+</blockquote>
+
+<h2 id="1-kibana汉化">1. kibana汉化</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> | kubectl apply -f -
+apiVersion: kibana.k8s.elastic.co/v1beta1
+kind: Kibana
+metadata:
+  name: kibana
+  namespace: elastic-system
+spec:
+  version: 7.5.0
+  count: 1
+  elasticsearchRef:
+    name: "elastic"
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  podTemplate:
+    spec:
+      containers:
+      - name: kibana
+        env:
+        - name: I18N_LOCALE
+          value: zh-CN
+        resources:
+          requests:
+            memory: 1Gi
+          limits:
+            memory: 2Gi
+        volumeMounts:
+        - name: timezone-volume
+          mountPath: /etc/localtime
+          readOnly: true
+      volumes:
+      - name: timezone-volume
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Shanghai
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<blockquote>
+  <p>这样就可以支持中文了</p>
+</blockquote>
+
+<p><img src="/assets/images/efk/chinese.png" alt="chinese" /></p>
+
+<h2 id="kibana创建新用户">kibana创建新用户</h2>
+<blockquote>
+  <p>按照官方教程 创建后貌似用户是无法登陆的，New user can’t login kibana。可参考https://discuss.elastic.co/t/new-user-cant-login-kibana/204810。</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> | kubectl apply -f -
+apiVersion: elasticsearch.k8s.elastic.co/v1beta1
+kind: Elasticsearch
+metadata:
+  name: elastic
+  namespace: elastic-system
+spec:
+  version: 7.5.0
+  nodeSets:
+  - name: elastic
+    count: 3
+    config:
+      node.master: true
+      node.data: true
+      node.ingest: true
+      node.store.allow_mmap: false
+      xpack.security.authc.realms:
+        native:
+          native1: 
+            order: 1
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 30Gi
+        storageClassName: rook-ceph-block
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>增加了：
+      xpack.security.authc.realms:
+        native:
+          native1: 
+            order: 1
+</code></pre></div></div>
+<p><img src="/assets/images/efk/user.png" alt="user" /></p>
+<blockquote>
+  <p>其他参考官方文档即可。</p>
+</blockquote>
+:ET

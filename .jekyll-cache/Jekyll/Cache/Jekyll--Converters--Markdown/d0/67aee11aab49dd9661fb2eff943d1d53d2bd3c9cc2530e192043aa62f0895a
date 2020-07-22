@@ -1,0 +1,206 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#安装harbor" id="markdown-toc-安装harbor">安装harbor</a></li>
+  <li><a href="#helm安装-harbor" id="markdown-toc-helm安装-harbor">helm安装 harbor</a></li>
+  <li><a href="#treafik-代理harbor" id="markdown-toc-treafik-代理harbor">treafik 代理harbor</a></li>
+  <li><a href="#web登录harbor" id="markdown-toc-web登录harbor">web登录harbor</a></li>
+</ul>
+
+<h1 id="描述背景">描述背景：</h1>
+<p>注：记录各种常见问题</p>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.1</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="安装harbor">安装harbor</h1>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c"># 下载harbor仓库</span>
+git clone https://github.com/goharbor/harbor-helm
+注：偶尔会下载了 部署不成功，如有此状况尽量选择稳定分支。
+<span class="c">#修改配置文件values.yaml</span>
+代理使用了treafik,对外暴露模式没有使用loadBalancer和nodePort,选择了clusterIP，然后使用treafik代理，集群中安装了rook-ceph.存储storageClass: <span class="s2">"rook-ceph-block"</span>配置文件就修改了这两个配置。
+</code></pre></div></div>
+<p><img src="/assets/images/harbor/clusterIP.png" alt="clusterIP.png" />
+<img src="/assets/images/harbor/storageClass.png" alt="storageClass.png" /></p>
+
+<h1 id="helm安装-harbor">helm安装 harbor</h1>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm <span class="nb">install</span> <span class="nt">--name</span> harbor <span class="nt">-f</span> values.yaml <span class="nb">.</span> <span class="nt">--namespace</span> kube-ops
+<span class="c"># 等待pod running</span>
+kubectl get pods <span class="nt">-n</span> kube-ops <span class="nt">-w</span>  
+如果pod一直pending 基本是pv,pvc的问题 查看下自己的storageclass ,pv,pvc配置
+</code></pre></div></div>
+
+<p><img src="/assets/images/harbor/svc.png" alt="svc.png" /></p>
+
+<h1 id="treafik-代理harbor">treafik 代理harbor</h1>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kube-ops下创建http证书<span class="o">(</span>ssl证书目录下执行<span class="o">)</span>
+kubectl create secret tls all-saynaihe-com <span class="nt">--key</span><span class="o">=</span>2_sainaihe.com.key <span class="nt">--cert</span><span class="o">=</span>1_saynaihe.com_bundle.crt <span class="nt">-n</span> kube-ops
+
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; harbor.saynaihe.com.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: harbor-https
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(`harbor.saynaihe.com`) &amp;&amp; PathPrefix(`/`)
+      kind: Rule
+      services:
+        - name: harbor-harbor-portal
+          port: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: harbor-api
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(`harbor.saynaihe.com`) &amp;&amp; PathPrefix(`/api`)
+      kind: Rule
+      services:
+        - name: harbor-harbor-core
+          port: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: harbor-service
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(`harbor.saynaihe.com`) &amp;&amp; PathPrefix(`/service`)
+      kind: Rule
+      services:
+        - name: harbor-harbor-core
+          port: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: harbor-v2
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(`harbor.saynaihe.com`) &amp;&amp; PathPrefix(`/v2`)
+      kind: Rule
+      services:
+        - name: harbor-harbor-core
+          port: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: harbor-chartrepo
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(`harbor.saynaihe.com`) &amp;&amp; PathPrefix(`/chartrepo`)
+      kind: Rule
+      services:
+        - name: harbor-harbor-core
+          port: 80
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: harbor-c
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(`harbor.saynaihe.com`) &amp;&amp; PathPrefix(`/c`)
+      kind: Rule
+      services:
+        - name: harbor-harbor-core
+          port: 80
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> harbor.saynaihe.com.yaml
+登录https://traefik.lsaynaihe.com/dashboard/#/http/routers 查看,如下图：
+
+</code></pre></div></div>
+
+<p><img src="/assets/images/harbor/harbor.png" alt="harbor.png" /></p>
+
+<h1 id="web登录harbor">web登录harbor</h1>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>注：密码为配置文件中默认Harbor12345，在安装前可自定义修改，我选择了登录后自主修改：
+OK安装完成，harbor还在摸索中，最喜欢的一个功能是同步其他仓库非常方便：
+</code></pre></div></div>
+<p><img src="/assets/images/harbor/harbor2.png" alt="harbor2.png" /></p>
+
+<p><img src="/assets/images/harbor/harbor3.png" alt="harbor3.png" /></p>
+
+<p><img src="/assets/images/harbor/harbor4.png" alt="harbor4.png" /></p>
+:ET

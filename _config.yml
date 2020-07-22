@@ -42,9 +42,9 @@ gitalk:
 
 # statistic analysis 统计代码
 # 百度统计 id，将统计代码替换为自己的百度统计id，即
-# hm.src = "//hm.baidu.com/hm.js?xxxxxxxxxxxx";
+##hm.src = //"https://hm.baidu.com/hm.js?d5fc86dcc214ca5ef6e06cd0c7120d64";
 # xxxxx字符串
-baidu_tongji_id: 
+baidu_tongji_id: d5fc86dcc214ca5ef6e06cd0c7120d64
 google_analytics_id: 
 
 # Build settings

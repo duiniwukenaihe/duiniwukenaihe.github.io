@@ -1,0 +1,33 @@
+I"�<ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#关于traefik" id="markdown-toc-关于traefik">关于Traefik</a></li>
+</ul>
+
+<h1 id="描述背景">描述背景：</h1>
+<blockquote>
+  <p>注：  文章配置文件示例都是拿阳明大佬的还有良哥转发的http://www.mydlq.club/article/41 超级小豆丁的文章中参考的。个人只是拿来整合测试了下整合，鸣谢各位大佬。</p>
+</blockquote>
+
+<blockquote>
+  <p>开始使用腾讯云tke,slb对外映射方式 还需要对外开启Nodeport  然后slb对端口映射，个人觉得比较反人类，然后看到阳明 良哥两位大佬都发了traefik的方式就试用了一下。</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>集群配置：
+初始集群环境kubeadm 1.16.1
+
+|  ip           | 自定义域名         |    主机名 |
+|  :----:       |     :----:        |   :----:  |
+|192.168.3.8      |  master.k8s.io    |  k8s-vip  |
+|192.168.3.10    |  master01.k8s.io  |  k8s-master-01|
+|192.168.3.5   |  master02.k8s.io  |  k8s-master-02| 
+|192.168.3.12   |  master03.k8s.io  |  k8s-master-03|
+|192.168.3.6    |  node01.k8s.io    |  k8s-node-01|
+|192.168.3.2    |  node02.k8s.io    |  k8s-node-02|
+|192.168.3.4    |  node03.k8s.io    |  k8s-node-03|
+k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载均衡并对外暴露了80  443两个端口，开始443想放在https监听器哪里，但是这样一个sbl负载均衡只能绑定一个证书的，业务不太多，不想用多个slb，就将443端口监听放在了tcp/udp监听器这里，然后证书在kubernetes集群中创建绑定在traefik上。
+</code></pre></div></div>
+<h1 id="关于traefik">关于Traefik</h1>
+<blockquote>
+  <p>Traefik 2.0 官方文档：https://docs.traefik.io/v2.0/ 比较乱，中文的可参照阳明大佬的中文翻译https://www.qikqiak.com/traefik-book/</p>
+</blockquote>
+:ET
