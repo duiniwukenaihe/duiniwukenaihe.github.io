@@ -28,7 +28,7 @@ centos7.7 64位
 
 
 ## 背景
->环境为kubernets集群1.18.6，参照 https://duiniwukenaihe.github.io/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/在腾讯云上搭建。过去自己搭建过rook-ceph但是版本升级或者节点挂掉出现了各种问题，而且ceph的规划什么的 自己也掌握的不好，正好有腾讯云自己开源的kubernetes-csi-tencentcloud组件 就准备使用他集成做kubernets集群的默认storageclass了。
+>环境为kubernets集群1.18.6，参照 https://duiniwukenaihe.github.io/2020/07/22/tencent-slb-kubeadm-ha/在腾讯云上搭建。过去自己搭建过rook-ceph但是版本升级或者节点挂掉出现了各种问题，而且ceph的规划什么的 自己也掌握的不好，正好有腾讯云自己开源的kubernetes-csi-tencentcloud组件 就准备使用他集成做kubernets集群的默认storageclass了。
 
 
 #### 1.git clone 仓库
