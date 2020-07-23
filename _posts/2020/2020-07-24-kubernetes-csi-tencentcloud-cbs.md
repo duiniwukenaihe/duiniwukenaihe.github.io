@@ -1,6 +1,6 @@
 ---
 layout: "post"
-title: "2020-07-23-kubernets集群使用腾讯云cbs块存储"
+title: "2020-07-23-kubernetes集群使用腾讯云cbs块存储"
 date: "2020-07-23 10:00:00"
 category: "kubernetes"
 tags:  "kubernetes1.18.6 kubernetes-csi-tencentcloud"
