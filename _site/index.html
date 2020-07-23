@@ -152,7 +152,162 @@ var _hmt = _hmt || [];
             
               <li>
                 <h2>
-                  <a class="post-link" href="/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a>
+                  <a class="post-link" href="/2020/07/23/kubernetes-csi-tencentcloud-cbs/">2020-07-23-kubernets集群使用腾讯云cbs块存储</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2020-07-23
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes1.18.6" title="Tag: kubernetes1.18.6" rel="tag">kubernetes1.18.6</a>&nbsp;
+    
+        <a href="/tag/#kubernetes-csi-tencentcloud" title="Tag: kubernetes-csi-tencentcloud" rel="tag">kubernetes-csi-tencentcloud</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#背景" id="markdown-toc-背景">背景</a>    <ul>
+      <li><a href="#1git-clone-仓库" id="markdown-toc-1git-clone-仓库">1.git clone 仓库</a></li>
+      <li><a href="#2-kubernets集群更改配置" id="markdown-toc-2-kubernets集群更改配置">2. kubernets集群更改配置</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>集群配置：
+centos7.7 64位</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">ip</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">10.0.4.20</td>
+      <td style="text-align: center">vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">10.0.4.27</td>
+      <td style="text-align: center">sh-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">10.0.4.46</td>
+      <td style="text-align: center">sh-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">10.0.4.47</td>
+      <td style="text-align: center">sh-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">10.0.4.14</td>
+      <td style="text-align: center">sh-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">10.0.4.2</td>
+      <td style="text-align: center">sh-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">10.0.4.6</td>
+      <td style="text-align: center">sh-node-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">10.0.4.4</td>
+      <td style="text-align: center">sh-node-04</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">10.0.4.13</td>
+      <td style="text-align: center">sh-node-05</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="背景">背景</h2>
+<blockquote>
+  <p>环境为kubernets集群1.18.6，参照 https://duiniwukenaihe.github.io/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/在腾讯云上搭建。过去自己搭建过rook-ceph但是版本升级或者节点挂掉出现了各种问题，而且ceph的规划什么的 自己也掌握的不好，正好有腾讯云自己开源的kubernetes-csi-tencentcloud组件 就准备使用他集成做kubernets集群的默认storageclass了。</p>
+</blockquote>
+
+<h4 id="1git-clone-仓库">1.git clone 仓库</h4>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>https://github.com/TencentCloud/kubernetes-csi-tencentcloud
+现在github会非常卡你懂的，最好还是国外服务器下载了。
+</code></pre></div></div>
+<h4 id="2-kubernets集群更改配置">2. kubernets集群更改配置</h4>
+<blockquote>
+  <p>参照https://github.com/TencentCloud/kubernetes-csi-tencentcloud/blob/master/docs/README_CBS_zhCN.md，我的kubernets集群是1.18.6。
+按照显性设置版本要求在kubelet apiserver  controller-manager scheduler 配置文件添加–feature-gates=VolumeSnapshotDataSource=true配置：</p>
+
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="nb">cd</span> /etc/kubernetes/manifests,修改三个master的  apiserver controller  scheduler配置文件如下：
+</code></pre></div></div>
+
+<p><img src="/assets/images/2020/07/kubernetes-csi-tencentcloud/kube-api.png" alt="kube-api" />
+<img src="/assets/images/2020/07/kubernetes-csi-tencentcloud/kube-controller-manager.png" alt="kube-controller-manager" />
+<img src="/assets/images/2020/07/kubernetes-csi-tencentcloud/kube-scheduler.png" alt="kube-scheduler" /></p>
+
+<blockquote>
+  <p>所有节点 包括master与work节点，进入/etc/sysconfig目录修改kubelet配置文件如下：</p>
+</blockquote>
+
+<p><img src="/assets/images/2020/07/kubernetes-csi-tencentcloud/kubelet.png" alt="kubelet" /></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>所有节点重启kubelet ：
+systemctl restart kubelet
+</code></pre></div></div>
+
+<blockquote>
+  <p>步骤3-6基本就是按照腾讯云文档来就可以了，唯一可怕的就少镜像被墙….最好把镜像打包放到国内镜像仓库，然后修改配置文件。然后还有csi-node的apiVersion要修改一下呢，直接修改为apps/v1。</p>
+</blockquote>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2020/07/23/kubernetes-csi-tencentcloud-cbs/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
+                  <a class="post-link" href="/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA-%E5%89%AF%E6%9C%AC/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a>
                 </h2>
                 <div class="label">
                     <div class="label-card">
@@ -669,7 +824,7 @@ kubectl get pod <span class="nt">-n</span> kube-system | <span class="nb">grep <
 
                 </div>
                 <div class="read-all">
-                    <a  href="/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                    <a  href="/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA-%E5%89%AF%E6%9C%AC/"><i class="fa fa-newspaper-o"></i>Read All</a>
                 </div>
                 <hr>
               </li>
@@ -2957,653 +3112,6 @@ spec:
                 <hr>
               </li>
             
-              <li>
-                <h2>
-                  <a class="post-link" href="/2019/11/05/k8s-install-prometheus-operator/">k8s-install-prometheus-operator</a>
-                </h2>
-                <div class="label">
-                    <div class="label-card">
-                        <i class="fa fa-calendar"></i>2019-11-05
-                    </div>
-                    <div class="label-card">
-                        <i class="fa fa-user"></i>duiniwukenaihe
-                        
-                    </div>
-                    <div class="label-card">
-                        
-                    </div>
-
-                    <div class="label-card">
-                    
-
-
-<!-- <span class="point">•</span> -->
-<span class="categories">
-  <i class="fa fa-th-list"></i>
-  
-    
-        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
-    
-  
-
-  <!-- <span class="point">•</span> -->
-</span>
-
-
-                    </div>
-
-                    <div class="label-card">
-                    
-<!-- <span class="point">•</span> -->
-<span class="pageTag">
-  <i class="fa fa-tags"></i>
-  
-    
-        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
-    
-        <a href="/tag/#prometheus-operator" title="Tag: prometheus-operator" rel="tag">prometheus-operator</a>
-    
-  
-
-</span>
-
-                    </div>
-                </div>
-                <div class="excerpt">
-                    <ul id="markdown-toc">
-  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a>    <ul>
-      <li><a href="#安装prometheus-operator" id="markdown-toc-安装prometheus-operator">安装prometheus-operator</a>        <ul>
-          <li><a href="#克隆prometheus-operator仓库" id="markdown-toc-克隆prometheus-operator仓库">克隆prometheus-operator仓库</a></li>
-        </ul>
-      </li>
-      <li><a href="#treafik代理prometheus-grafana-alertmanager" id="markdown-toc-treafik代理prometheus-grafana-alertmanager">treafik代理prometheus grafana alertmanager</a></li>
-      <li><a href="#添加-kubecontrollermanager-kubescheduler监控" id="markdown-toc-添加-kubecontrollermanager-kubescheduler监控">添加 kubeControllerManager kubeScheduler监控</a></li>
-      <li><a href="#监控集群etcd服务" id="markdown-toc-监控集群etcd服务">监控集群etcd服务</a>        <ul>
-          <li><a href="#kubadm安装集成etcd方式下操作" id="markdown-toc-kubadm安装集成etcd方式下操作">kubadm安装集成etcd方式下操作：</a></li>
-          <li><a href="#kubadm安装挂载外部安装etcd方式下操作" id="markdown-toc-kubadm安装挂载外部安装etcd方式下操作">kubadm安装挂载外部安装etcd方式下操作：</a></li>
-        </ul>
-      </li>
-      <li><a href="#开启服务自动发现配置可持续存储修改prometheus-storage-retention参数设置数据保留时间" id="markdown-toc-开启服务自动发现配置可持续存储修改prometheus-storage-retention参数设置数据保留时间">开启服务自动发现，配置可持续存储，修改prometheus Storage Retention参数设置数据保留时间</a>        <ul>
-          <li><a href="#由于rabc权限问题prometheus-dashboard-的配置页面下面我们可以看到已经有了对应的的配置信息了但是我们切换到-targets-页面下面却并没有发现对应的监控任务" id="markdown-toc-由于rabc权限问题prometheus-dashboard-的配置页面下面我们可以看到已经有了对应的的配置信息了但是我们切换到-targets-页面下面却并没有发现对应的监控任务">由于RABC权限问题，Prometheus Dashboard 的配置页面下面我们可以看到已经有了对应的的配置信息了，但是我们切换到 targets 页面下面却并没有发现对应的监控任务</a></li>
-        </ul>
-      </li>
-      <li><a href="#grafana添加监控模板持久化" id="markdown-toc-grafana添加监控模板持久化">grafana添加监控模板，持久化</a>        <ul>
-          <li><a href="#持久化" id="markdown-toc-持久化">持久化</a></li>
-          <li><a href="#grafana添加模板只添加了treafik2-和etcd模板" id="markdown-toc-grafana添加模板只添加了treafik2-和etcd模板">grafana添加模板，只添加了treafik2 和etcd模板</a></li>
-        </ul>
-      </li>
-      <li><a href="#微信报警" id="markdown-toc-微信报警">微信报警</a></li>
-    </ul>
-  </li>
-</ul>
-
-<h1 id="描述背景">描述背景：</h1>
-<p>注：搭建prometheus-operator</p>
-
-<p>集群配置：
-初始集群环境kubeadm 1.16.1</p>
-
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: center">ip</th>
-      <th style="text-align: center">自定义域名</th>
-      <th style="text-align: center">主机名</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: center">192.168.3.8</td>
-      <td style="text-align: center">master.k8s.io</td>
-      <td style="text-align: center">k8s-vip</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.10</td>
-      <td style="text-align: center">master01.k8s.io</td>
-      <td style="text-align: center">k8s-master-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.5</td>
-      <td style="text-align: center">master02.k8s.io</td>
-      <td style="text-align: center">k8s-master-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.12</td>
-      <td style="text-align: center">master03.k8s.io</td>
-      <td style="text-align: center">k8s-master-03</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.6</td>
-      <td style="text-align: center">node01.k8s.io</td>
-      <td style="text-align: center">k8s-node-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.2</td>
-      <td style="text-align: center">node02.k8s.io</td>
-      <td style="text-align: center">k8s-node-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.4</td>
-      <td style="text-align: center">node03.k8s.io</td>
-      <td style="text-align: center">k8s-node-03</td>
-    </tr>
-  </tbody>
-</table>
-
-<h2 id="安装prometheus-operator">安装prometheus-operator</h2>
-
-<blockquote>
-
-  <p>先说下自己的流程：</p>
-  <ol>
-    <li>克隆prometheus-operator仓库</li>
-    <li>按照官方quickstart进行安装</li>
-    <li>treafik代理prometheus grafana alertmanager</li>
-    <li>添加 kubeControllerManager kubeScheduler监控</li>
-    <li>监控集群etcd服务</li>
-    <li>开启服务自动发现，配置可持续存储，修改prometheus Storage Retention参数设置数据保留时间</li>
-    <li>grafana添加监控模板，持久化</li>
-    <li>微信报警</li>
-  </ol>
-</blockquote>
-
-<h3 id="克隆prometheus-operator仓库">克隆prometheus-operator仓库</h3>
-
-<blockquote>
-  <p>注：新版本升级后和旧版本文件结构有些不一样 可以参照github仓库文档quickstart.</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/coreos/kube-prometheus
-<span class="nb">cd </span>kube-prometheus
-<span class="c">###创建命名空间和crd.保证可用后建立相关资源</span>
-kubectl create <span class="nt">-f</span> manifests/setup
-<span class="k">until </span>kubectl get servicemonitors <span class="nt">--all-namespaces</span> <span class="p">;</span> <span class="k">do </span><span class="nb">date</span><span class="p">;</span> <span class="nb">sleep </span>1<span class="p">;</span> <span class="nb">echo</span> <span class="s2">""</span><span class="p">;</span> <span class="k">done
-</span>kubectl create <span class="nt">-f</span> manifests/
-kubectl get pods <span class="nt">-n</span> monitoring
-<span class="o">[</span>root@k8s-master-01 work]# kubectl get pods <span class="nt">-n</span> monitoring
-NAME                                  READY   STATUS             RESTARTS   AGE
-grafana-58dc7468d7-6v86k              1/1     Running            0          9m
-kube-state-metrics-78b46c84d8-ns7hk   2/3     ImagePullBackOff   0          9m
-node-exporter-4pr77                   2/2     Running            0          9m
-node-exporter-6jhz5                   2/2     Running            0          9m
-node-exporter-8xv8v                   2/2     Running            0          9m
-node-exporter-ngt9r                   2/2     Running            0          9m
-node-exporter-nlff4                   2/2     Running            0          9m
-node-exporter-pw554                   2/2     Running            0          9m
-node-exporter-rwpfj                   2/2     Running            0          9m
-node-exporter-thz4j                   2/2     Running            0          9m
-prometheus-adapter-5cd5798d96-2jnjl   0/1     ImagePullBackOff   0          9m
-prometheus-operator-99dccdc56-zr6fw   0/1     ImagePullBackOff   0          9m11s
-</code></pre></div></div>
-<blockquote>
-  <p>注意：会出现有些镜像下载不下来的问题，可墙外服务器下载镜像修改tag上传到harbor，修改yaml文件中镜像为对应harbor tag解决。最终如下图：
-<img src="/assets/images/monitoring/create.png" alt="create.png" /> 
-<img src="/assets/images/monitoring/status.png" alt="state.png" /></p>
-</blockquote>
-
-<h2 id="treafik代理prometheus-grafana-alertmanager">treafik代理prometheus grafana alertmanager</h2>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>monitoring下创建http证书<span class="o">(</span>ssl证书目录下执行<span class="o">)</span>
-kubectl create secret tls all-saynaihe-com <span class="nt">--key</span><span class="o">=</span>2_sainaihe.com.key <span class="nt">--cert</span><span class="o">=</span>1_saynaihe.com_bundle.crt <span class="nt">-n</span> monitoring
-
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; monitoring.com.yaml
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: monitoring
-  name: alertmanager-main-https
-spec:
-  entryPoints:
-    - websecure
-  tls:
-    secretName: all-saynaihe-com
-  routes:
-    - match: Host(`alertmanager.saynaihe.com`)
-      kind: Rule
-      services:
-        - name: alertmanager-main
-          port: 9093
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: monitoring
-  name: grafana-https
-spec:
-  entryPoints:
-    - websecure
-  tls:
-    secretName: all-saynaihe-com
-  routes:
-    - match: Host(`monitoring.saynaihe.com`)
-      kind: Rule
-      services:
-        - name: grafana
-          port: 3000
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: monitoring
-  name: prometheus
-spec:
-  entryPoints:
-    - websecure
-  tls:
-    secretName: all-saynaihe-com
-  routes:
-    - match: Host(`prometheus.saynaihe.com`)
-      kind: Rule
-      services:
-        - name: prometheus-k8s
-          port: 9090
----
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span> monitoring.com.yaml
-登录https://monitoring.saynaihe.com/ 
-https://prometheus.saynaihe.com/
-https://alertmanager.saynaihe.com/
-查看,如下图：
-</code></pre></div></div>
-<p><img src="/assets/images/monitoring/grafana.png" alt="grafana.png" />
-<img src="/assets/images/monitoring/prometheus.png" alt="prometheus.png" /> 
-<img src="/assets/images/monitoring/alertmanager.png" alt="alertmanager.png" /></p>
-
-<h2 id="添加-kubecontrollermanager-kubescheduler监控">添加 kubeControllerManager kubeScheduler监控</h2>
-<blockquote>
-  <p>在https://prometheus.saynaihe.com/targets中可以看到， kubeControllerManager kubeScheduler没有能正常监控。
-<img src="/assets/images/monitoring/targets.png" alt="targets.png" /></p>
-</blockquote>
-
-<p>可参照https://www.qikqiak.com/post/first-use-prometheus-operator/ 阳明大佬的文档：</p>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; prometheus-kubeControllerManagerService.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: kube-system
-  name: kube-controller-manager
-  labels:
-    k8s-app: kube-controller-manager
-spec:
-  selector:
-    component: kube-controller-manager
-  ports:
-  - name: http-metrics
-    port: 10252
-    targetPort: 10252
-    protocol: TCP
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span> prometheus-kubeControllerManagerService.yaml
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; prometheus-kubeSchedulerService.yaml
-
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: kube-system
-  name: kube-scheduler
-  labels:
-    k8s-app: kube-scheduler
-spec:
-  selector:
-    component: kube-scheduler
-  ports:
-  - name: http-metrics
-    port: 10251
-    targetPort: 10251
-    protocol: TCP
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span> prometheus-kubeSchedulerService.yaml
-</code></pre></div></div>
-<p><img src="/assets/images/monitoring/ready.png" alt="ready.png" /></p>
-<h2 id="监控集群etcd服务">监控集群etcd服务</h2>
-<blockquote>
-  <p>kubernetes 安装etcd一般常用的是两种 外部搭建etcd和 容器化运行etc两种的方式都写了下。也特别说下既然都用了kubernetes了 都上了容器了 没有必要去外部搭建etd集群。尤其是后期集群升级，etcd的版本 各种的 会有些恶心，安装kubernetes集群还是安装官方的指导的安装比较好，个人觉得很多教程让二进制安装和kubeadm安装还外挂etcd集群的方式很爽反感。除非有良好系统的基础不建议那么的玩了。</p>
-</blockquote>
-
-<h3 id="kubadm安装集成etcd方式下操作">kubadm安装集成etcd方式下操作：</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl <span class="nt">-n</span> monitoring create secret generic etcd-certs <span class="nt">--from-file</span><span class="o">=</span>/etc/kubernetes/pki/etcd/healthcheck-client.crt <span class="nt">--from-file</span><span class="o">=</span>/etc/kubernetes/pki/etcd/healthcheck-client.key <span class="nt">--from-file</span><span class="o">=</span>/etc/kubernetes/pki/etcd/ca.crt
-
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; prometheus-serviceMonitorEtcd.yaml
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: etcd-k8s
-  namespace: monitoring
-  labels:
-    k8s-app: etcd-k8s
-spec:
-  jobLabel: k8s-app
-  endpoints:
-  - port: port
-    interval: 30s
-    scheme: https
-    tlsConfig:
-      caFile: /etc/prometheus/secrets/etcd-certs/ca.crt
-      certFile: /etc/prometheus/secrets/etcd-certs/healthcheck-client.crt
-      keyFile: /etc/prometheus/secrets/etcd-certs/healthcheck-client.key
-      insecureSkipVerify: true
-  selector:
-    matchLabels:
-      k8s-app: etcd
-  namespaceSelector:
-    matchNames:
-    - kube-system
-</span><span class="no"> EOF
-
-</span>kubectl apply <span class="nt">-f</span> prometheus-serviceMonitorEtcd.yaml
-</code></pre></div></div>
-<h3 id="kubadm安装挂载外部安装etcd方式下操作">kubadm安装挂载外部安装etcd方式下操作：</h3>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl <span class="nt">-n</span> monitoring create secret generic etcd-certs <span class="nt">--from-file</span><span class="o">=</span>/etc/etcd/ssl/ca.pem <span class="nt">--from-file</span><span class="o">=</span>/etc/etcd/ssl/server.pem <span class="nt">--from-file</span><span class="o">=</span>/etc/etcd/ssl/server-key.pem
-
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; prometheus-serviceMonitorEtcd.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: etcd-k8s
-  namespace: kube-system
-  labels:
-    k8s-app: etcd
-spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-  - name: api
-    port: 2379
-    protocol: TCP
----
-apiVersion: v1
-kind: Endpoints
-metadata:
-  name: etcd-k8s
-  namespace: kube-system
-  labels:
-    k8s-app: etcd
-subsets:
-- addresses:
-  - ip: 192.168.0.195
-    nodeName: etcd1
-  - ip: 192.168.0.197
-    nodeName: etcd2
-  - ip: 192.168.0.198
-    nodeName: etcd3
-  ports:
-  - name: api
-    port: 2379
-    protocol: TCP
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: etcd-k8s
-  namespace: monitoring
-  labels:
-    k8s-app: etcd-k8s
-spec:
-  jobLabel: k8s-app
-  endpoints:
-  - port: api
-    interval: 30s
-    scheme: https
-    tlsConfig:
-      caFile: /etc/prometheus/secrets/etcd-certs/ca.pem
-      certFile: /etc/prometheus/secrets/etcd-certs/server.pem
-      keyFile: /etc/prometheus/secrets/etcd-certs/server-key.pem
-      #use insecureSkipVerify only if you cannot use a Subject Alternative Name
-      insecureSkipVerify: true 
-  selector:
-    matchLabels:
-      k8s-app: etcd
-  namespaceSelector:
-    matchNames:
-    - kube-system
-</span><span class="no"> EOF
-</span>kubectl apply <span class="nt">-f</span> prometheus-serviceMonitorEtcd.yaml
-</code></pre></div></div>
-<p><img src="/assets/images/monitoring/etcd1.png" alt="etcd1.png" /></p>
-
-<h2 id="开启服务自动发现配置可持续存储修改prometheus-storage-retention参数设置数据保留时间">开启服务自动发现，配置可持续存储，修改prometheus Storage Retention参数设置数据保留时间</h2>
-<blockquote>
-  <p>参照https://www.qikqiak.com/post/prometheus-operator-advance/,自动发现集群中的 Service，就需要我们在 Service 的annotation区域添加prometheus.io/scrape=true的声明，然后通过这个文件创建一个对应的 Secret 对象。由于配置可持续存储和修改retention参数都在同一个配置文件就都写在一起了</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; prometheus-additional.yaml
-
-- job_name: 'kubernetes-service-endpoints'
-  kubernetes_sd_configs:
-  - role: endpoints
-  relabel_configs:
-  - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
-    action: keep
-    regex: true
-  - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
-    action: replace
-    target_label: __scheme__
-    regex: (https?)
-  - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
-    action: replace
-    target_label: __metrics_path__
-    regex: (.+)
-  - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
-    action: replace
-    target_label: __address__
-    regex: ([^:]+)(?::</span><span class="se">\d</span><span class="sh">+)?;(</span><span class="se">\d</span><span class="sh">+)
-    replacement: </span><span class="nv">$1</span><span class="sh">:</span><span class="nv">$2</span><span class="sh">
-  - action: labelmap
-    regex: __meta_kubernetes_service_label_(.+)
-  - source_labels: [__meta_kubernetes_namespace]
-    action: replace
-    target_label: kubernetes_namespace
-  - source_labels: [__meta_kubernetes_service_name]
-    action: replace
-    target_label: kubernetes_name
-</span><span class="no">EOF
-</span><span class="nv">$ </span>kubectl create secret generic additional-configs <span class="nt">--from-file</span><span class="o">=</span>prometheus-additional.yaml <span class="nt">-n</span> monitoring
-secret <span class="s2">"additional-configs"</span> created
-<span class="c">#修改crd文件，</span>
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; prometheus-prometheus.yaml
-apiVersion: monitoring.coreos.com/v1
-kind: Prometheus
-metadata:
-  labels:
-    prometheus: k8s
-  name: k8s
-  namespace: monitoring
-spec:
-  alerting:
-    alertmanagers:
-    - name: alertmanager-main
-      namespace: monitoring
-      port: web
-  storage:
-    volumeClaimTemplate:
-      spec:
-        storageClassName: rook-ceph-block
-        resources:
-          requests:
-            storage: 20Gi
-  baseImage: quay.io/prometheus/prometheus
-  nodeSelector:
-    kubernetes.io/os: linux
-  podMonitorSelector: {}
-  replicas: 2
-  resources:
-    requests:
-      memory: 400Mi
-  ruleSelector:
-    matchLabels:
-      prometheus: k8s
-      role: alert-rules
-  securityContext:
-    fsGroup: 2000
-    runAsNonRoot: true
-    runAsUser: 1000
-  additionalScrapeConfigs:
-    name: additional-configs
-    key: prometheus-additional.yaml
-  serviceAccountName: prometheus-k8s
-  retention: 15d
-  serviceMonitorNamespaceSelector: {}
-  serviceMonitorSelector: {}
-  version: v2.11.0
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span> prometheus-prometheus.yaml
-</code></pre></div></div>
-<p><img src="/assets/images/monitoring/prometheus-prometheus.png" alt="prometheus-prometheus.png" /></p>
-<h4 id="由于rabc权限问题prometheus-dashboard-的配置页面下面我们可以看到已经有了对应的的配置信息了但是我们切换到-targets-页面下面却并没有发现对应的监控任务">由于RABC权限问题，Prometheus Dashboard 的配置页面下面我们可以看到已经有了对应的的配置信息了，但是我们切换到 targets 页面下面却并没有发现对应的监控任务</h4>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; prometheus-clusterRole.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: prometheus-k8s
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  - services
-  - endpoints
-  - pods
-  - nodes/proxy
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  - nodes/metrics
-  verbs:
-  - get
-- nonResourceURLs:
-  - /metrics
-  verbs:
-  - get
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span>  rometheus-clusterRole.yaml
-</code></pre></div></div>
-<p><img src="/assets/images/monitoring/find-service.png" alt="find-service.png" /></p>
-
-<h2 id="grafana添加监控模板持久化">grafana添加监控模板，持久化</h2>
-<h3 id="持久化">持久化</h3>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  grafana-pv.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: grafana
-  namespace: monitoring
-spec:
-  storageClassName: rook-ceph-block
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span> grafana-pv.yaml
-修改grafana-deployment.yaml,如下图：
-</code></pre></div></div>
-<p><img src="/assets/images/monitoring/grafana-dev1.png" alt="grafana-dev1.png" />
-<img src="/assets/images/monitoring/grafana-dev2.png" alt="grafana-dev2.png" /></p>
-
-<blockquote>
-  <p>kubectl apply -f grafana-deployment.yaml</p>
-</blockquote>
-
-<h3 id="grafana添加模板只添加了treafik2-和etcd模板">grafana添加模板，只添加了treafik2 和etcd模板</h3>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>登录https://monitoring.saynaihe.com/dashboards  import模板号10906  3070.
-打开dashboard，有的模板会出现Panel plugin not found: grafana-piechart-panel 。
-解决方法：重新构建grafana镜像，/usr/share/grafana/bin/grafana-cli plugins <span class="nb">install </span>grafana-piechart-panel安装缺失插件
-</code></pre></div></div>
-<p><img src="/assets/images/monitoring/no-panel.png" alt="no-panel.png" />
-<img src="/assets/images/monitoring/api.png" alt="api.png" />
-<img src="/assets/images/monitoring/treafik.png" alt="treafik.png" />
-<img src="/assets/images/monitoring/etcd-prometheus.png" alt="etcd-prometheus.png" /></p>
-
-<h2 id="微信报警">微信报警</h2>
-<blockquote>
-  <p>将对应参数修改为自己微信企业号相对应参数</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; alertmanager.yaml 
-    global:
-      resolve_timeout: 2m
-      wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
-    route:
-      group_by: ['alert']
-      group_wait: 10s
-      group_interval: 1m
-      repeat_interval: 1h
-      receiver: wechat
-    receivers:
-    - name: 'wechat'
-      wechat_configs:
-      - api_secret: 'xxxx'
-        send_resolved: true
-        to_user: '@all'
-        to_party: 'xxx'
-        agent_id: 'xxx'
-        corp_id: 'xxxx'
-    templates:
-      - '/etc/config/alert/wechat.tmpl'
-    inhibit_rules:
-      - source_match:
-          severity: 'critical'
-        target_match:
-          severity: 'warning'
-        equal: ['alertname', 'dev', 'instance']
-</span><span class="no">EOF
-</span><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; wechat.tpl
-
-☸ Alerts Firing ✖️ ‼️ :
-
-☎️ 触发警报 ☔ ☠️ : 
-☞名称空间: 
-☞主机: 
-☞job: 
--&gt;涉及容器名称: 
--&gt;Pod名称: 
-告警级别: 
-告警详情: 
-触发时间⏱: 
-警报链接: 
-✍️ 备注详情❄️: 
---------------------&gt;END&lt;--------------------
-☸ Alerts Resolved ✔️:
-
-☎️ 触发警报 ☫ : 
-♥️ 名称空间 ✝️ : 
-♥️ -&gt;涉及容器名称: 
-♥️ -&gt;Pod名称☸: 
-♥️ 告警级别: 
-♥️ 告警详情: 
-♥️ 触发时间 ⏱ : 
-♥️ 恢复时间 ⏲ : 
-♥️ 备注详情: 
---------------------&gt;END&lt;--------------------
-</span><span class="no">EOF
-</span></code></pre></div></div>
-<p><img src="/assets/images/monitoring/tpl.png" alt="tpl.png" />
-<img src="/assets/images/monitoring/alertmanager1.png" alt="alertmanager.png" /></p>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl delete secret alertmanager-main <span class="nt">-n</span> monitoring
-kubectl create secret generic alertmanager-main <span class="nt">--from-file</span><span class="o">=</span>alertmanager.yaml <span class="nt">--from-file</span><span class="o">=</span>wechat.tmpl <span class="nt">-n</span> monitoring
-wechat.tpl模板可以根据自己需求自己定制，我这里就找了个网上的例子,格式不太会玩，貌似看不到，如下图
-</code></pre></div></div>
-<p><img src="/assets/images/monitoring/wechat.png" alt="wechat.png" /></p>
-
-<blockquote>
-  <p>基本完成。具体的修改可参考个人实际。</p>
-</blockquote>
-
-                </div>
-                <div class="read-all">
-                    <a  href="/2019/11/05/k8s-install-prometheus-operator/"><i class="fa fa-newspaper-o"></i>Read All</a>
-                </div>
-                <hr>
-              </li>
-            
         </ul>
 
 
@@ -3706,7 +3214,9 @@ wechat.tpl模板可以根据自己需求自己定制，我这里就找了个网�
                 </div>
                 <ul class="content-ul" recent>
                     
-                        <li><a href="/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a></li>
+                        <li><a href="/2020/07/23/kubernetes-csi-tencentcloud-cbs/">2020-07-23-kubernets集群使用腾讯云cbs块存储</a></li>
+                    
+                        <li><a href="/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA-%E5%89%AF%E6%9C%AC/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a></li>
                     
                         <li><a href="/2019/12/27/traefik/">2019-12-27-traefik</a></li>
                     
@@ -3723,8 +3233,6 @@ wechat.tpl模板可以根据自己需求自己定制，我这里就找了个网�
                         <li><a href="/2019/11/19/cncf-ali/">k8s-install-jenkins</a></li>
                     
                         <li><a href="/2019/11/19/k8s-install-jenkins/">k8s-install-jenkins</a></li>
-                    
-                        <li><a href="/2019/11/05/k8s-install-prometheus-operator/">k8s-install-prometheus-operator</a></li>
                     
                 </ul>
             </div>
@@ -3751,7 +3259,7 @@ wechat.tpl模板可以根据自己需求自己定制，我这里就找了个网�
                             <span class="name">
                                 kubernetes
                             </span>
-                            <span class="badge">19</span>
+                            <span class="badge">20</span>
                         </a>
                     </li>
                     
@@ -4047,7 +3555,7 @@ wechat.tpl模板可以根据自己需求自己定制，我这里就找了个网�
                       
                       
                       
-                      <a href="/tag/#kubernetes1.18.6" style="font-size: 9pt; color: #999;">kubernetes1.18.6</a>
+                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10pt; color: #888;">kubernetes1.18.6</a>
                     
                       
                       
@@ -4062,6 +3570,13 @@ wechat.tpl模板可以根据自己需求自己定制，我这里就找了个网�
                       
                       
                       <a href="/tag/#ha" style="font-size: 9pt; color: #999;">ha</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 9pt; color: #999;">kubernetes-csi-tencentcloud</a>
                     
                 </div>
             </div>

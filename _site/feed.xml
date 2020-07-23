@@ -5,9 +5,119 @@
     <description></description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Wed, 22 Jul 2020 20:34:48 +0800</pubDate>
-    <lastBuildDate>Wed, 22 Jul 2020 20:34:48 +0800</lastBuildDate>
+    <pubDate>Thu, 23 Jul 2020 15:22:36 +0800</pubDate>
+    <lastBuildDate>Thu, 23 Jul 2020 15:22:36 +0800</lastBuildDate>
     <generator>Jekyll v4.1.1</generator>
+    
+      <item>
+        <title>2020-07-23-kubernets集群使用腾讯云cbs块存储</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#背景&quot; id=&quot;markdown-toc-背景&quot;&gt;背景&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1git-clone-仓库&quot; id=&quot;markdown-toc-1git-clone-仓库&quot;&gt;1.git clone 仓库&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#2-kubernets集群更改配置&quot; id=&quot;markdown-toc-2-kubernets集群更改配置&quot;&gt;2. kubernets集群更改配置&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+集群配置：
+centos7.7 64位
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.20&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.27&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.46&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.47&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.14&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-04&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.13&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-05&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;背景&quot;&gt;背景&lt;/h2&gt;
+&lt;blockquote&gt;
+  环境为kubernets集群1.18.6，参照 https://duiniwukenaihe.github.io/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/在腾讯云上搭建。过去自己搭建过rook-ceph但是版本升级或者节点挂掉出现了各种问题，而且ceph的规划什么的 自己也掌握的不好，正好有腾讯云自己开源的kubernetes-csi-tencentcloud组件 就准备使用他集成做kubernets集群的默认storageclass了。
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;1git-clone-仓库&quot;&gt;1.git clone 仓库&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;https://github.com/TencentCloud/kubernetes-csi-tencentcloud
+现在github会非常卡你懂的，最好还是国外服务器下载了。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;2-kubernets集群更改配置&quot;&gt;2. kubernets集群更改配置&lt;/h4&gt;
+&lt;blockquote&gt;
+  参照https://github.com/TencentCloud/kubernetes-csi-tencentcloud/blob/master/docs/README_CBS_zhCN.md，我的kubernets集群是1.18.6。
+按照显性设置版本要求在kubelet apiserver  controller-manager scheduler 配置文件添加–feature-gates=VolumeSnapshotDataSource=true配置：
+
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; /etc/kubernetes/manifests,修改三个master的  apiserver controller  scheduler配置文件如下：
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;img src=&quot;/assets/images/2020/07/kubernetes-csi-tencentcloud/kube-api.png&quot; alt=&quot;kube-api&quot; /&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes-csi-tencentcloud/kube-controller-manager.png&quot; alt=&quot;kube-controller-manager&quot; /&gt;
+&lt;img src=&quot;/assets/images/2020/07/kubernetes-csi-tencentcloud/kube-scheduler.png&quot; alt=&quot;kube-scheduler&quot; /&gt;
+
+&lt;blockquote&gt;
+  所有节点 包括master与work节点，进入/etc/sysconfig目录修改kubelet配置文件如下：
+&lt;/blockquote&gt;
+
+&lt;img src=&quot;/assets/images/2020/07/kubernetes-csi-tencentcloud/kubelet.png&quot; alt=&quot;kubelet&quot; /&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;所有节点重启kubelet ：
+systemctl restart kubelet
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  步骤3-6基本就是按照腾讯云文档来就可以了，唯一可怕的就少镜像被墙….最好把镜像打包放到国内镜像仓库，然后修改配置文件。然后还有csi-node的apiVersion要修改一下呢，直接修改为apps/v1。
+&lt;/blockquote&gt;
+</description>
+        <pubDate>Thu, 23 Jul 2020 10:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2020/07/23/kubernetes-csi-tencentcloud-cbs/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/07/23/kubernetes-csi-tencentcloud-cbs/</guid>
+        
+        <category>kubernetes1.18.6</category>
+        
+        <category>kubernetes-csi-tencentcloud</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
     
       <item>
         <title>2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</title>
@@ -472,8 +582,8 @@ kubectl get pod &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-system | &
 &lt;/blockquote&gt;
 </description>
         <pubDate>Wed, 22 Jul 2020 16:00:00 +0800</pubDate>
-        <link>http://localhost:4000/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</link>
-        <guid isPermaLink="true">http://localhost:4000/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA/</guid>
+        <link>http://localhost:4000/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA-%E5%89%AF%E6%9C%AC/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA-%E5%89%AF%E6%9C%AC/</guid>
         
         <category>kubernetes1.18.6</category>
         
@@ -2405,608 +2515,6 @@ spec:
         <category>kubernetes1.16</category>
         
         <category>jenkins</category>
-        
-        
-        <category>kubernetes</category>
-        
-      </item>
-    
-      <item>
-        <title>k8s-install-prometheus-operator</title>
-        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
-  &lt;li&gt;&lt;a href=&quot;#描述背景&quot; id=&quot;markdown-toc-描述背景&quot;&gt;描述背景：&lt;/a&gt;    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#安装prometheus-operator&quot; id=&quot;markdown-toc-安装prometheus-operator&quot;&gt;安装prometheus-operator&lt;/a&gt;        &lt;ul&gt;
-          &lt;li&gt;&lt;a href=&quot;#克隆prometheus-operator仓库&quot; id=&quot;markdown-toc-克隆prometheus-operator仓库&quot;&gt;克隆prometheus-operator仓库&lt;/a&gt;&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#treafik代理prometheus-grafana-alertmanager&quot; id=&quot;markdown-toc-treafik代理prometheus-grafana-alertmanager&quot;&gt;treafik代理prometheus grafana alertmanager&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#添加-kubecontrollermanager-kubescheduler监控&quot; id=&quot;markdown-toc-添加-kubecontrollermanager-kubescheduler监控&quot;&gt;添加 kubeControllerManager kubeScheduler监控&lt;/a&gt;&lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#监控集群etcd服务&quot; id=&quot;markdown-toc-监控集群etcd服务&quot;&gt;监控集群etcd服务&lt;/a&gt;        &lt;ul&gt;
-          &lt;li&gt;&lt;a href=&quot;#kubadm安装集成etcd方式下操作&quot; id=&quot;markdown-toc-kubadm安装集成etcd方式下操作&quot;&gt;kubadm安装集成etcd方式下操作：&lt;/a&gt;&lt;/li&gt;
-          &lt;li&gt;&lt;a href=&quot;#kubadm安装挂载外部安装etcd方式下操作&quot; id=&quot;markdown-toc-kubadm安装挂载外部安装etcd方式下操作&quot;&gt;kubadm安装挂载外部安装etcd方式下操作：&lt;/a&gt;&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#开启服务自动发现配置可持续存储修改prometheus-storage-retention参数设置数据保留时间&quot; id=&quot;markdown-toc-开启服务自动发现配置可持续存储修改prometheus-storage-retention参数设置数据保留时间&quot;&gt;开启服务自动发现，配置可持续存储，修改prometheus Storage Retention参数设置数据保留时间&lt;/a&gt;        &lt;ul&gt;
-          &lt;li&gt;&lt;a href=&quot;#由于rabc权限问题prometheus-dashboard-的配置页面下面我们可以看到已经有了对应的的配置信息了但是我们切换到-targets-页面下面却并没有发现对应的监控任务&quot; id=&quot;markdown-toc-由于rabc权限问题prometheus-dashboard-的配置页面下面我们可以看到已经有了对应的的配置信息了但是我们切换到-targets-页面下面却并没有发现对应的监控任务&quot;&gt;由于RABC权限问题，Prometheus Dashboard 的配置页面下面我们可以看到已经有了对应的的配置信息了，但是我们切换到 targets 页面下面却并没有发现对应的监控任务&lt;/a&gt;&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#grafana添加监控模板持久化&quot; id=&quot;markdown-toc-grafana添加监控模板持久化&quot;&gt;grafana添加监控模板，持久化&lt;/a&gt;        &lt;ul&gt;
-          &lt;li&gt;&lt;a href=&quot;#持久化&quot; id=&quot;markdown-toc-持久化&quot;&gt;持久化&lt;/a&gt;&lt;/li&gt;
-          &lt;li&gt;&lt;a href=&quot;#grafana添加模板只添加了treafik2-和etcd模板&quot; id=&quot;markdown-toc-grafana添加模板只添加了treafik2-和etcd模板&quot;&gt;grafana添加模板，只添加了treafik2 和etcd模板&lt;/a&gt;&lt;/li&gt;
-        &lt;/ul&gt;
-      &lt;/li&gt;
-      &lt;li&gt;&lt;a href=&quot;#微信报警&quot; id=&quot;markdown-toc-微信报警&quot;&gt;微信报警&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&quot;描述背景&quot;&gt;描述背景：&lt;/h1&gt;
-注：搭建prometheus-operator
-
-集群配置：
-初始集群环境kubeadm 1.16.1
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;自定义域名&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.8&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;master.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-vip&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.10&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;master01.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-01&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.5&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;master02.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-02&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.12&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;master03.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-03&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.6&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;node01.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-01&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.2&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;node02.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-02&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.4&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;node03.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-03&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;h2 id=&quot;安装prometheus-operator&quot;&gt;安装prometheus-operator&lt;/h2&gt;
-
-&lt;blockquote&gt;
-
-  先说下自己的流程：
-  &lt;ol&gt;
-    &lt;li&gt;克隆prometheus-operator仓库&lt;/li&gt;
-    &lt;li&gt;按照官方quickstart进行安装&lt;/li&gt;
-    &lt;li&gt;treafik代理prometheus grafana alertmanager&lt;/li&gt;
-    &lt;li&gt;添加 kubeControllerManager kubeScheduler监控&lt;/li&gt;
-    &lt;li&gt;监控集群etcd服务&lt;/li&gt;
-    &lt;li&gt;开启服务自动发现，配置可持续存储，修改prometheus Storage Retention参数设置数据保留时间&lt;/li&gt;
-    &lt;li&gt;grafana添加监控模板，持久化&lt;/li&gt;
-    &lt;li&gt;微信报警&lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;克隆prometheus-operator仓库&quot;&gt;克隆prometheus-operator仓库&lt;/h3&gt;
-
-&lt;blockquote&gt;
-  注：新版本升级后和旧版本文件结构有些不一样 可以参照github仓库文档quickstart.
-&lt;/blockquote&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;git clone https://github.com/coreos/kube-prometheus
-&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;kube-prometheus
-&lt;span class=&quot;c&quot;&gt;###创建命名空间和crd.保证可用后建立相关资源&lt;/span&gt;
-kubectl create &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; manifests/setup
-&lt;span class=&quot;k&quot;&gt;until &lt;/span&gt;kubectl get servicemonitors &lt;span class=&quot;nt&quot;&gt;--all-namespaces&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;do &lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;date&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;sleep &lt;/span&gt;1&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;echo&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;done
-&lt;/span&gt;kubectl create &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; manifests/
-kubectl get pods &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; monitoring
-&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;root@k8s-master-01 work]# kubectl get pods &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; monitoring
-NAME                                  READY   STATUS             RESTARTS   AGE
-grafana-58dc7468d7-6v86k              1/1     Running            0          9m
-kube-state-metrics-78b46c84d8-ns7hk   2/3     ImagePullBackOff   0          9m
-node-exporter-4pr77                   2/2     Running            0          9m
-node-exporter-6jhz5                   2/2     Running            0          9m
-node-exporter-8xv8v                   2/2     Running            0          9m
-node-exporter-ngt9r                   2/2     Running            0          9m
-node-exporter-nlff4                   2/2     Running            0          9m
-node-exporter-pw554                   2/2     Running            0          9m
-node-exporter-rwpfj                   2/2     Running            0          9m
-node-exporter-thz4j                   2/2     Running            0          9m
-prometheus-adapter-5cd5798d96-2jnjl   0/1     ImagePullBackOff   0          9m
-prometheus-operator-99dccdc56-zr6fw   0/1     ImagePullBackOff   0          9m11s
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;blockquote&gt;
-  注意：会出现有些镜像下载不下来的问题，可墙外服务器下载镜像修改tag上传到harbor，修改yaml文件中镜像为对应harbor tag解决。最终如下图：
-&lt;img src=&quot;/assets/images/monitoring/create.png&quot; alt=&quot;create.png&quot; /&gt; 
-&lt;img src=&quot;/assets/images/monitoring/status.png&quot; alt=&quot;state.png&quot; /&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;treafik代理prometheus-grafana-alertmanager&quot;&gt;treafik代理prometheus grafana alertmanager&lt;/h2&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;monitoring下创建http证书&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;ssl证书目录下执行&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
-kubectl create secret tls all-saynaihe-com &lt;span class=&quot;nt&quot;&gt;--key&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;2_sainaihe.com.key &lt;span class=&quot;nt&quot;&gt;--cert&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;1_saynaihe.com_bundle.crt &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; monitoring
-
-&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; monitoring.com.yaml
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: monitoring
-  name: alertmanager-main-https
-spec:
-  entryPoints:
-    - websecure
-  tls:
-    secretName: all-saynaihe-com
-  routes:
-    - match: Host(`alertmanager.saynaihe.com`)
-      kind: Rule
-      services:
-        - name: alertmanager-main
-          port: 9093
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: monitoring
-  name: grafana-https
-spec:
-  entryPoints:
-    - websecure
-  tls:
-    secretName: all-saynaihe-com
-  routes:
-    - match: Host(`monitoring.saynaihe.com`)
-      kind: Rule
-      services:
-        - name: grafana
-          port: 3000
----
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: monitoring
-  name: prometheus
-spec:
-  entryPoints:
-    - websecure
-  tls:
-    secretName: all-saynaihe-com
-  routes:
-    - match: Host(`prometheus.saynaihe.com`)
-      kind: Rule
-      services:
-        - name: prometheus-k8s
-          port: 9090
----
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; monitoring.com.yaml
-登录https://monitoring.saynaihe.com/ 
-https://prometheus.saynaihe.com/
-https://alertmanager.saynaihe.com/
-查看,如下图：
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;img src=&quot;/assets/images/monitoring/grafana.png&quot; alt=&quot;grafana.png&quot; /&gt;
-&lt;img src=&quot;/assets/images/monitoring/prometheus.png&quot; alt=&quot;prometheus.png&quot; /&gt; 
-&lt;img src=&quot;/assets/images/monitoring/alertmanager.png&quot; alt=&quot;alertmanager.png&quot; /&gt;
-
-&lt;h2 id=&quot;添加-kubecontrollermanager-kubescheduler监控&quot;&gt;添加 kubeControllerManager kubeScheduler监控&lt;/h2&gt;
-&lt;blockquote&gt;
-  在https://prometheus.saynaihe.com/targets中可以看到， kubeControllerManager kubeScheduler没有能正常监控。
-&lt;img src=&quot;/assets/images/monitoring/targets.png&quot; alt=&quot;targets.png&quot; /&gt;
-&lt;/blockquote&gt;
-
-可参照https://www.qikqiak.com/post/first-use-prometheus-operator/ 阳明大佬的文档：
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; prometheus-kubeControllerManagerService.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: kube-system
-  name: kube-controller-manager
-  labels:
-    k8s-app: kube-controller-manager
-spec:
-  selector:
-    component: kube-controller-manager
-  ports:
-  - name: http-metrics
-    port: 10252
-    targetPort: 10252
-    protocol: TCP
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; prometheus-kubeControllerManagerService.yaml
-&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; prometheus-kubeSchedulerService.yaml
-
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: kube-system
-  name: kube-scheduler
-  labels:
-    k8s-app: kube-scheduler
-spec:
-  selector:
-    component: kube-scheduler
-  ports:
-  - name: http-metrics
-    port: 10251
-    targetPort: 10251
-    protocol: TCP
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; prometheus-kubeSchedulerService.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;img src=&quot;/assets/images/monitoring/ready.png&quot; alt=&quot;ready.png&quot; /&gt;
-&lt;h2 id=&quot;监控集群etcd服务&quot;&gt;监控集群etcd服务&lt;/h2&gt;
-&lt;blockquote&gt;
-  kubernetes 安装etcd一般常用的是两种 外部搭建etcd和 容器化运行etc两种的方式都写了下。也特别说下既然都用了kubernetes了 都上了容器了 没有必要去外部搭建etd集群。尤其是后期集群升级，etcd的版本 各种的 会有些恶心，安装kubernetes集群还是安装官方的指导的安装比较好，个人觉得很多教程让二进制安装和kubeadm安装还外挂etcd集群的方式很爽反感。除非有良好系统的基础不建议那么的玩了。
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;kubadm安装集成etcd方式下操作&quot;&gt;kubadm安装集成etcd方式下操作：&lt;/h3&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; monitoring create secret generic etcd-certs &lt;span class=&quot;nt&quot;&gt;--from-file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/etc/kubernetes/pki/etcd/healthcheck-client.crt &lt;span class=&quot;nt&quot;&gt;--from-file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/etc/kubernetes/pki/etcd/healthcheck-client.key &lt;span class=&quot;nt&quot;&gt;--from-file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/etc/kubernetes/pki/etcd/ca.crt
-
-&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; prometheus-serviceMonitorEtcd.yaml
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: etcd-k8s
-  namespace: monitoring
-  labels:
-    k8s-app: etcd-k8s
-spec:
-  jobLabel: k8s-app
-  endpoints:
-  - port: port
-    interval: 30s
-    scheme: https
-    tlsConfig:
-      caFile: /etc/prometheus/secrets/etcd-certs/ca.crt
-      certFile: /etc/prometheus/secrets/etcd-certs/healthcheck-client.crt
-      keyFile: /etc/prometheus/secrets/etcd-certs/healthcheck-client.key
-      insecureSkipVerify: true
-  selector:
-    matchLabels:
-      k8s-app: etcd
-  namespaceSelector:
-    matchNames:
-    - kube-system
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt; EOF
-
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; prometheus-serviceMonitorEtcd.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;h3 id=&quot;kubadm安装挂载外部安装etcd方式下操作&quot;&gt;kubadm安装挂载外部安装etcd方式下操作：&lt;/h3&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; monitoring create secret generic etcd-certs &lt;span class=&quot;nt&quot;&gt;--from-file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/etc/etcd/ssl/ca.pem &lt;span class=&quot;nt&quot;&gt;--from-file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/etc/etcd/ssl/server.pem &lt;span class=&quot;nt&quot;&gt;--from-file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;/etc/etcd/ssl/server-key.pem
-
-&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; prometheus-serviceMonitorEtcd.yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: etcd-k8s
-  namespace: kube-system
-  labels:
-    k8s-app: etcd
-spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-  - name: api
-    port: 2379
-    protocol: TCP
----
-apiVersion: v1
-kind: Endpoints
-metadata:
-  name: etcd-k8s
-  namespace: kube-system
-  labels:
-    k8s-app: etcd
-subsets:
-- addresses:
-  - ip: 192.168.0.195
-    nodeName: etcd1
-  - ip: 192.168.0.197
-    nodeName: etcd2
-  - ip: 192.168.0.198
-    nodeName: etcd3
-  ports:
-  - name: api
-    port: 2379
-    protocol: TCP
----
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: etcd-k8s
-  namespace: monitoring
-  labels:
-    k8s-app: etcd-k8s
-spec:
-  jobLabel: k8s-app
-  endpoints:
-  - port: api
-    interval: 30s
-    scheme: https
-    tlsConfig:
-      caFile: /etc/prometheus/secrets/etcd-certs/ca.pem
-      certFile: /etc/prometheus/secrets/etcd-certs/server.pem
-      keyFile: /etc/prometheus/secrets/etcd-certs/server-key.pem
-      #use insecureSkipVerify only if you cannot use a Subject Alternative Name
-      insecureSkipVerify: true 
-  selector:
-    matchLabels:
-      k8s-app: etcd
-  namespaceSelector:
-    matchNames:
-    - kube-system
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt; EOF
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; prometheus-serviceMonitorEtcd.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;img src=&quot;/assets/images/monitoring/etcd1.png&quot; alt=&quot;etcd1.png&quot; /&gt;
-
-&lt;h2 id=&quot;开启服务自动发现配置可持续存储修改prometheus-storage-retention参数设置数据保留时间&quot;&gt;开启服务自动发现，配置可持续存储，修改prometheus Storage Retention参数设置数据保留时间&lt;/h2&gt;
-&lt;blockquote&gt;
-  参照https://www.qikqiak.com/post/prometheus-operator-advance/,自动发现集群中的 Service，就需要我们在 Service 的annotation区域添加prometheus.io/scrape=true的声明，然后通过这个文件创建一个对应的 Secret 对象。由于配置可持续存储和修改retention参数都在同一个配置文件就都写在一起了
-&lt;/blockquote&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; prometheus-additional.yaml
-
-- job_name: 'kubernetes-service-endpoints'
-  kubernetes_sd_configs:
-  - role: endpoints
-  relabel_configs:
-  - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape]
-    action: keep
-    regex: true
-  - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
-    action: replace
-    target_label: __scheme__
-    regex: (https?)
-  - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
-    action: replace
-    target_label: __metrics_path__
-    regex: (.+)
-  - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
-    action: replace
-    target_label: __address__
-    regex: ([^:]+)(?::&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\d&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;+)?;(&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\d&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;+)
-    replacement: &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$1&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$2&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;
-  - action: labelmap
-    regex: __meta_kubernetes_service_label_(.+)
-  - source_labels: [__meta_kubernetes_namespace]
-    action: replace
-    target_label: kubernetes_namespace
-  - source_labels: [__meta_kubernetes_service_name]
-    action: replace
-    target_label: kubernetes_name
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;$ &lt;/span&gt;kubectl create secret generic additional-configs &lt;span class=&quot;nt&quot;&gt;--from-file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;prometheus-additional.yaml &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; monitoring
-secret &lt;span class=&quot;s2&quot;&gt;&quot;additional-configs&quot;&lt;/span&gt; created
-&lt;span class=&quot;c&quot;&gt;#修改crd文件，&lt;/span&gt;
-&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; prometheus-prometheus.yaml
-apiVersion: monitoring.coreos.com/v1
-kind: Prometheus
-metadata:
-  labels:
-    prometheus: k8s
-  name: k8s
-  namespace: monitoring
-spec:
-  alerting:
-    alertmanagers:
-    - name: alertmanager-main
-      namespace: monitoring
-      port: web
-  storage:
-    volumeClaimTemplate:
-      spec:
-        storageClassName: rook-ceph-block
-        resources:
-          requests:
-            storage: 20Gi
-  baseImage: quay.io/prometheus/prometheus
-  nodeSelector:
-    kubernetes.io/os: linux
-  podMonitorSelector: {}
-  replicas: 2
-  resources:
-    requests:
-      memory: 400Mi
-  ruleSelector:
-    matchLabels:
-      prometheus: k8s
-      role: alert-rules
-  securityContext:
-    fsGroup: 2000
-    runAsNonRoot: true
-    runAsUser: 1000
-  additionalScrapeConfigs:
-    name: additional-configs
-    key: prometheus-additional.yaml
-  serviceAccountName: prometheus-k8s
-  retention: 15d
-  serviceMonitorNamespaceSelector: {}
-  serviceMonitorSelector: {}
-  version: v2.11.0
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; prometheus-prometheus.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;img src=&quot;/assets/images/monitoring/prometheus-prometheus.png&quot; alt=&quot;prometheus-prometheus.png&quot; /&gt;
-&lt;h4 id=&quot;由于rabc权限问题prometheus-dashboard-的配置页面下面我们可以看到已经有了对应的的配置信息了但是我们切换到-targets-页面下面却并没有发现对应的监控任务&quot;&gt;由于RABC权限问题，Prometheus Dashboard 的配置页面下面我们可以看到已经有了对应的的配置信息了，但是我们切换到 targets 页面下面却并没有发现对应的监控任务&lt;/h4&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; prometheus-clusterRole.yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: prometheus-k8s
-rules:
-- apiGroups:
-  - &quot;&quot;
-  resources:
-  - nodes
-  - services
-  - endpoints
-  - pods
-  - nodes/proxy
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - &quot;&quot;
-  resources:
-  - configmaps
-  - nodes/metrics
-  verbs:
-  - get
-- nonResourceURLs:
-  - /metrics
-  verbs:
-  - get
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt;  rometheus-clusterRole.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;img src=&quot;/assets/images/monitoring/find-service.png&quot; alt=&quot;find-service.png&quot; /&gt;
-
-&lt;h2 id=&quot;grafana添加监控模板持久化&quot;&gt;grafana添加监控模板，持久化&lt;/h2&gt;
-&lt;h3 id=&quot;持久化&quot;&gt;持久化&lt;/h3&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt;  grafana-pv.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: grafana
-  namespace: monitoring
-spec:
-  storageClassName: rook-ceph-block
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; grafana-pv.yaml
-修改grafana-deployment.yaml,如下图：
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;img src=&quot;/assets/images/monitoring/grafana-dev1.png&quot; alt=&quot;grafana-dev1.png&quot; /&gt;
-&lt;img src=&quot;/assets/images/monitoring/grafana-dev2.png&quot; alt=&quot;grafana-dev2.png&quot; /&gt;
-
-&lt;blockquote&gt;
-  kubectl apply -f grafana-deployment.yaml
-&lt;/blockquote&gt;
-
-&lt;h3 id=&quot;grafana添加模板只添加了treafik2-和etcd模板&quot;&gt;grafana添加模板，只添加了treafik2 和etcd模板&lt;/h3&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;登录https://monitoring.saynaihe.com/dashboards  import模板号10906  3070.
-打开dashboard，有的模板会出现Panel plugin not found: grafana-piechart-panel 。
-解决方法：重新构建grafana镜像，/usr/share/grafana/bin/grafana-cli plugins &lt;span class=&quot;nb&quot;&gt;install &lt;/span&gt;grafana-piechart-panel安装缺失插件
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;img src=&quot;/assets/images/monitoring/no-panel.png&quot; alt=&quot;no-panel.png&quot; /&gt;
-&lt;img src=&quot;/assets/images/monitoring/api.png&quot; alt=&quot;api.png&quot; /&gt;
-&lt;img src=&quot;/assets/images/monitoring/treafik.png&quot; alt=&quot;treafik.png&quot; /&gt;
-&lt;img src=&quot;/assets/images/monitoring/etcd-prometheus.png&quot; alt=&quot;etcd-prometheus.png&quot; /&gt;
-
-&lt;h2 id=&quot;微信报警&quot;&gt;微信报警&lt;/h2&gt;
-&lt;blockquote&gt;
-  将对应参数修改为自己微信企业号相对应参数
-&lt;/blockquote&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; alertmanager.yaml 
-    global:
-      resolve_timeout: 2m
-      wechat_api_url: 'https://qyapi.weixin.qq.com/cgi-bin/'
-    route:
-      group_by: ['alert']
-      group_wait: 10s
-      group_interval: 1m
-      repeat_interval: 1h
-      receiver: wechat
-    receivers:
-    - name: 'wechat'
-      wechat_configs:
-      - api_secret: 'xxxx'
-        send_resolved: true
-        to_user: '@all'
-        to_party: 'xxx'
-        agent_id: 'xxx'
-        corp_id: 'xxxx'
-    templates:
-      - '/etc/config/alert/wechat.tmpl'
-    inhibit_rules:
-      - source_match:
-          severity: 'critical'
-        target_match:
-          severity: 'warning'
-        equal: ['alertname', 'dev', 'instance']
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; wechat.tpl
-
-☸ Alerts Firing ✖️ ‼️ :
-
-☎️ 触发警报 ☔ ☠️ : 
-☞名称空间: 
-☞主机: 
-☞job: 
--&amp;gt;涉及容器名称: 
--&amp;gt;Pod名称: 
-告警级别: 
-告警详情: 
-触发时间⏱: 
-警报链接: 
-✍️ 备注详情❄️: 
---------------------&amp;gt;END&amp;lt;--------------------
-☸ Alerts Resolved ✔️:
-
-☎️ 触发警报 ☫ : 
-♥️ 名称空间 ✝️ : 
-♥️ -&amp;gt;涉及容器名称: 
-♥️ -&amp;gt;Pod名称☸: 
-♥️ 告警级别: 
-♥️ 告警详情: 
-♥️ 触发时间 ⏱ : 
-♥️ 恢复时间 ⏲ : 
-♥️ 备注详情: 
---------------------&amp;gt;END&amp;lt;--------------------
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;img src=&quot;/assets/images/monitoring/tpl.png&quot; alt=&quot;tpl.png&quot; /&gt;
-&lt;img src=&quot;/assets/images/monitoring/alertmanager1.png&quot; alt=&quot;alertmanager.png&quot; /&gt;
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl delete secret alertmanager-main &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; monitoring
-kubectl create secret generic alertmanager-main &lt;span class=&quot;nt&quot;&gt;--from-file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;alertmanager.yaml &lt;span class=&quot;nt&quot;&gt;--from-file&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;wechat.tmpl &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; monitoring
-wechat.tpl模板可以根据自己需求自己定制，我这里就找了个网上的例子,格式不太会玩，貌似看不到，如下图
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;img src=&quot;/assets/images/monitoring/wechat.png&quot; alt=&quot;wechat.png&quot; /&gt;
-
-&lt;blockquote&gt;
-  基本完成。具体的修改可参考个人实际。
-&lt;/blockquote&gt;
-</description>
-        <pubDate>Tue, 05 Nov 2019 21:00:33 +0800</pubDate>
-        <link>http://localhost:4000/2019/11/05/k8s-install-prometheus-operator/</link>
-        <guid isPermaLink="true">http://localhost:4000/2019/11/05/k8s-install-prometheus-operator/</guid>
-        
-        <category>kubernetes</category>
-        
-        <category>prometheus-operator</category>
         
         
         <category>kubernetes</category>
