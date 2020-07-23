@@ -3,6 +3,21 @@
   
     
     <url>
+      <loc>http://localhost:4000/2020/07/23/kubernetes-question-etcd/</loc>
+      
+        <lastmod>2020-07-23T10:00:00+08:00</lastmod>
+      
+      
+        <changefreq>monthly</changefreq>
+      
+      
+        <priority>0.5</priority>
+      
+    </url>
+    
+  
+    
+    <url>
       <loc>http://localhost:4000/2020/07/23/kubernetes-csi-tencentcloud-cbs/</loc>
       
         <lastmod>2020-07-23T10:00:00+08:00</lastmod>
@@ -18,7 +33,7 @@
   
     
     <url>
-      <loc>http://localhost:4000/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA-%E5%89%AF%E6%9C%AC/</loc>
+      <loc>http://localhost:4000/2020/07/22/tencent-slb-kubeadm-ha/</loc>
       
         <lastmod>2020-07-22T16:00:00+08:00</lastmod>
       
@@ -351,7 +366,7 @@
     <url>
       <loc>http://localhost:4000/archive/</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -366,7 +381,7 @@
     <url>
       <loc>http://localhost:4000/category/</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -381,7 +396,7 @@
     <url>
       <loc>http://localhost:4000/tag/</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -396,7 +411,7 @@
     <url>
       <loc>http://localhost:4000/collection/</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -411,7 +426,7 @@
     <url>
       <loc>http://localhost:4000/demo/</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -426,7 +441,7 @@
     <url>
       <loc>http://localhost:4000/nav/</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -441,7 +456,7 @@
     <url>
       <loc>http://localhost:4000/about/</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -456,7 +471,7 @@
     <url>
       <loc>http://localhost:4000/feed.xml</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -471,7 +486,7 @@
     <url>
       <loc>http://localhost:4000/</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -486,7 +501,7 @@
     <url>
       <loc>http://localhost:4000/css/main.css</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -505,7 +520,7 @@
     <url>
       <loc>http://localhost:4000/page2/</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -520,7 +535,7 @@
     <url>
       <loc>http://localhost:4000/page3/</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>
@@ -535,7 +550,7 @@
     <url>
       <loc>http://localhost:4000/css/main.css.map</loc>
       
-        <lastmod>2020-07-23T15:56:03+08:00</lastmod>
+        <lastmod>2020-07-23T20:24:48+08:00</lastmod>
       
       
         <changefreq>monthly</changefreq>

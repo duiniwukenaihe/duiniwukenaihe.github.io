@@ -154,6 +154,341 @@ var _hmt = _hmt || [];
             
               <li>
                 <h2>
+                  <a class="post-link" href="/2019/11/19/k8s-install-jenkins/">k8s-install-jenkins</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-11-19
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes1.16" title="Tag: kubernetes1.16" rel="tag">kubernetes1.16</a>&nbsp;
+    
+        <a href="/tag/#jenkins" title="Tag: jenkins" rel="tag">jenkins</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#安装jenkins" id="markdown-toc-安装jenkins">安装jenkins</a>    <ul>
+      <li><a href="#登陆jenkins初始化配置" id="markdown-toc-登陆jenkins初始化配置">登陆jenkins。初始化配置</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="描述背景">描述背景：</h1>
+<p>注：kubernetes基本环境搭建完成，存储rook-ceph，rbd方式。代码仓库gitlab,容器仓库harbor,监控prometheus，负载方式都用了内部clusterip然后 traefik代理的方式。为了完善工具链，容器中搭建jenkins工具。</p>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.1</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="安装jenkins">安装jenkins</h1>
+<blockquote>
+  <ol>
+    <li>建立命名空间
+      <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create namespace kube-ops
+注：后续所有工具类应用程序都创建在此命名空间内。
+</code></pre></div>      </div>
+      <hr />
+    </li>
+    <li>创建ServiceAccount &amp; ClusterRoleBinding</li>
+  </ol>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>注：都是用的默认的，权限的管理还没有深入进行学习下。
+
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; rabc.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: jenkins2
+rules:
+  - apiGroups: ["extensions", "apps"]
+    resources: ["deployments"]
+    verbs: ["create", "delete", "get", "list", "watch", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["create", "delete", "get", "list", "watch", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create","delete","get","list","patch","update","watch"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create","delete","get","list","patch","update","watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get","list","watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: jenkins2
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jenkins2
+subjects:
+  - kind: ServiceAccount
+    name: jenkins2
+    namespace: kube-ops
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> rabc.yaml
+</code></pre></div></div>
+
+<blockquote>
+  <p>3.deployment jenkins</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; jenkins.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: opspvc
+  labels:
+    app: jenkins2
+  namespace: kube-ops
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+spec:
+  selector:
+    matchLabels:
+      app: jenkins2
+  template:
+    metadata:
+      labels:
+        app: jenkins2
+    spec:
+      terminationGracePeriodSeconds: 10
+      serviceAccountName: jenkins2
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: web
+          protocol: TCP
+        - containerPort: 50000
+          name: agent
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /login
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        readinessProbe:
+          httpGet:
+            path: /login
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        volumeMounts:
+        - name: jenkinshome
+          subPath: jenkins2
+          mountPath: /var/jenkins_home
+        env:
+        - name: LIMITS_MEMORY
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+              divisor: 1Mi
+        - name: JAVA_OPTS
+          value: -Xmx</span><span class="si">$(</span>LIMITS_MEMORY<span class="si">)</span><span class="sh">m -XshowSettings:vm -Dhudson.slaves.NodeProvisioner.initialDelay=0 -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85 -Duser.timezone=Asia/Shanghai
+      securityContext:
+        fsGroup: 1000
+      volumes:
+      - name: jenkinshome
+        persistentVolumeClaim:
+          claimName: opspvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+  labels:
+    app: jenkins2
+spec:
+  selector:
+    app: jenkins2
+  ports:
+  - name: web
+    port: 8080
+    targetPort: web
+  - name: agent
+    port: 50000
+    targetPort: agent
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> jenkins.yaml
+注： kubernetes 1.16 取消了extensions/v1beta1 api，使用apps/v1。
+</code></pre></div></div>
+<p><img src="/assets/images/jenkins/deployment.png" alt="deployment.png" /></p>
+<blockquote>
+  <p>4.traefik对外暴露服务</p>
+  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; ingress.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: jenkins2-https
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(</span><span class="se">\`</span><span class="sh">jenkins.sainaihe.com</span><span class="se">\`</span><span class="sh">)
+      kind: Rule
+      services:
+        - name: jenkins2
+          port: 8080
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> ingress.yaml
+</code></pre></div>  </div>
+  <p><img src="/assets/images/jenkins/ingressroute.png" alt="ingressroute.png" />
+<img src="/assets/images/jenkins/traefik.png" alt="traefik.png" /></p>
+  <h2 id="登陆jenkins初始化配置">登陆jenkins。初始化配置</h2>
+  <ol>
+    <li>访问 https://jenkins.saynaihe.com,出现：
+<img src="/assets/images/jenkins/jenkins1.png" alt="jenkins1.png" />
+获取初始密码
+      <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl <span class="nb">exec</span> <span class="nt">-it</span> jenkins2-9f55b98b6-xtffb <span class="nb">cat</span> /var/jenkins_home/secrets/initialAdminPassword <span class="nt">-n</span> kube-ops
+</code></pre></div>      </div>
+      <p><img src="/assets/images/jenkins/jenkins2.png" alt="jenkins2.png" /></p>
+    </li>
+    <li>设置管理员账号密码，进入登陆界面
+<img src="/assets/images/jenkins/jenkins3.png" alt="jenkins3.png" /></li>
+    <li>安装插件，安装了中文插件，pipeline，gitlab,git,github 参数化插件等，看个人需要安装吧。
+<img src="/assets/images/jenkins/jenkins4.png" alt="jenkins4.png" />
+<img src="/assets/images/jenkins/jenkins5.png" alt="jenkins5.png" />
+注：因为国外源不稳定 国内有其他备用源可以切换比如清华的源。jenkins中文社区有篇文章：https://mp.weixin.qq.com/s/rqx93WI0UEvzqaFrt84i8A可以参考。</li>
+  </ol>
+</blockquote>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/11/19/k8s-install-jenkins/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
                   <a class="post-link" href="/2019/11/05/k8s-install-prometheus-operator/">k8s-install-prometheus-operator</a>
                 </h2>
                 <div class="label">
@@ -2330,493 +2665,6 @@ master节点执行kubectl get nodes
                 <hr>
               </li>
             
-              <li>
-                <h2>
-                  <a class="post-link" href="/2019/09/06/k8s-gitlab/">docker 搭建gitlab迁移到kubernetes集群</a>
-                </h2>
-                <div class="label">
-                    <div class="label-card">
-                        <i class="fa fa-calendar"></i>2019-09-06
-                    </div>
-                    <div class="label-card">
-                        <i class="fa fa-user"></i>duiniwukenaihe
-                        
-                    </div>
-                    <div class="label-card">
-                        
-                    </div>
-
-                    <div class="label-card">
-                    
-
-
-<!-- <span class="point">•</span> -->
-<span class="categories">
-  <i class="fa fa-th-list"></i>
-  
-    
-        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
-    
-  
-
-  <!-- <span class="point">•</span> -->
-</span>
-
-
-                    </div>
-
-                    <div class="label-card">
-                    
-<!-- <span class="point">•</span> -->
-<span class="pageTag">
-  <i class="fa fa-tags"></i>
-  
-    
-        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
-    
-        <a href="/tag/#gitlab" title="Tag: gitlab" rel="tag">gitlab</a>&nbsp;
-    
-        <a href="/tag/#docker" title="Tag: docker" rel="tag">docker</a>
-    
-  
-
-</span>
-
-                    </div>
-                </div>
-                <div class="excerpt">
-                    <ul id="markdown-toc">
-  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
-  <li><a href="#环境搭建" id="markdown-toc-环境搭建">环境搭建：</a></li>
-  <li><a href="#备份原有docker-gitlab环境项目备份" id="markdown-toc-备份原有docker-gitlab环境项目备份">备份原有docker gitlab环境项目备份:</a></li>
-</ul>
-
-<h1 id="描述背景">描述背景：</h1>
-<blockquote>
-  <p>早前公司代码管理采用的docker compose搭建的gitlab管理。为完成资源优化，高可用。现在将环境迁移到kubernetes集群环境中。compose 文件基本是基于https://raw.githubusercontent.com/sameersbn/docker-gitlab/master/docker-compose.yml进行修改的，修改了gitlab images twang2218/gitlab-ce-zh:latest 中文版镜像.gitlab  postgresql  redis都挂载本地目录为/data/docker/相对应目录下 端口映射80映射到主机10080  22 映射到10022主机端口。</p>
-</blockquote>
-
-<p>如下图：</p>
-
-<p><img src="/assets/images/gitlab/gitlab1.png" alt="gitlab1.png" /></p>
-
-<blockquote>
-  <p>gitlab 主要涉及Redis、Postgresql、Gitlab三个应用，现在基于kubernetes 先搭建gitlab初始化环境：</p>
-
-  <p>注： 个人存储使用了rook的ceph，所以持久化存储都采用了rook ceph.</p>
-</blockquote>
-
-<h1 id="环境搭建">环境搭建：</h1>
-
-<blockquote>
-  <p>1 . gitlab redis 应用搭建</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  gitlab-redis.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: gitlab-redis
-  namespace: kube-ops
-  labels:
-    name: redis
-spec:
-  storageClassName: rook-ceph-block
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: redis
-  namespace: kube-ops
-  labels:
-    name: redis
-spec:
-  selector:
-    matchLabels:
-      name: redis
-  template:
-    metadata:
-      name: redis
-      labels:
-        name: redis
-    spec:
-      containers:
-      - name: redis
-        image: sameersbn/redis
-        imagePullPolicy: IfNotPresent
-        ports:
-        - name: redis
-          containerPort: 6379
-        volumeMounts:
-        - mountPath: /var/lib/redis
-          name: gitlab-redis
-        livenessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
-        readinessProbe:
-          exec:
-            command:
-            - redis-cli
-            - ping
-          initialDelaySeconds: 5
-          timeoutSeconds: 1
-      volumes:
-      - name: gitlab-redis
-        persistentVolumeClaim:
-          claimName: gitlab-redis
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: redis
-  namespace: kube-ops
-  labels:
-    name: redis
-spec:
-  ports:
-    - name: redis
-      port: 6379
-      targetPort: redis
-  selector:
-    name: redis
-</span><span class="no">EOF
-</span></code></pre></div></div>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> kubectl apply <span class="nt">-f</span> gitlab-redis.yaml
-</code></pre></div></div>
-<blockquote>
-  <p>2 . gitlab  portgresql 环境搭建</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;gitlab-postgresql.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: gitlab-postgresql
-  namespace: kube-ops
-  labels:
-    name: postgresql
-spec:
-  storageClassName: rook-ceph-block
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 1Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: postgresql
-  namespace: kube-ops
-  labels:
-    name: postgresql
-spec:
-spec:
-  selector:
-    matchLabels:
-      name: postgresql
-  template:
-    metadata:
-      name: postgresql
-      labels:
-        name: postgresql
-    spec:
-      containers:
-      - name: postgresql
-        image: sameersbn/postgresql:10
-        imagePullPolicy: IfNotPresent
-        env:
-        - name: DB_USER
-          value: gitlab
-        - name: DB_PASS
-          value: passw0rd
-        - name: DB_NAME
-          value: gitlab_production
-        - name: DB_EXTENSION
-          value: pg_trgm
-        ports:
-        - name: postgres
-          containerPort: 5432
-        volumeMounts:
-        - mountPath: /var/lib/postgresql
-          name: gitlab-postgresql
-        livenessProbe:
-          exec:
-            command:
-            - pg_isready
-            - -h
-            - localhost
-            - -U
-            - postgres
-          initialDelaySeconds: 30
-          timeoutSeconds: 5
-        readinessProbe:
-          exec:
-            command:
-            - pg_isready
-            - -h
-            - localhost
-            - -U
-            - postgres
-          initialDelaySeconds: 5
-          timeoutSeconds: 1
-      volumes:
-      - name: gitlab-postgresql
-        persistentVolumeClaim:
-          claimName: gitlab-postgresql
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgresql
-  namespace: kube-ops
-  labels:
-    name: postgresql
-spec:
-  ports:
-    - name: postgres
-      port: 5432
-      targetPort: postgres
-  selector:
-    name: postgresql
-</span><span class="no">
-EOF
-</span></code></pre></div></div>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code> kubectl apply <span class="nt">-f</span> gitlab-postgresql.yaml
-</code></pre></div></div>
-<blockquote>
-  <p>3 . gitlab 应用搭建</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;gitlab.yaml
-
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: gitlab
-  labels:
-    app: gitlab
-  namespace: kube-ops
-spec:
-  storageClassName: rook-ceph-block
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: gitlab
-  namespace: kube-ops
-  labels:
-    name: gitlab
-spec:
-spec:
-  selector:
-    matchLabels:
-      name: gitlab
-  template:
-    metadata:
-      name: gitlab
-      labels:
-        name: gitlab
-    spec:
-      containers:
-      - name: gitlab
-        image: twang2218/gitlab-ce-zh:10.8.3
-        imagePullPolicy: IfNotPresent
-        env:
-        - name: TZ
-          value: Asia/Shanghai
-        - name: GITLAB_TIMEZONE
-          value: Beijing
-        - name: GITLAB_SECRETS_DB_KEY_BASE
-          value: long-and-random-alpha-numeric-string
-        - name: GITLAB_SECRETS_SECRET_KEY_BASE
-          value: long-and-random-alpha-numeric-string
-        - name: GITLAB_SECRETS_OTP_KEY_BASE
-          value: long-and-random-alpha-numeric-string
-        - name: GITLAB_ROOT_PASSWORD
-          value: admin321
-        - name: GITLAB_ROOT_EMAIL
-          value: zhangpeng19871017@hotmail.com
-        - name: GITLAB_HOST
-          value: gitlab.zhangpeng.com
-        - name: GITLAB_PORT
-          value: "80"
-        - name: GITLAB_SSH_PORT
-          value: "22"
-        - name: GITLAB_NOTIFY_ON_BROKEN_BUILDS
-          value: "true"
-        - name: GITLAB_NOTIFY_PUSHER
-          value: "false"
-        - name: GITLAB_BACKUP_SCHEDULE
-          value: daily
-        - name: GITLAB_BACKUP_TIME
-          value: 01:00
-        - name: DB_TYPE
-          value: postgres
-        - name: DB_HOST
-          value: postgresql
-        - name: DB_PORT
-          value: "5432"
-        - name: DB_USER
-          value: gitlab
-        - name: DB_PASS
-          value: passw0rd
-        - name: DB_NAME
-          value: gitlab_production
-        - name: REDIS_HOST
-          value: redis
-        - name: REDIS_PORT
-          value: "6379"
-        ports:
-        - name: http
-          containerPort: 80
-        - name: ssh
-          containerPort: 22
-        volumeMounts:
-        - mountPath: /var/opt/gitlab
-          name: gitlab
-        livenessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 180
-          timeoutSeconds: 5
-        readinessProbe:
-          httpGet:
-            path: /
-            port: 80
-          initialDelaySeconds: 5
-          timeoutSeconds: 1
-      volumes:
-      - name: gitlab
-        persistentVolumeClaim:
-          claimName: gitlab
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: gitlab
-  namespace: kube-ops
-  labels:
-    name: gitlab
-spec:
-  ports:
-    - name: http
-      port: 80
-      targetPort: http
-    - name: ssh
-      port: 22
-      targetPort: ssh
-  selector:
-    name: gitlab
-</span><span class="no">EOF
-</span></code></pre></div></div>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> gitlab.yaml
-</code></pre></div></div>
-
-<blockquote>
-  <p>等待gitlab 容器状态 running &amp; kubectl get svc -n kube-ops</p>
-</blockquote>
-
-<p><img src="/assets/images/gitlab/gitlab2.png" alt="gitlab2.png" /></p>
-
-<blockquote>
-  <p>4 .  访问主机ip+svc 对外暴露端口验证
-<img src="/assets/images/gitlab/gitlab3.png" alt="gitlab3.png" /></p>
-</blockquote>
-
-<h1 id="备份原有docker-gitlab环境项目备份">备份原有docker gitlab环境项目备份:</h1>
-
-<blockquote>
-  <p>主要参考：https://blog.csdn.net/ygqygq2/article/details/85007910#21__15</p>
-</blockquote>
-
-<blockquote>
-  <p>1 . 进入gitlab容器，备份仓库：</p>
-  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>docker <span class="nb">exec</span> <span class="nt">-it</span> f80f368d857c bash
-gitlab-rake gitlab:backup:create
-</code></pre></div>  </div>
-  <p><img src="/assets/images/gitlab/gitlab4.png" alt="gitlab4.png" />
-<img src="/assets/images/gitlab/gitlab_back1.png" alt="gitlabback1.png" /></p>
-</blockquote>
-
-<blockquote>
-  <p>2 . 进入宿主机挂载的对应目录发现备份文件生成&amp;将备份文件copy 到kubernetes集群中master节点</p>
-</blockquote>
-
-<blockquote>
-  <p>cd /data/docker/gitlab/data/backups</p>
-</blockquote>
-
-<p><img src="/assets/images/gitlab/gitlab_back2.png" alt="gitlabback2.png" /></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl <span class="nb">cp </span>1567739719_2019_09_06_10.8.3_gitlab_backup.tar gitlab-78b9f67956-s9nmr:/var/opt/gitlab/backups <span class="nt">-n</span> kube-ops 
-kubectl <span class="nb">exec</span> <span class="nt">-it</span> gitlab-78b9f67956-s9nmr bash <span class="nt">-n</span> kube-ops
-gitlab-rake gitlab:backup:restore
-
-</code></pre></div></div>
-<blockquote>
-  <p>出现以下报错。看日志发现docker compose 环境下gitlab版本为10.8.3 。kubernetes集群版本gitlab image 为11.1.4.这也是比较推荐用详细版本号不要用latest版本的原因。</p>
-</blockquote>
-
-<p><img src="/assets/images/gitlab/gitlab_back3.png" alt="gitlabback3.png" /></p>
-
-<blockquote>
-  <p>修改gitlab.yaml 文件gitlab image 版本号  &amp;  kubectl apply gitlab.yaml ,出现下图所示还原完成</p>
-</blockquote>
-
-<p><img src="/assets/images/gitlab/gitlab_back4.png" alt="gitlabback3.png" /></p>
-
-<blockquote>
-  <p>用原有账号密码登录验证项目完整导入
-<img src="/assets/images/gitlab/gitlab5.png" alt="gitlab5.png" />
-域名代理方式用了腾讯云的slb
-<img src="/assets/images/gitlab/gitlab_https.png" alt="gitlab_https.png" />
-<img src="/assets/images/gitlab/gitlab_ssh.png" alt="gitlab_ssh.png" /></p>
-</blockquote>
-
-<blockquote>
-  <p>域名方式验证
-<img src="/assets/images/gitlab/gitlab6.png" alt="gitlab6.png" /></p>
-</blockquote>
-
-<blockquote>
-  <p>找一台服务器:</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>ssh-keygen <span class="nt">-t</span> rsa <span class="nt">-C</span> <span class="s2">"zhangpeng@k8s-node1.com"</span>
-
-添加ssh key 到gitlab  验证ssh访问ok
-</code></pre></div></div>
-<p><img src="/assets/images/gitlab/gitlab_ssh1.png" alt="gitlab_ssh.png" /></p>
-
-<blockquote>
-  <p>注： 特别鸣谢阳明大佬，很多东西都是从阳明大佬博客借鉴的，https://www.qikqiak.com/post/gitlab-install-on-k8s/大佬的文章很全。自己写是为了加强自己的记忆</p>
-</blockquote>
-
-                </div>
-                <div class="read-all">
-                    <a  href="/2019/09/06/k8s-gitlab/"><i class="fa fa-newspaper-o"></i>Read All</a>
-                </div>
-                <hr>
-              </li>
-            
         </ul>
 
 
@@ -2919,9 +2767,11 @@ gitlab-rake gitlab:backup:restore
                 </div>
                 <ul class="content-ul" recent>
                     
+                        <li><a href="/2020/07/23/kubernetes-question-etcd/">2020-07-23-qestion-etcd(error execution phase check-etcd)</a></li>
+                    
                         <li><a href="/2020/07/23/kubernetes-csi-tencentcloud-cbs/">2020-07-23-kubernetes集群使用腾讯云cbs块存储</a></li>
                     
-                        <li><a href="/2020/07/22/%E8%85%BE%E8%AE%AF%E4%BA%91-slb-kubeadm%E9%AB%98%E5%8F%AF%E7%94%A8%E9%9B%86%E7%BE%A4%E6%90%AD%E5%BB%BA-%E5%89%AF%E6%9C%AC/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a></li>
+                        <li><a href="/2020/07/22/tencent-slb-kubeadm-ha/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a></li>
                     
                         <li><a href="/2019/12/27/traefik/">2019-12-27-traefik</a></li>
                     
@@ -2936,8 +2786,6 @@ gitlab-rake gitlab:backup:restore
                         <li><a href="/2019/11/25/k8s-question2/">2019-11-25-k8s-question2</a></li>
                     
                         <li><a href="/2019/11/19/cncf-ali/">k8s-install-jenkins</a></li>
-                    
-                        <li><a href="/2019/11/19/k8s-install-jenkins/">k8s-install-jenkins</a></li>
                     
                 </ul>
             </div>
@@ -2964,7 +2812,7 @@ gitlab-rake gitlab:backup:restore
                             <span class="name">
                                 kubernetes
                             </span>
-                            <span class="badge">20</span>
+                            <span class="badge">21</span>
                         </a>
                     </li>
                     
@@ -3282,6 +3130,34 @@ gitlab-rake gitlab:backup:restore
                       
                       
                       <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 9pt; color: #999;">kubernetes-csi-tencentcloud</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#kubernetes1.16.8" style="font-size: 9pt; color: #999;">kubernetes1.16.8</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#etcd" style="font-size: 10pt; color: #888;">etcd</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#check-etcd" style="font-size: 9pt; color: #999;">check-etcd</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#监控检查失败" style="font-size: 9pt; color: #999;">监控检查失败</a>
                     
                 </div>
             </div>
