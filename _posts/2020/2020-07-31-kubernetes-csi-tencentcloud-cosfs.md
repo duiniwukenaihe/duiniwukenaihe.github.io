@@ -358,11 +358,12 @@ data:
   SecretId: VWVEJxRk5Fb0JGbDA4M...(base64 encode)
   SecretKey: Qa3p4ZTVCMFlQek...(base64 encode)
 ```  
-
-> kubectl apply -f secret 
+```  
+kubectl apply -f secret 
 or 
 创建secret的另外一种方式：kubectl create secret generic cos-secret -n kube-system  --from-literal=SecretId=AKIDjustfortest --from-literal=SecretKey=justfortest
-![cos-secret](/assets/images/2020/07/cosfscos-secret.png) 
+```  
+![cos-secret](/assets/images/2020/07/cosfs/cos-secret.png) 
 ##### 2. create  pv and pvc 创建pv pvc 
 
 ```  
@@ -409,12 +410,12 @@ spec:
   # Currently cos only supports static provisioning, the StorageClass name should be empty.
   storageClassName: ""  
 ```   
-
+```  
 kubectl apply -f pv.yaml
 
 kubectl apply -f pvc.yaml
 
-      
+ ```       
 
  
 ![pv-pvc1](/assets/images/2020/07/cosfs/pv-pvc1.png) 
