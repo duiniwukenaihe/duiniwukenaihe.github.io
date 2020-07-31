@@ -31,12 +31,12 @@ centos7.7 64位
 >环境为kubernets集群1.18.6，参照 https://duiniwukenaihe.github.io/2020/07/22/tencent-slb-kubeadm-ha/在腾讯云上搭建。参照https://duiniwukenaihe.github.io/2020/07/23/kubernetes-csi-tencentcloud-cbs/完成 cbs云硬盘块存储集成。现在想把cos作为存储试一下。
 
 
-#### 1.git clone 仓库
+#### 一.git clone 仓库
  ```bash
 https://github.com/TencentCloud/kubernetes-csi-tencentcloud
 现在github会非常卡你懂的，最好还是国外服务器下载了。
  ```
-#### 2. kubernets集群更改配置
+#### 二. kubernets集群更改配置
 
 > 参照https://github.com/TencentCloud/kubernetes-csi-tencentcloud/blob/master/docs/README_COSFS.md，我的kubernets集群是1.18.6。按照https://github.com/TencentCloud/kubernetes-csi-tencentcloud/edit/master/docs/README_CBS_zhCN.md的前置特性KubeletPluginsWatcher支持到1.12 我就不去考虑了。如下：
 
@@ -57,7 +57,7 @@ https://github.com/TencentCloud/kubernetes-csi-tencentcloud
 
 
 
-#### 2. 配置
+#### 三. 配置
 **注意**: https://github.com/TencentCloud/kubernetes-csi-tencentcloud/blob/master/docs/README_COSFS.md 文档比较坑，首先 rbac都没有搞，照着下去能成功吗？反正我搞东西 先rbac授权。
 ##### 1. 配置rbac
 
@@ -337,7 +337,7 @@ spec:
 ![cosplugin-pods](/assets/images/2020/07/cosfs/cosplugin-pods.png) 
 
 
-#### 3. DEMO
+#### 四. DEMO
 
 
 ##### 1. create a secret 创建secret秘钥
@@ -420,7 +420,7 @@ kubectl apply -f pvc.yaml
  
 ![pv-pvc1](/assets/images/2020/07/cosfs/pv-pvc1.png) 
 ![pv-pvc](/assets/images/2020/07/cosfs/pv-pvc.png)
-##### 3. Create a Pod to use the PVC
+##### 4. Create a Pod to use the PVC
 ```  
 #参考deploy/cosfs/examples/podyaml
 apiVersion: v1
