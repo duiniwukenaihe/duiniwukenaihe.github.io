@@ -246,7 +246,7 @@ spec:
  ![coslauncher](/assets/images/2020/07/cosfs/coslauncher.png) 
 ![coslauncher-pods](/assets/images/2020/07/cosfs/coslauncher-pods.png) 
 
-##### 3.Deploy COS CSI driver 部署cos  csi驱动
+##### 4.Deploy COS CSI driver 部署cos  csi驱动
  ```   
 #参考deploy/cosfs/kubernetes/cosplugin.yaml
 # This YAML file contains driver-registrar & csi driver nodeplugin API objects,
@@ -332,8 +332,14 @@ spec:
  原文档 apps/v1beta2 修改为apps/v1
   ```  
 > kubectl apply -f  cosplugin.yaml  
+
+
 ![cosplugin-pods](/assets/images/2020/07/cosfs/cosplugin-pods.png) 
+
+
 #### 3. DEMO
+
+
 ##### 1. create a secret 创建secret秘钥
 
   ``` 
@@ -358,8 +364,9 @@ or
 创建secret的另外一种方式：kubectl create secret generic cos-secret -n kube-system  --from-literal=SecretId=AKIDjustfortest --from-literal=SecretKey=justfortest
 ![cos-secret](/assets/images/2020/07/cosfscos-secret.png) 
 ##### 2. create  pv and pvc 创建pv pvc 
+
 ```  
-#参考deploy/cosfs/examples/pv.yaml
+###参考deploy/cosfs/examples/pv.yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -386,10 +393,7 @@ spec:
       # Replaced by the name and namespace of your secret.
       name: cos-secret
       namespace: kube-system
-```        
-> kubectl apply -f pv.yaml
-```  
-#参考deploy/cosfs/examples/pvc.yaml
+###参考deploy/cosfs/examples/pvc.yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -403,9 +407,16 @@ spec:
   # You can specify the pv name manually or just let kubernetes to bind the pv and pvc.
   # volumeName: pv-cos
   # Currently cos only supports static provisioning, the StorageClass name should be empty.
-  storageClassName: ""
-```  
-> kubectl apply -f pvc.yaml
+  storageClassName: ""  
+```   
+
+kubectl apply -f pv.yaml
+
+kubectl apply -f pvc.yaml
+
+      
+
+ 
 ![pv-pvc1](/assets/images/2020/07/cosfs/pv-pvc1.png) 
 ![pv-pvc](/assets/images/2020/07/cosfs/pv-pvc.png)
 ##### 3. Create a Pod to use the PVC
@@ -433,6 +444,7 @@ spec:
       # Replaced by your pvc name.
       claimName: pvc-cos
 ``` 
+
 > kubectl apply -f pod.yaml
 
 ![cos-pods](/assets/images/2020/07/cosfs/cos-pods.png)
