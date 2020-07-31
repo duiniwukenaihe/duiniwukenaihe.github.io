@@ -154,6 +154,341 @@ var _hmt = _hmt || [];
             
               <li>
                 <h2>
+                  <a class="post-link" href="/2019/11/19/cncf-ali/">k8s-install-jenkins</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-11-19
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes1.16" title="Tag: kubernetes1.16" rel="tag">kubernetes1.16</a>&nbsp;
+    
+        <a href="/tag/#jenkins" title="Tag: jenkins" rel="tag">jenkins</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#安装jenkins" id="markdown-toc-安装jenkins">安装jenkins</a>    <ul>
+      <li><a href="#登陆jenkins初始化配置" id="markdown-toc-登陆jenkins初始化配置">登陆jenkins。初始化配置</a></li>
+    </ul>
+  </li>
+</ul>
+
+<h1 id="描述背景">描述背景：</h1>
+<p>注：kubernetes基本环境搭建完成，存储rook-ceph，rbd方式。代码仓库gitlab,容器仓库harbor,监控prometheus，负载方式都用了内部clusterip然后 traefik代理的方式。为了完善工具链，容器中搭建jenkins工具。</p>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.1</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="安装jenkins">安装jenkins</h1>
+<blockquote>
+  <ol>
+    <li>建立命名空间
+      <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create namespace kube-ops
+注：后续所有工具类应用程序都创建在此命名空间内。
+</code></pre></div>      </div>
+      <hr />
+    </li>
+    <li>创建ServiceAccount &amp; ClusterRoleBinding</li>
+  </ol>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>注：都是用的默认的，权限的管理还没有深入进行学习下。
+
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; rabc.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: jenkins2
+rules:
+  - apiGroups: ["extensions", "apps"]
+    resources: ["deployments"]
+    verbs: ["create", "delete", "get", "list", "watch", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["create", "delete", "get", "list", "watch", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create","delete","get","list","patch","update","watch"]
+  - apiGroups: [""]
+    resources: ["pods/exec"]
+    verbs: ["create","delete","get","list","patch","update","watch"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get","list","watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: jenkins2
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jenkins2
+subjects:
+  - kind: ServiceAccount
+    name: jenkins2
+    namespace: kube-ops
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> rabc.yaml
+</code></pre></div></div>
+
+<blockquote>
+  <p>3.deployment jenkins</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; jenkins.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: opspvc
+  labels:
+    app: jenkins2
+  namespace: kube-ops
+spec:
+  storageClassName: rook-ceph-block
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+spec:
+  selector:
+    matchLabels:
+      app: jenkins2
+  template:
+    metadata:
+      labels:
+        app: jenkins2
+    spec:
+      terminationGracePeriodSeconds: 10
+      serviceAccountName: jenkins2
+      containers:
+      - name: jenkins
+        image: jenkins/jenkins:lts
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: web
+          protocol: TCP
+        - containerPort: 50000
+          name: agent
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 1000m
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /login
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        readinessProbe:
+          httpGet:
+            path: /login
+            port: 8080
+          initialDelaySeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 12
+        volumeMounts:
+        - name: jenkinshome
+          subPath: jenkins2
+          mountPath: /var/jenkins_home
+        env:
+        - name: LIMITS_MEMORY
+          valueFrom:
+            resourceFieldRef:
+              resource: limits.memory
+              divisor: 1Mi
+        - name: JAVA_OPTS
+          value: -Xmx</span><span class="si">$(</span>LIMITS_MEMORY<span class="si">)</span><span class="sh">m -XshowSettings:vm -Dhudson.slaves.NodeProvisioner.initialDelay=0 -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85 -Duser.timezone=Asia/Shanghai
+      securityContext:
+        fsGroup: 1000
+      volumes:
+      - name: jenkinshome
+        persistentVolumeClaim:
+          claimName: opspvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins2
+  namespace: kube-ops
+  labels:
+    app: jenkins2
+spec:
+  selector:
+    app: jenkins2
+  ports:
+  - name: web
+    port: 8080
+    targetPort: web
+  - name: agent
+    port: 50000
+    targetPort: agent
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> jenkins.yaml
+注： kubernetes 1.16 取消了extensions/v1beta1 api，使用apps/v1。
+</code></pre></div></div>
+<p><img src="/assets/images/jenkins/deployment.png" alt="deployment.png" /></p>
+<blockquote>
+  <p>4.traefik对外暴露服务</p>
+  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; ingress.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: jenkins2-https
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(</span><span class="se">\`</span><span class="sh">jenkins.sainaihe.com</span><span class="se">\`</span><span class="sh">)
+      kind: Rule
+      services:
+        - name: jenkins2
+          port: 8080
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> ingress.yaml
+</code></pre></div>  </div>
+  <p><img src="/assets/images/jenkins/ingressroute.png" alt="ingressroute.png" />
+<img src="/assets/images/jenkins/traefik.png" alt="traefik.png" /></p>
+  <h2 id="登陆jenkins初始化配置">登陆jenkins。初始化配置</h2>
+  <ol>
+    <li>访问 https://jenkins.saynaihe.com,出现：
+<img src="/assets/images/jenkins/jenkins1.png" alt="jenkins1.png" />
+获取初始密码
+      <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl <span class="nb">exec</span> <span class="nt">-it</span> jenkins2-9f55b98b6-xtffb <span class="nb">cat</span> /var/jenkins_home/secrets/initialAdminPassword <span class="nt">-n</span> kube-ops
+</code></pre></div>      </div>
+      <p><img src="/assets/images/jenkins/jenkins2.png" alt="jenkins2.png" /></p>
+    </li>
+    <li>设置管理员账号密码，进入登陆界面
+<img src="/assets/images/jenkins/jenkins3.png" alt="jenkins3.png" /></li>
+    <li>安装插件，安装了中文插件，pipeline，gitlab,git,github 参数化插件等，看个人需要安装吧。
+<img src="/assets/images/jenkins/jenkins4.png" alt="jenkins4.png" />
+<img src="/assets/images/jenkins/jenkins5.png" alt="jenkins5.png" />
+注：因为国外源不稳定 国内有其他备用源可以切换比如清华的源。jenkins中文社区有篇文章：https://mp.weixin.qq.com/s/rqx93WI0UEvzqaFrt84i8A可以参考。</li>
+  </ol>
+</blockquote>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/11/19/cncf-ali/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
                   <a class="post-link" href="/2019/11/19/k8s-install-jenkins/">k8s-install-jenkins</a>
                 </h2>
                 <div class="label">
@@ -2504,167 +2839,6 @@ kubectl get nodes
                 <hr>
               </li>
             
-              <li>
-                <h2>
-                  <a class="post-link" href="/2019/09/18/k8s-expanded/">kubernetes集群扩容</a>
-                </h2>
-                <div class="label">
-                    <div class="label-card">
-                        <i class="fa fa-calendar"></i>2019-09-18
-                    </div>
-                    <div class="label-card">
-                        <i class="fa fa-user"></i>duiniwukenaihe
-                        
-                    </div>
-                    <div class="label-card">
-                        
-                    </div>
-
-                    <div class="label-card">
-                    
-
-
-<!-- <span class="point">•</span> -->
-<span class="categories">
-  <i class="fa fa-th-list"></i>
-  
-    
-        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
-    
-  
-
-  <!-- <span class="point">•</span> -->
-</span>
-
-
-                    </div>
-
-                    <div class="label-card">
-                    
-<!-- <span class="point">•</span> -->
-<span class="pageTag">
-  <i class="fa fa-tags"></i>
-  
-    
-        <a href="/tag/#kubernetes扩容" title="Tag: kubernetes扩容" rel="tag">kubernetes扩容</a>
-    
-  
-
-</span>
-
-                    </div>
-                </div>
-                <div class="excerpt">
-                    <ul id="markdown-toc">
-  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
-</ul>
-
-<h2 id="描述背景">描述背景：</h2>
-<p>已经搭建完的k8s集群只有两个worker节点，现在增加work节点到集群。原有集群机器：</p>
-
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: center">ip</th>
-      <th style="text-align: center">自定义域名</th>
-      <th style="text-align: center">主机名</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: center"> </td>
-      <td style="text-align: center">master.k8s.io</td>
-      <td style="text-align: center">k8s-vip</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.0.195</td>
-      <td style="text-align: center">master01.k8s.io</td>
-      <td style="text-align: center">k8s-master-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.0.197</td>
-      <td style="text-align: center">master02.k8s.io</td>
-      <td style="text-align: center">k8s-master-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.0.198</td>
-      <td style="text-align: center">master03.k8s.io</td>
-      <td style="text-align: center">k8s-master-03</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.0.199</td>
-      <td style="text-align: center">node01.k8s.io</td>
-      <td style="text-align: center">k8s-node-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.0.202</td>
-      <td style="text-align: center">node02.k8s.io</td>
-      <td style="text-align: center">k8s-node-02</td>
-    </tr>
-  </tbody>
-</table>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>本地搭建的用了一种不要脸的方式，基本搭建方式如https://duiniwukenaihe.github.io/2019/09/02/k8s-install/， master01  master02  节点host  master.k8s.io绑定了192.168.0.195.master03节点master.k8s.io绑定了192.168.0.197跑了下貌似也是没有问题的。现在将一下三台机器加入集群：
-
-|192.168.0.108    |  node03.k8s.io    |  k8s-node-03|
-|192.168.0.111    |  node04.k8s.io    |  k8s-node-04|
-|192.168.0.115    |  node05.k8s.io    |  k8s-node-05|
-
-
-三台绑定host
-192.168.0.108
-<span class="nb">cat</span> /etc/host
-192.168.0.197  master.k8s.io      k8s-vip
-192.168.0.195  master01.k8s.io  k8s-master-01
-192.168.0.197  master02.k8s.io  k8s-master-02
-192.168.0.198  master03.k8s.io  k8s-master-03
-
-192.168.111
-<span class="nb">cat</span> /etc/host
-192.168.0.198  master.k8s.io      k8s-vip
-192.168.0.195  master01.k8s.io  k8s-master-01
-192.168.0.197  master02.k8s.io  k8s-master-02
-192.168.0.198  master03.k8s.io  k8s-master-03
-
-192.168.115
-<span class="nb">cat</span> /etc/host
-192.168.0.195  master.k8s.io      k8s-vip
-192.168.0.195  master01.k8s.io  k8s-master-01
-192.168.0.197  master02.k8s.io  k8s-master-02
-192.168.0.198  master03.k8s.io  k8s-master-03
-
-
-参照https://duiniwukenaihe.github.io/2019/09/02/k8s-install/完成系统参数调优，配置yum源  安装docker kubernetes 
-</code></pre></div></div>
-
-<p>任一master节点执行kubeadm token list，查看是否有有效期内token和SH256加密字符串</p>
-
-<p><img src="/assets/images/k8s/token.list.png" alt="token.list.png" /> 
-token默认的有效期是24小时，如果没有有效token，则将创建token</p>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm token create
-
-openssl x509 <span class="nt">-pubkey</span> <span class="nt">-in</span> /etc/kubernetes/pki/ca.crt | openssl rsa <span class="nt">-pubin</span> <span class="nt">-outform</span> der 2&gt;/dev/null | openssl dgst <span class="nt">-sha256</span> <span class="nt">-hex</span> | <span class="nb">sed</span> <span class="s1">'s/^.* //'</span>
-</code></pre></div></div>
-<p><img src="/assets/images/k8s/token.list1.png" alt="token.list1.png" /></p>
-
-<p>k8s-node-03 k8s-node-04 k8s-node-05节点加入集群</p>
-
-<p><img src="/assets/images/k8s/token.list2.png" alt="token.list2.png" /></p>
-
-<p>没有关闭swap  加入集群命令加入–ignore-preflight-errors=Swap：</p>
-
-<p>kubeadm join master.k8s.io:8443 –token u7lv9t.bubw4r69tkmorug2     –discovery-token-ca-cert-hash sha256:74e007d58a810fd4e8a233158d0b8e195641f724ad402e4afddc77e0eb003d95   –ignore-preflight-errors=Swap
-<img src="/assets/images/k8s/token.list3.png" alt="token.list3.png" />
-master节点执行kubectl get nodes
-<img src="/assets/images/k8s/token.list4.png" alt="token.list4.png" /></p>
-
-                </div>
-                <div class="read-all">
-                    <a  href="/2019/09/18/k8s-expanded/"><i class="fa fa-newspaper-o"></i>Read All</a>
-                </div>
-                <hr>
-              </li>
-            
         </ul>
 
 
@@ -2767,6 +2941,8 @@ master节点执行kubectl get nodes
                 </div>
                 <ul class="content-ul" recent>
                     
+                        <li><a href="/2020/07/31/kubernetes-csi-tencentcloud-cosfs/">2020-07-31-kubernetes集群使用腾讯云cos存储</a></li>
+                    
                         <li><a href="/2020/07/23/kubernetes-question-etcd/">2020-07-23-qestion-etcd(error execution phase check-etcd)</a></li>
                     
                         <li><a href="/2020/07/23/kubernetes-csi-tencentcloud-cbs/">2020-07-23-kubernetes集群使用腾讯云cbs块存储</a></li>
@@ -2784,8 +2960,6 @@ master节点执行kubectl get nodes
                         <li><a href="/2019/11/26/k8s-install-new/">2019-11-26-k8s-install-new</a></li>
                     
                         <li><a href="/2019/11/25/k8s-question2/">2019-11-25-k8s-question2</a></li>
-                    
-                        <li><a href="/2019/11/19/cncf-ali/">k8s-install-jenkins</a></li>
                     
                 </ul>
             </div>
@@ -2812,7 +2986,7 @@ master节点执行kubectl get nodes
                             <span class="name">
                                 kubernetes
                             </span>
-                            <span class="badge">21</span>
+                            <span class="badge">22</span>
                         </a>
                     </li>
                     
@@ -3108,7 +3282,7 @@ master节点执行kubectl get nodes
                       
                       
                       
-                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10pt; color: #888;">kubernetes1.18.6</a>
+                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10.5pt; color: #777;">kubernetes1.18.6</a>
                     
                       
                       
@@ -3129,7 +3303,7 @@ master节点执行kubectl get nodes
                       
                       
                       
-                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 9pt; color: #999;">kubernetes-csi-tencentcloud</a>
+                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 10pt; color: #888;">kubernetes-csi-tencentcloud</a>
                     
                       
                       
@@ -3158,6 +3332,13 @@ master节点执行kubectl get nodes
                       
                       
                       <a href="/tag/#监控检查失败" style="font-size: 9pt; color: #999;">监控检查失败</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#cosfs" style="font-size: 9pt; color: #999;">cosfs</a>
                     
                 </div>
             </div>

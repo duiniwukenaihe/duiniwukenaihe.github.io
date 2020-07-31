@@ -154,6 +154,167 @@ var _hmt = _hmt || [];
             
               <li>
                 <h2>
+                  <a class="post-link" href="/2019/09/18/k8s-expanded/">kubernetes集群扩容</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-09-18
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes扩容" title="Tag: kubernetes扩容" rel="tag">kubernetes扩容</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+</ul>
+
+<h2 id="描述背景">描述背景：</h2>
+<p>已经搭建完的k8s集群只有两个worker节点，现在增加work节点到集群。原有集群机器：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center"> </td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.0.195</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.0.197</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.0.198</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.0.199</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.0.202</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>本地搭建的用了一种不要脸的方式，基本搭建方式如https://duiniwukenaihe.github.io/2019/09/02/k8s-install/， master01  master02  节点host  master.k8s.io绑定了192.168.0.195.master03节点master.k8s.io绑定了192.168.0.197跑了下貌似也是没有问题的。现在将一下三台机器加入集群：
+
+|192.168.0.108    |  node03.k8s.io    |  k8s-node-03|
+|192.168.0.111    |  node04.k8s.io    |  k8s-node-04|
+|192.168.0.115    |  node05.k8s.io    |  k8s-node-05|
+
+
+三台绑定host
+192.168.0.108
+<span class="nb">cat</span> /etc/host
+192.168.0.197  master.k8s.io      k8s-vip
+192.168.0.195  master01.k8s.io  k8s-master-01
+192.168.0.197  master02.k8s.io  k8s-master-02
+192.168.0.198  master03.k8s.io  k8s-master-03
+
+192.168.111
+<span class="nb">cat</span> /etc/host
+192.168.0.198  master.k8s.io      k8s-vip
+192.168.0.195  master01.k8s.io  k8s-master-01
+192.168.0.197  master02.k8s.io  k8s-master-02
+192.168.0.198  master03.k8s.io  k8s-master-03
+
+192.168.115
+<span class="nb">cat</span> /etc/host
+192.168.0.195  master.k8s.io      k8s-vip
+192.168.0.195  master01.k8s.io  k8s-master-01
+192.168.0.197  master02.k8s.io  k8s-master-02
+192.168.0.198  master03.k8s.io  k8s-master-03
+
+
+参照https://duiniwukenaihe.github.io/2019/09/02/k8s-install/完成系统参数调优，配置yum源  安装docker kubernetes 
+</code></pre></div></div>
+
+<p>任一master节点执行kubeadm token list，查看是否有有效期内token和SH256加密字符串</p>
+
+<p><img src="/assets/images/k8s/token.list.png" alt="token.list.png" /> 
+token默认的有效期是24小时，如果没有有效token，则将创建token</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm token create
+
+openssl x509 <span class="nt">-pubkey</span> <span class="nt">-in</span> /etc/kubernetes/pki/ca.crt | openssl rsa <span class="nt">-pubin</span> <span class="nt">-outform</span> der 2&gt;/dev/null | openssl dgst <span class="nt">-sha256</span> <span class="nt">-hex</span> | <span class="nb">sed</span> <span class="s1">'s/^.* //'</span>
+</code></pre></div></div>
+<p><img src="/assets/images/k8s/token.list1.png" alt="token.list1.png" /></p>
+
+<p>k8s-node-03 k8s-node-04 k8s-node-05节点加入集群</p>
+
+<p><img src="/assets/images/k8s/token.list2.png" alt="token.list2.png" /></p>
+
+<p>没有关闭swap  加入集群命令加入–ignore-preflight-errors=Swap：</p>
+
+<p>kubeadm join master.k8s.io:8443 –token u7lv9t.bubw4r69tkmorug2     –discovery-token-ca-cert-hash sha256:74e007d58a810fd4e8a233158d0b8e195641f724ad402e4afddc77e0eb003d95   –ignore-preflight-errors=Swap
+<img src="/assets/images/k8s/token.list3.png" alt="token.list3.png" />
+master节点执行kubectl get nodes
+<img src="/assets/images/k8s/token.list4.png" alt="token.list4.png" /></p>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/09/18/k8s-expanded/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
                   <a class="post-link" href="/2019/09/06/k8s-gitlab/">docker 搭建gitlab迁移到kubernetes集群</a>
                 </h2>
                 <div class="label">
@@ -1192,6 +1353,8 @@ setenforce  0
                 </div>
                 <ul class="content-ul" recent>
                     
+                        <li><a href="/2020/07/31/kubernetes-csi-tencentcloud-cosfs/">2020-07-31-kubernetes集群使用腾讯云cos存储</a></li>
+                    
                         <li><a href="/2020/07/23/kubernetes-question-etcd/">2020-07-23-qestion-etcd(error execution phase check-etcd)</a></li>
                     
                         <li><a href="/2020/07/23/kubernetes-csi-tencentcloud-cbs/">2020-07-23-kubernetes集群使用腾讯云cbs块存储</a></li>
@@ -1209,8 +1372,6 @@ setenforce  0
                         <li><a href="/2019/11/26/k8s-install-new/">2019-11-26-k8s-install-new</a></li>
                     
                         <li><a href="/2019/11/25/k8s-question2/">2019-11-25-k8s-question2</a></li>
-                    
-                        <li><a href="/2019/11/19/cncf-ali/">k8s-install-jenkins</a></li>
                     
                 </ul>
             </div>
@@ -1237,7 +1398,7 @@ setenforce  0
                             <span class="name">
                                 kubernetes
                             </span>
-                            <span class="badge">21</span>
+                            <span class="badge">22</span>
                         </a>
                     </li>
                     
@@ -1533,7 +1694,7 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10pt; color: #888;">kubernetes1.18.6</a>
+                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10.5pt; color: #777;">kubernetes1.18.6</a>
                     
                       
                       
@@ -1554,7 +1715,7 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 9pt; color: #999;">kubernetes-csi-tencentcloud</a>
+                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 10pt; color: #888;">kubernetes-csi-tencentcloud</a>
                     
                       
                       
@@ -1583,6 +1744,13 @@ setenforce  0
                       
                       
                       <a href="/tag/#监控检查失败" style="font-size: 9pt; color: #999;">监控检查失败</a>
+                    
+                      
+                      
+                      
+                      
+                      
+                      <a href="/tag/#cosfs" style="font-size: 9pt; color: #999;">cosfs</a>
                     
                 </div>
             </div>

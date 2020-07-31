@@ -5,9 +5,155 @@
     <description></description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Thu, 23 Jul 2020 20:24:48 +0800</pubDate>
-    <lastBuildDate>Thu, 23 Jul 2020 20:24:48 +0800</lastBuildDate>
+    <pubDate>Fri, 31 Jul 2020 16:23:42 +0800</pubDate>
+    <lastBuildDate>Fri, 31 Jul 2020 16:23:42 +0800</lastBuildDate>
     <generator>Jekyll v4.1.1</generator>
+    
+      <item>
+        <title>2020-07-31-kubernetes集群使用腾讯云cos存储</title>
+        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#背景&quot; id=&quot;markdown-toc-背景&quot;&gt;背景&lt;/a&gt;    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;#1git-clone-仓库&quot; id=&quot;markdown-toc-1git-clone-仓库&quot;&gt;1.git clone 仓库&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;#2-kubernets集群更改配置&quot; id=&quot;markdown-toc-2-kubernets集群更改配置&quot;&gt;2. kubernets集群更改配置&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+集群配置：
+centos7.7 64位
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;ip&lt;/th&gt;
+      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.20&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;vip&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.27&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.46&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.47&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-master-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.14&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-01&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.2&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-02&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.6&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-03&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.4&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-04&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;10.0.4.13&lt;/td&gt;
+      &lt;td style=&quot;text-align: center&quot;&gt;sh-node-05&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;h2 id=&quot;背景&quot;&gt;背景&lt;/h2&gt;
+&lt;blockquote&gt;
+  环境为kubernets集群1.18.6，参照 https://duiniwukenaihe.github.io/2020/07/22/tencent-slb-kubeadm-ha/在腾讯云上搭建。参照https://duiniwukenaihe.github.io/2020/07/23/kubernetes-csi-tencentcloud-cbs/完成 cbs云硬盘块存储集成。现在想把cos作为存储试一下。
+&lt;/blockquote&gt;
+
+&lt;h4 id=&quot;1git-clone-仓库&quot;&gt;1.git clone 仓库&lt;/h4&gt;
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;https://github.com/TencentCloud/kubernetes-csi-tencentcloud
+现在github会非常卡你懂的，最好还是国外服务器下载了。
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;2-kubernets集群更改配置&quot;&gt;2. kubernets集群更改配置&lt;/h4&gt;
+
+&lt;blockquote&gt;
+  参照https://github.com/TencentCloud/kubernetes-csi-tencentcloud/blob/master/docs/README_COSFS.md，我的kubernets集群是1.18.6。按照https://github.com/TencentCloud/kubernetes-csi-tencentcloud/edit/master/docs/README_CBS_zhCN.md的前置特性KubeletPluginsWatcher支持到1.12 我就不去考虑了。如下：
+&lt;/blockquote&gt;
+
+&lt;strong&gt;注意&lt;/strong&gt;:
+
+在讲述&lt;strong&gt;前置要求&lt;/strong&gt;之前，对于各组件设置参数启动项有些要注意的地方：
+&lt;ul&gt;
+  &lt;li&gt;有些feature gates在GA以后的版本不能再被显式设置，否则可能导致报错。实际上这些feature gates在beta版本开始则无需添加。下表整理了涉及到feature gates的beta版本的表格，在给kubelet、master/controllermanager、scheduler设置启动参数时，可以基于此来做取舍.（举例：KubeletPluginsWatcher在1.12及以上版本则无须添加）。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;特性&lt;/th&gt;
+      &lt;th&gt;默认值&lt;/th&gt;
+      &lt;th&gt;阶段&lt;/th&gt;
+      &lt;th&gt;起始&lt;/th&gt;
+      &lt;th&gt;直到&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;VolumeSnapshotDataSource&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;true&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Beta&lt;/td&gt;
+      &lt;td&gt;1.17&lt;/td&gt;
+      &lt;td&gt;-&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CSINodeInfo&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;true&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Beta&lt;/td&gt;
+      &lt;td&gt;1.14&lt;/td&gt;
+      &lt;td&gt;1.16&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;CSIDriverRegistry&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;true&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Beta&lt;/td&gt;
+      &lt;td&gt;1.14&lt;/td&gt;
+      &lt;td&gt;1.17&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;KubeletPluginsWatcher&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;true&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Beta&lt;/td&gt;
+      &lt;td&gt;1.12&lt;/td&gt;
+      &lt;td&gt;1.12&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;VolumeScheduling&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;true&lt;/code&gt;&lt;/td&gt;
+      &lt;td&gt;Beta&lt;/td&gt;
+      &lt;td&gt;1.10&lt;/td&gt;
+      &lt;td&gt;1.12&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+</description>
+        <pubDate>Fri, 31 Jul 2020 10:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2020/07/31/kubernetes-csi-tencentcloud-cosfs/</link>
+        <guid isPermaLink="true">http://localhost:4000/2020/07/31/kubernetes-csi-tencentcloud-cosfs/</guid>
+        
+        <category>kubernetes1.18.6</category>
+        
+        <category>kubernetes-csi-tencentcloud</category>
+        
+        <category>cosfs</category>
+        
+        
+        <category>kubernetes</category>
+        
+      </item>
     
       <item>
         <title>2020-07-23-qestion-etcd(error execution phase check-etcd)</title>
@@ -1957,296 +2103,6 @@ Are you sure you want to &lt;span class=&quot;k&quot;&gt;continue&lt;/span&gt;? 
         <category>on</category>
         
         <category>device</category>
-        
-        
-        <category>kubernetes</category>
-        
-      </item>
-    
-      <item>
-        <title>k8s-install-jenkins</title>
-        <description>&lt;ul id=&quot;markdown-toc&quot;&gt;
-  &lt;li&gt;&lt;a href=&quot;#描述背景&quot; id=&quot;markdown-toc-描述背景&quot;&gt;描述背景：&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;#安装jenkins&quot; id=&quot;markdown-toc-安装jenkins&quot;&gt;安装jenkins&lt;/a&gt;    &lt;ul&gt;
-      &lt;li&gt;&lt;a href=&quot;#登陆jenkins初始化配置&quot; id=&quot;markdown-toc-登陆jenkins初始化配置&quot;&gt;登陆jenkins。初始化配置&lt;/a&gt;&lt;/li&gt;
-    &lt;/ul&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h1 id=&quot;描述背景&quot;&gt;描述背景：&lt;/h1&gt;
-注：kubernetes基本环境搭建完成，存储rook-ceph，rbd方式。代码仓库gitlab,容器仓库harbor,监控prometheus，负载方式都用了内部clusterip然后 traefik代理的方式。为了完善工具链，容器中搭建jenkins工具。
-
-集群配置：
-初始集群环境kubeadm 1.16.1
-
-&lt;table&gt;
-  &lt;thead&gt;
-    &lt;tr&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;ip&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;自定义域名&lt;/th&gt;
-      &lt;th style=&quot;text-align: center&quot;&gt;主机名&lt;/th&gt;
-    &lt;/tr&gt;
-  &lt;/thead&gt;
-  &lt;tbody&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.8&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;master.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-vip&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.10&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;master01.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-01&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.5&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;master02.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-02&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.12&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;master03.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-master-03&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.6&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;node01.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-01&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.2&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;node02.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-02&lt;/td&gt;
-    &lt;/tr&gt;
-    &lt;tr&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;192.168.3.4&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;node03.k8s.io&lt;/td&gt;
-      &lt;td style=&quot;text-align: center&quot;&gt;k8s-node-03&lt;/td&gt;
-    &lt;/tr&gt;
-  &lt;/tbody&gt;
-&lt;/table&gt;
-
-&lt;h1 id=&quot;安装jenkins&quot;&gt;安装jenkins&lt;/h1&gt;
-&lt;blockquote&gt;
-  &lt;ol&gt;
-    &lt;li&gt;建立命名空间
-      &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl create namespace kube-ops
-注：后续所有工具类应用程序都创建在此命名空间内。
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;      &lt;/div&gt;
-      &lt;hr /&gt;
-    &lt;/li&gt;
-    &lt;li&gt;创建ServiceAccount &amp;amp; ClusterRoleBinding&lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/blockquote&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;注：都是用的默认的，权限的管理还没有深入进行学习下。
-
-&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; rabc.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: jenkins2
-  namespace: kube-ops
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: jenkins2
-rules:
-  - apiGroups: [&quot;extensions&quot;, &quot;apps&quot;]
-    resources: [&quot;deployments&quot;]
-    verbs: [&quot;create&quot;, &quot;delete&quot;, &quot;get&quot;, &quot;list&quot;, &quot;watch&quot;, &quot;patch&quot;, &quot;update&quot;]
-  - apiGroups: [&quot;&quot;]
-    resources: [&quot;services&quot;]
-    verbs: [&quot;create&quot;, &quot;delete&quot;, &quot;get&quot;, &quot;list&quot;, &quot;watch&quot;, &quot;patch&quot;, &quot;update&quot;]
-  - apiGroups: [&quot;&quot;]
-    resources: [&quot;pods&quot;]
-    verbs: [&quot;create&quot;,&quot;delete&quot;,&quot;get&quot;,&quot;list&quot;,&quot;patch&quot;,&quot;update&quot;,&quot;watch&quot;]
-  - apiGroups: [&quot;&quot;]
-    resources: [&quot;pods/exec&quot;]
-    verbs: [&quot;create&quot;,&quot;delete&quot;,&quot;get&quot;,&quot;list&quot;,&quot;patch&quot;,&quot;update&quot;,&quot;watch&quot;]
-  - apiGroups: [&quot;&quot;]
-    resources: [&quot;pods/log&quot;]
-    verbs: [&quot;get&quot;,&quot;list&quot;,&quot;watch&quot;]
-  - apiGroups: [&quot;&quot;]
-    resources: [&quot;secrets&quot;]
-    verbs: [&quot;get&quot;]
-
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: jenkins2
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: jenkins2
-subjects:
-  - kind: ServiceAccount
-    name: jenkins2
-    namespace: kube-ops
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; rabc.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  3.deployment jenkins
-&lt;/blockquote&gt;
-
-&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; jenkins.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: opspvc
-  labels:
-    app: jenkins2
-  namespace: kube-ops
-spec:
-  storageClassName: rook-ceph-block
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: jenkins2
-  namespace: kube-ops
-spec:
-  selector:
-    matchLabels:
-      app: jenkins2
-  template:
-    metadata:
-      labels:
-        app: jenkins2
-    spec:
-      terminationGracePeriodSeconds: 10
-      serviceAccountName: jenkins2
-      containers:
-      - name: jenkins
-        image: jenkins/jenkins:lts
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 8080
-          name: web
-          protocol: TCP
-        - containerPort: 50000
-          name: agent
-          protocol: TCP
-        resources:
-          limits:
-            cpu: 1000m
-            memory: 1Gi
-          requests:
-            cpu: 500m
-            memory: 512Mi
-        livenessProbe:
-          httpGet:
-            path: /login
-            port: 8080
-          initialDelaySeconds: 60
-          timeoutSeconds: 5
-          failureThreshold: 12
-        readinessProbe:
-          httpGet:
-            path: /login
-            port: 8080
-          initialDelaySeconds: 60
-          timeoutSeconds: 5
-          failureThreshold: 12
-        volumeMounts:
-        - name: jenkinshome
-          subPath: jenkins2
-          mountPath: /var/jenkins_home
-        env:
-        - name: LIMITS_MEMORY
-          valueFrom:
-            resourceFieldRef:
-              resource: limits.memory
-              divisor: 1Mi
-        - name: JAVA_OPTS
-          value: -Xmx&lt;/span&gt;&lt;span class=&quot;si&quot;&gt;$(&lt;/span&gt;LIMITS_MEMORY&lt;span class=&quot;si&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;m -XshowSettings:vm -Dhudson.slaves.NodeProvisioner.initialDelay=0 -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85 -Duser.timezone=Asia/Shanghai
-      securityContext:
-        fsGroup: 1000
-      volumes:
-      - name: jenkinshome
-        persistentVolumeClaim:
-          claimName: opspvc
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: jenkins2
-  namespace: kube-ops
-  labels:
-    app: jenkins2
-spec:
-  selector:
-    app: jenkins2
-  ports:
-  - name: web
-    port: 8080
-    targetPort: web
-  - name: agent
-    port: 50000
-    targetPort: agent
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; jenkins.yaml
-注： kubernetes 1.16 取消了extensions/v1beta1 api，使用apps/v1。
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;img src=&quot;/assets/images/jenkins/deployment.png&quot; alt=&quot;deployment.png&quot; /&gt;
-&lt;blockquote&gt;
-  4.traefik对外暴露服务
-  &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt; &amp;gt; ingress.yaml
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: kube-ops
-  name: jenkins2-https
-spec:
-  entryPoints:
-    - websecure
-  tls:
-    secretName: all-saynaihe-com
-  routes:
-    - match: Host(&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\`&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;jenkins.sainaihe.com&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\`&lt;/span&gt;&lt;span class=&quot;sh&quot;&gt;)
-      kind: Rule
-      services:
-        - name: jenkins2
-          port: 8080
-&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;EOF
-&lt;/span&gt;kubectl apply &lt;span class=&quot;nt&quot;&gt;-f&lt;/span&gt; ingress.yaml
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;  &lt;/div&gt;
-  &lt;img src=&quot;/assets/images/jenkins/ingressroute.png&quot; alt=&quot;ingressroute.png&quot; /&gt;
-&lt;img src=&quot;/assets/images/jenkins/traefik.png&quot; alt=&quot;traefik.png&quot; /&gt;
-  &lt;h2 id=&quot;登陆jenkins初始化配置&quot;&gt;登陆jenkins。初始化配置&lt;/h2&gt;
-  &lt;ol&gt;
-    &lt;li&gt;访问 https://jenkins.saynaihe.com,出现：
-&lt;img src=&quot;/assets/images/jenkins/jenkins1.png&quot; alt=&quot;jenkins1.png&quot; /&gt;
-获取初始密码
-      &lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;kubectl &lt;span class=&quot;nb&quot;&gt;exec&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-it&lt;/span&gt; jenkins2-9f55b98b6-xtffb &lt;span class=&quot;nb&quot;&gt;cat&lt;/span&gt; /var/jenkins_home/secrets/initialAdminPassword &lt;span class=&quot;nt&quot;&gt;-n&lt;/span&gt; kube-ops
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;      &lt;/div&gt;
-      &lt;img src=&quot;/assets/images/jenkins/jenkins2.png&quot; alt=&quot;jenkins2.png&quot; /&gt;
-    &lt;/li&gt;
-    &lt;li&gt;设置管理员账号密码，进入登陆界面
-&lt;img src=&quot;/assets/images/jenkins/jenkins3.png&quot; alt=&quot;jenkins3.png&quot; /&gt;&lt;/li&gt;
-    &lt;li&gt;安装插件，安装了中文插件，pipeline，gitlab,git,github 参数化插件等，看个人需要安装吧。
-&lt;img src=&quot;/assets/images/jenkins/jenkins4.png&quot; alt=&quot;jenkins4.png&quot; /&gt;
-&lt;img src=&quot;/assets/images/jenkins/jenkins5.png&quot; alt=&quot;jenkins5.png&quot; /&gt;
-注：因为国外源不稳定 国内有其他备用源可以切换比如清华的源。jenkins中文社区有篇文章：https://mp.weixin.qq.com/s/rqx93WI0UEvzqaFrt84i8A可以参考。&lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/blockquote&gt;
-</description>
-        <pubDate>Tue, 19 Nov 2019 14:00:33 +0800</pubDate>
-        <link>http://localhost:4000/2019/11/19/cncf-ali/</link>
-        <guid isPermaLink="true">http://localhost:4000/2019/11/19/cncf-ali/</guid>
-        
-        <category>kubernetes1.16</category>
-        
-        <category>jenkins</category>
         
         
         <category>kubernetes</category>
