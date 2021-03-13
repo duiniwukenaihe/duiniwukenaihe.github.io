@@ -2,7 +2,7 @@
 layout: "post"
 title: "Node Metadata  Protection--节点的元数据保护"
 date: "2021-03-13 18:00:00"
-category: "kubernetes cks"
+category: "cks"
 tags:  "Node Metadata  Protection--节点的元数据保护"
 author: duiniwukenaihe
 ---
