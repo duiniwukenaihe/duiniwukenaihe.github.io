@@ -1,9 +1,9 @@
 ---
 layout: "post"
-title: "Cluster Setup - CIS Benchmarks（集群设置-CIS基线)"
+title: "Cluster Setup - CIS Benchmarks"
 date: "2021-03-13 18:00:00"
 category: "kubernetes cks"
-tags:  "kubernetes cks"
+tags:  "Cluster Setup - CIS Benchmarks（集群设置-CIS基线）"
 author: duiniwukenaihe
 ---
 * content
