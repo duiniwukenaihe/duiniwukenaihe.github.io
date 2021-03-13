@@ -1,3 +1,14 @@
+---
+layout: "post"
+title: "Cluster Setup - CIS Benchmarks"
+date: "2021-03-13 18:00:00"
+category: "kubernetes cks"
+tags:  "Cluster Setup - CIS Benchmarks（集群设置-CIS基线）"
+author: duiniwukenaihe
+---
+* content
+{:toc}
+
 # 前言
 这一节主要掌握使用 kube-bench  cis 安全基线检查集群的安全配置,并提高集群的安全性。所有操作都是抛砖引玉。
 

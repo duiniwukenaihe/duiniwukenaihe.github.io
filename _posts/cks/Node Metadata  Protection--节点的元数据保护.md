@@ -1,3 +1,14 @@
+---
+layout: "post"
+title: "Node Metadata  Protection--节点的元数据保护"
+date: "2021-03-13 18:00:00"
+category: "kubernetes cks"
+tags:  "Node Metadata  Protection--节点的元数据保护"
+author: duiniwukenaihe
+---
+* content
+{:toc}
+
 ![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1615602337342-4bff4851-aa6d-43dd-b3d7-8445c22ca29c.png#align=left&display=inline&height=291&margin=%5Bobject%20Object%5D&name=image.png&originHeight=582&originWidth=1129&size=451386&status=done&style=none&width=564.5)
 ## 1. 关于元数据
 kubernets集群不管是运行与公有云还是私有云，都是有些元数据的资源的各种各样的标签。比如镜像id，网络设备id,硬盘的唯一id等。

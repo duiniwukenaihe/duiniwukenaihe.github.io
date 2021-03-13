@@ -1,3 +1,15 @@
+---
+layout: "post"
+title: "Cluster Setup - Secure Ingress--安全入口"
+date: "2021-03-13 18:00:00"
+category: "kubernetes cks"
+tags:  "Cluster Setup - Secure Ingress--安全入口"
+author: duiniwukenaihe
+---
+* content
+{:toc}
+
+
 ## 前言
 **ingress objects with security control             一个具有安全控制的入口对象**
 **what is ingress？                           什么是入口**

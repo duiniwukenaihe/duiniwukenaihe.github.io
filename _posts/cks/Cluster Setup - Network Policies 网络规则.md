@@ -1,4 +1,13 @@
-
+---
+layout: "post"
+title: "Cluster Setup - Network Policies"
+date: "2021-03-13 18:00:00"
+category: "kubernetes cks"
+tags:  "Cluster Setup - Network Policies 网络规则"
+author: duiniwukenaihe
+---
+* content
+{:toc}
 
 # 1. 网络安全规则
 

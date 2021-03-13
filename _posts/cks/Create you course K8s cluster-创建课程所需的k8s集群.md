@@ -1,3 +1,15 @@
+---
+layout: "post"
+title: "Create you course K8s cluster"
+date: "2021-03-13 18:00:00"
+category: "kubernetes cks"
+tags:  "Create you course K8s cluster"
+author: duiniwukenaihe
+---
+* content
+{:toc}
+
+
 注： 由于限制不能谷歌云绑定银联卡了，直接拿两台腾讯云服务器做课程实例
 线上跑的是自建的集群搭建方式详见：[https://duiniwukenaihe.github.io/2020/07/22/tencent-slb-kubeadm-ha/](https://duiniwukenaihe.github.io/2020/07/22/tencent-slb-kubeadm-ha/)（跑了两个集群，其实还是跑的1.16版本，只进行了小版本升级现为1.16.15版本）
 关于安全组配置就不详细说明了，由于是个人测试这里也没有做安全组策略，直接开放了ALL，ssh端口也没有做更改，当然了密码设置还是符合个人的安全策略的。由于测试环境不做各种系统优化，复杂配置了。直接就按照课程的操作来了。

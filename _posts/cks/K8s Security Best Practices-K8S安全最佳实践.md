@@ -1,4 +1,13 @@
-
+---
+layout: "post"
+title: "K8s Security Best Practices-K8S安全最佳实践"
+date: "2021-03-13 18:00:00"
+category: "kubernetes cks"
+tags:  "K8s Security Best Practices-K8S安全最佳实践"
+author: duiniwukenaihe
+---
+* content
+{:toc}
 
 # 关于安全-写在前面的
 

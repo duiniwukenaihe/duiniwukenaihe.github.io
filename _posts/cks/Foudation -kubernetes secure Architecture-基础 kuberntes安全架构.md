@@ -1,3 +1,16 @@
+---
+layout: "post"
+title: "Foudation -kubernetes secure Architecture-基础 kuberntes安全架构"
+date: "2021-03-13 18:00:00"
+category: "kubernetes cks"
+tags:  "Foudation -kubernetes secure Architecture-基础 kuberntes安全架构"
+author: duiniwukenaihe
+---
+* content
+{:toc}
+
+
+
 # 1   docker   Architecture![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1612160877253-d97a71f9-d707-4b58-bced-068856b8677b.png#align=left&display=inline&height=476&margin=%5Bobject%20Object%5D&name=image.png&originHeight=476&originWidth=839&size=96824&status=done&style=none&width=839)
 **run container in container engine-在容器引擎中运行容器**
 **Schedule containers effcient-高效的调度容器**
