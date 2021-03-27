@@ -154,6 +154,603 @@ var _hmt = _hmt || [];
             
               <li>
                 <h2>
+                  <a class="post-link" href="/2019/10/21/k8s-efk/">kuberntes1.16安装efk</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-10-21
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
+    
+        <a href="/tag/#elastic" title="Tag: elastic" rel="tag">elastic</a>&nbsp;
+    
+        <a href="/tag/#fluent-bit" title="Tag: fluent-bit" rel="tag">fluent-bit</a>&nbsp;
+    
+        <a href="/tag/#Elasticsearch" title="Tag: Elasticsearch" rel="tag">Elasticsearch</a>&nbsp;
+    
+        <a href="/tag/#Operator" title="Tag: Operator" rel="tag">Operator</a>&nbsp;
+    
+        <a href="/tag/#Elastic" title="Tag: Elastic" rel="tag">Elastic</a>&nbsp;
+    
+        <a href="/tag/#Cloud" title="Tag: Cloud" rel="tag">Cloud</a>&nbsp;
+    
+        <a href="/tag/#on" title="Tag: on" rel="tag">on</a>&nbsp;
+    
+        <a href="/tag/#Kubernetes" title="Tag: Kubernetes" rel="tag">Kubernetes</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#关于elastic-cloud-on-kubernetes" id="markdown-toc-关于elastic-cloud-on-kubernetes">关于Elastic Cloud on Kubernetes</a></li>
+  <li><a href="#安装elastic-cloud-on-kubernetes" id="markdown-toc-安装elastic-cloud-on-kubernetes">安装Elastic Cloud on Kubernetes</a></li>
+  <li><a href="#安装elasticsearch-on-cluster" id="markdown-toc-安装elasticsearch-on-cluster">安装elasticsearch on cluster</a></li>
+  <li><a href="#安装kibana-on-cluaster" id="markdown-toc-安装kibana-on-cluaster">安装kibana on cluaster</a></li>
+  <li><a href="#kibana-traefik对外暴露" id="markdown-toc-kibana-traefik对外暴露">kibana traefik对外暴露</a></li>
+  <li><a href="#接下来fluent-bit-安装" id="markdown-toc-接下来fluent-bit-安装">接下来fluent-bit 安装</a></li>
+  <li><a href="#登录kibana-进行相关配置" id="markdown-toc-登录kibana-进行相关配置">登录kibana 进行相关配置</a></li>
+</ul>
+
+<h1 id="描述背景">描述背景：</h1>
+<p>注：  文章配置文件示例都是拿阳明大佬博客https://www.qikqiak.com/post/elastic-cloud-on-k8s/ 还有elastic官方文档，阳明大佬文档是旧的新版本有所改变尽量参考官方文档，fluent-bit也有必要看下官方文档 —</p>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.1</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="关于elastic-cloud-on-kubernetes">关于Elastic Cloud on Kubernetes</h1>
+
+<p>Elastic Cloud on Kubernetes(ECK)是一个 Elasticsearch Operator，elastic推出的一个便于部署管理的项目，而且内部集成了核心安全功能（TLS 加密、基于角色的访问控制，以及文件和原生身份验证）免费提供。</p>
+
+<h1 id="安装elastic-cloud-on-kubernetes">安装Elastic Cloud on Kubernetes</h1>
+
+<p>当前最新版本为1.0，参考：https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-quickstart.html。</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> https://download.elastic.co/downloads/eck/1.0.0-beta1/all-in-one.yaml
+kubectl get pods <span class="nt">-n</span> elastic-system
+kubectl <span class="nt">-n</span> elastic-system logs <span class="nt">-f</span> statefulset.apps/elastic-operator
+</code></pre></div></div>
+<p><img src="/assets/images/efk/eck1.png" alt="eck1.png" /></p>
+
+<h1 id="安装elasticsearch-on-cluster">安装elasticsearch on cluster</h1>
+
+<p>官方示例  0.8 示例中apiversion还是elasticsearch.k8s.elastic.co/v1alpha1，1.0更新为elasticsearch.k8s.elastic.co/v1beta1。所以最好能看下最新的官方文档。</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> | kubectl apply -f -
+apiVersion: elasticsearch.k8s.elastic.co/v1beta1
+kind: Elasticsearch
+metadata:
+  name: elastic
+  namespace: elastic-system
+spec:
+  version: 7.4.0
+  nodeSets:
+  - name: default
+    count: 3
+    config:
+      node.master: true
+      node.data: true
+      node.ingest: true
+      node.store.allow_mmap: false
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 5Gi
+        storageClassName: rook-ceph-block
+</span><span class="no">EOF
+</span>注：采用默认官方的了,个人安装了rook ceph 就用了rook-ceph-block，由于是测试storage就设置为5G。另外如果指定运行node节点可以设置lable根据个人需求设置
+</code></pre></div></div>
+<p><img src="/assets/images/efk/storageclass.png" alt="storageclass.png" />
+<img src="/assets/images/efk/elastic1.png" alt="elastic1.png" /></p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods <span class="nt">-n</span> elastic-system <span class="nt">-o</span> wide
+kubectl <span class="nt">-n</span> elastic-system get pods <span class="nt">--selector</span><span class="o">=</span><span class="s1">'elasticsearch.k8s.elastic.co/cluster-name=elastic'</span>（官方文档的查看方式，看个人使用习惯了呢）
+
+kubectl get elasticsearch <span class="nt">-n</span> elastic-system
+
+kubectl get service <span class="nt">-n</span> elastic-system
+
+获取elastic链接用户密码，默认用户为elastic
+kubectl <span class="nt">-n</span> elastic-system get secret elastic-es-elastic-user <span class="nt">-o</span><span class="o">=</span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.elastic}'</span> | <span class="nb">base64</span> <span class="nt">--decode</span><span class="p">;</span> <span class="nb">echo</span>
+
+</code></pre></div></div>
+<p><img src="/assets/images/efk/elastic2.png" alt="elastic2.png" />
+<img src="/assets/images/efk/svc.png" alt="svc.png" />
+<img src="/assets/images/efk/secret.png" alt="secret.png" /></p>
+
+<h1 id="安装kibana-on-cluaster">安装kibana on cluaster</h1>
+<p>依然官方示例</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> | kubectl apply -f -
+apiVersion: kibana.k8s.elastic.co/v1beta1
+kind: Kibana
+metadata:
+  name: kibana
+  namespace: elastic-system
+spec:
+  version: 7.4.0
+  count: 1
+  elasticsearchRef:
+    name: elastic
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+</span><span class="no">EOF
+</span>注意：属性spec.elasticsearchRef.name的值为上面我们创建的 Elasticsearch 对象的 name：elastic。直接添加这个资源对象即可，配置文件下方关于http的配置参照https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-kibana.html#k8s-kibana-http-configuration disable tls为了方便外部traefik负载。
+
+kubectl get kibana <span class="nt">-n</span> elastic-system
+
+kubectl <span class="nt">-n</span> elastic-system get pod <span class="nt">--selector</span><span class="o">=</span><span class="s1">'kibana.k8s.elastic.co/name=kibana'</span>
+
+
+kuberctl get svc <span class="nt">-n</span> elastic-system
+
+</code></pre></div></div>
+<p><img src="/assets/images/efk/kibana.png" alt="kibana.png" /></p>
+
+<h1 id="kibana-traefik对外暴露">kibana traefik对外暴露</h1>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  ingress.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: kibana-kb-http
+  namespace: elastic-system
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-sainaihe-com
+  routes:
+    - match: Host(`kibana123.saynaihe.com`)
+      kind: Rule
+      services:
+        - name: kibana-kb-http
+          port: 5601
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> ingress.yaml
+kubectl get ingressroute <span class="nt">-n</span> elastic-system
+</code></pre></div></div>
+<p><img src="/assets/images/efk/ingress.png" alt="ingress.png" />
+<img src="/assets/images/efk/ingess1.png" alt="ingess1.png" />
+<img src="/assets/images/efk/welcome.png" alt="welcome.png" /></p>
+<h1 id="接下来fluent-bit-安装">接下来fluent-bit 安装</h1>
+<p>kubernetes 采集日志比较常用的有很多比如elasitc自己的logstash  filebeat ，
+还有fluent，另外fluent还有专门针对kubernetes的fluent-bit，各种优劣 可以找文档对比，最终我选择了fluent-bit.先按照https://github.com/fluent/fluent-bit-kubernetes-logging。 README.md修改下配置文件。</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/fluent/fluent-bit-kubernetes-logging
+<span class="nb">cd</span> /fluent/fluent-bit-kubernetes-logging
+注： 修改下配置文件将默认的namespace修改下与eck在同一命名空间下
+修改后文件如下：
+<span class="nt">------</span>
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  fluent-bit-service-account.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fluent-bit
+  namespace: elastic-system
+</span><span class="no">EOF
+</span><span class="nt">------</span>
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  fluent-bit-role.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: fluent-bit-read
+  namespace: elastic-system
+rules:
+- apiGroups: [""]
+  resources:
+  - namespaces
+  - pods
+  verbs: ["get", "list", "watch"]
+</span><span class="no">EOF
+</span><span class="nt">------</span>
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  fluent-bit-role-binding.yaml
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: fluent-bit-read
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fluent-bit-read
+subjects:
+- kind: ServiceAccount
+  name: fluent-bit
+  namespace: elastic-system
+</span><span class="no">EOF
+</span><span class="nt">------</span>
+
+kubectl apply <span class="nt">-f</span> fluent-bit-service-account.yaml
+kubectl apply <span class="nt">-f</span> fluent-bit-role.yaml
+kubectl apply <span class="nt">-f</span> fluent-bit-role-binding.yaml
+<span class="nt">------</span>
+<span class="nb">cd </span>output/elasticsearch/
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; fluent-bit-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  namespace: elastic-system
+  labels:
+    k8s-app: fluent-bit
+data:
+  # Configuration files: server, input, filters and output
+  # ======================================================
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush         1
+        Log_Level     info
+        Daemon        off
+        Parsers_File  parsers.conf
+        HTTP_Server   On
+        HTTP_Listen   0.0.0.0
+        HTTP_Port     2020
+
+    @INCLUDE input-kubernetes.conf
+    @INCLUDE filter-kubernetes.conf
+    @INCLUDE output-elasticsearch.conf
+
+  input-kubernetes.conf: |
+    [INPUT]
+        Name              tail
+        Tag               kube.*
+        Path              /var/log/containers/*.log
+        Parser            docker
+        DB                /var/log/flb_kube.db
+        Mem_Buf_Limit     5MB
+        Skip_Long_Lines   On
+        Refresh_Interval  10
+
+  filter-kubernetes.conf: |
+    [FILTER]
+        Name                kubernetes
+        Match               kube.*
+        Kube_URL            https://kubernetes.default.svc:443
+        Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+        Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
+        Kube_Tag_Prefix     kube.var.log.containers.
+        Merge_Log           On
+        Merge_Log_Key       log_processed
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude Off
+
+  output-elasticsearch.conf: |
+    [OUTPUT]
+        Name            es
+        Match           *
+        Host            elastic-es-http
+        Port            9200
+        HTTP_User       elastic
+        HTTP_Passwd     *********
+        tls   on
+        tls.verify   off
+        Logstash_Format On
+        Replace_Dots    On
+        Retry_Limit     False
+
+  parsers.conf: |
+    [PARSER]
+        Name   apache
+        Format regex
+        Regex  ^(?&lt;host&gt;[^ ]*) [^ ]* (?&lt;user&gt;[^ ]*) </span><span class="se">\[</span><span class="sh">(?&lt;time&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh"> "(?&lt;method&gt;</span><span class="se">\S</span><span class="sh">+)(?: +(?&lt;path&gt;[^</span><span class="se">\"</span><span class="sh">]*?)(?: +</span><span class="se">\S</span><span class="sh">*)?)?" (?&lt;code&gt;[^ ]*) (?&lt;size&gt;[^ ]*)(?: "(?&lt;referer&gt;[^</span><span class="se">\"</span><span class="sh">]*)" "(?&lt;agent&gt;[^</span><span class="se">\"</span><span class="sh">]*)")?$
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name   apache2
+        Format regex
+        Regex  ^(?&lt;host&gt;[^ ]*) [^ ]* (?&lt;user&gt;[^ ]*) </span><span class="se">\[</span><span class="sh">(?&lt;time&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh"> "(?&lt;method&gt;</span><span class="se">\S</span><span class="sh">+)(?: +(?&lt;path&gt;[^ ]*) +</span><span class="se">\S</span><span class="sh">*)?" (?&lt;code&gt;[^ ]*) (?&lt;size&gt;[^ ]*)(?: "(?&lt;referer&gt;[^</span><span class="se">\"</span><span class="sh">]*)" "(?&lt;agent&gt;[^</span><span class="se">\"</span><span class="sh">]*)")?$
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name   apache_error
+        Format regex
+        Regex  ^</span><span class="se">\[</span><span class="sh">[^ ]* (?&lt;time&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh"> </span><span class="se">\[</span><span class="sh">(?&lt;level&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh">(?: </span><span class="se">\[</span><span class="sh">pid (?&lt;pid&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh">)?( </span><span class="se">\[</span><span class="sh">client (?&lt;client&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh">)? (?&lt;message&gt;.*)$
+
+    [PARSER]
+        Name   nginx
+        Format regex
+        Regex ^(?&lt;remote&gt;[^ ]*) (?&lt;host&gt;[^ ]*) (?&lt;user&gt;[^ ]*) </span><span class="se">\[</span><span class="sh">(?&lt;time&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh"> "(?&lt;method&gt;</span><span class="se">\S</span><span class="sh">+)(?: +(?&lt;path&gt;[^</span><span class="se">\"</span><span class="sh">]*?)(?: +</span><span class="se">\S</span><span class="sh">*)?)?" (?&lt;code&gt;[^ ]*) (?&lt;size&gt;[^ ]*)(?: "(?&lt;referer&gt;[^</span><span class="se">\"</span><span class="sh">]*)" "(?&lt;agent&gt;[^</span><span class="se">\"</span><span class="sh">]*)")?$
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name   json
+        Format json
+        Time_Key time
+        Time_Format %d/%b/%Y:%H:%M:%S %z
+
+    [PARSER]
+        Name        docker
+        Format      json
+        Time_Key    time
+        Time_Format %Y-%m-%dT%H:%M:%S.%L
+        Time_Keep   On
+
+    [PARSER]
+        Name        syslog
+        Format      regex
+        Regex       ^</span><span class="se">\&lt;</span><span class="sh">(?&lt;pri&gt;[0-9]+)</span><span class="se">\&gt;</span><span class="sh">(?&lt;time&gt;[^ ]* {1,2}[^ ]* [^ ]*) (?&lt;host&gt;[^ ]*) (?&lt;ident&gt;[a-zA-Z0-9_</span><span class="se">\/\.\-</span><span class="sh">]*)(?:</span><span class="se">\[</span><span class="sh">(?&lt;pid&gt;[0-9]+)</span><span class="se">\]</span><span class="sh">)?(?:[^</span><span class="se">\:</span><span class="sh">]*</span><span class="se">\:</span><span class="sh">)? *(?&lt;message&gt;.*)$
+        Time_Key    time
+        Time_Format %b %d %H:%M:%S
+</span><span class="no">EOF
+</span><span class="nt">------</span>
+注：基本还是默认的就修改了namespace 还有output-elasticsearch.conf中 Host  Port   HTTP_User  HTTP_Passwd  tls   tls.verify具体参考https://docs.fluentbit.io/manual/configuration 官方文档
+<span class="nt">------</span>
+<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; fluent-bit-ds.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluent-bit
+  namespace: elastic-system
+  labels:
+    k8s-app: fluent-bit-logging
+    version: v1
+    kubernetes.io/cluster-service: "true"
+spec:
+  selector:
+    matchLabels:
+      k8s-app: fluent-bit-logging
+  template:
+    metadata:
+      labels:
+        k8s-app: fluent-bit-logging
+        version: v1
+        kubernetes.io/cluster-service: "true"
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "2020"
+        prometheus.io/path: /api/v1/metrics/prometheus
+    spec:
+      containers:
+      - name: fluent-bit
+        image: fluent/fluent-bit:1.2.1
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 2020
+        env:
+        - name: FLUENT_ELASTICSEARCH_HOST
+          value: "elastic-es-http"
+        - name: FLUENT_ELASTICSEARCH_PORT
+          value: "9200"
+        volumeMounts:
+        - name: varlog
+          mountPath: /var/log
+        - name: varlibdockercontainers
+          mountPath: /var/lib/docker/containers
+          readOnly: true
+        - name: fluent-bit-config
+          mountPath: /fluent-bit/etc/
+      terminationGracePeriodSeconds: 10
+      volumes:
+      - name: varlog
+        hostPath:
+          path: /var/log
+      - name: varlibdockercontainers
+        hostPath:
+          path: /var/lib/docker/containers
+      - name: fluent-bit-config
+        configMap:
+          name: fluent-bit-config
+      serviceAccountName: fluent-bit
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        operator: Exists
+        effect: NoSchedule
+      - operator: "Exists"
+        effect: "NoExecute"
+      - operator: "Exists"
+        effect: "NoSchedule"
+</span><span class="no">EOF
+</span><span class="nt">------</span>
+注: 修改了下apiversion  1.16取消了extensions/v1beta1  更改为apps/v1
+配置文件增加  selector: 相关配置。FLUENT_ELASTICSEARCH_HOST  FLUENT_ELASTICSEARCH_PORT  对应value输入
+<span class="nt">------</span>
+kubectl apply <span class="nt">-f</span> fluent-bit-configmap.yaml
+kubectl apply <span class="nt">-f</span> fluent-bit-ds.yaml
+kubectl get pods <span class="nt">-n</span> elastic-system
+
+</code></pre></div></div>
+<p><img src="/assets/images/efk/fluent-bit.png" alt="fluent-bit.png" /></p>
+<h1 id="登录kibana-进行相关配置">登录kibana 进行相关配置</h1>
+
+<p><img src="/assets/images/efk/kibana1.png" alt="kibana1.png" />
+<img src="/assets/images/efk/kibana2.png" alt="kibana2.png" />
+<img src="/assets/images/efk/kibana3.png" alt="kibana3.png" />
+<img src="/assets/images/efk/kibana4.png" alt="kibana3.png" /></p>
+
+<p>注：发现rook的日志单行了 后续将完善下各种日志的格式还有其他相关问题</p>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/10/21/k8s-efk/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
+                  <a class="post-link" href="/2019/10/17/k8s-traefik2/">traefik2 安装实现 http  https</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-10-17
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#traefik2" title="Tag: traefik2" rel="tag">traefik2</a>&nbsp;
+    
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#关于traefik" id="markdown-toc-关于traefik">关于Traefik</a></li>
+</ul>
+
+<h1 id="描述背景">描述背景：</h1>
+<blockquote>
+  <p>注：  文章配置文件示例都是拿阳明大佬的还有良哥转发的http://www.mydlq.club/article/41 超级小豆丁的文章中参考的。个人只是拿来整合测试了下整合，鸣谢各位大佬。</p>
+</blockquote>
+
+<blockquote>
+  <p>开始使用腾讯云tke,slb对外映射方式 还需要对外开启Nodeport  然后slb对端口映射，个人觉得比较反人类，然后看到阳明 良哥两位大佬都发了traefik的方式就试用了一下。</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>集群配置：
+初始集群环境kubeadm 1.16.1
+
+|  ip           | 自定义域名         |    主机名 |
+|  :----:       |     :----:        |   :----:  |
+|192.168.3.8      |  master.k8s.io    |  k8s-vip  |
+|192.168.3.10    |  master01.k8s.io  |  k8s-master-01|
+|192.168.3.5   |  master02.k8s.io  |  k8s-master-02| 
+|192.168.3.12   |  master03.k8s.io  |  k8s-master-03|
+|192.168.3.6    |  node01.k8s.io    |  k8s-node-01|
+|192.168.3.2    |  node02.k8s.io    |  k8s-node-02|
+|192.168.3.4    |  node03.k8s.io    |  k8s-node-03|
+k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载均衡并对外暴露了80  443两个端口，开始443想放在https监听器哪里，但是这样一个sbl负载均衡只能绑定一个证书的，业务不太多，不想用多个slb，就将443端口监听放在了tcp/udp监听器这里，然后证书在kubernetes集群中创建绑定在traefik上。
+</code></pre></div></div>
+<h1 id="关于traefik">关于Traefik</h1>
+<blockquote>
+  <p>Traefik 2.0 官方文档：https://docs.traefik.io/v2.0/ 比较乱，中文的可参照阳明大佬的中文翻译https://www.qikqiak.com/traefik-book/</p>
+</blockquote>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/10/17/k8s-traefik2/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
                   <a class="post-link" href="/2019/09/23/k8s-1.15.3-update1.16.0/">2019-09-23-k8s-1.15.3-update1.16.0</a>
                 </h2>
                 <div class="label">
@@ -1583,7 +2180,13 @@ setenforce  0
                 </div>
                 <ul class="content-ul" recent>
                     
-                        <li><a href="/2020/09/11/hadoop-ha-hbase-hive-spark/">2020-09-11-hadoop-ha-hbase-hive-spark</a></li>
+                        <li><a href="/2021/03/27/Kuberentes-eck/">Kuberentes 1.20.5搭建eck</a></li>
+                    
+                        <li><a href="/2021/03/27/Kubernetes-traefik/">Kubernetes 1.20.5 安装traefik在腾讯云下的实践</a></li>
+                    
+                        <li><a href="/2021/03/27/Kuberentes-cbs/">Kuberentes集群添加腾讯云CBS为默认存储</a></li>
+                    
+                        <li><a href="/2021/03/26/centos8+kubeadm1.20.5+cilium+hubble/">centos8+kubeadm1.20.5+cilium+hubble环境搭建</a></li>
                     
                         <li><a href="/2020/07/31/kubernetes-csi-tencentcloud-cosfs/">2020-07-31-kubernetes集群使用腾讯云cos存储</a></li>
                     
@@ -1596,12 +2199,6 @@ setenforce  0
                         <li><a href="/2020/07/22/tencent-slb-kubeadm-ha/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a></li>
                     
                         <li><a href="/2019/12/27/traefik/">2019-12-27-traefik</a></li>
-                    
-                        <li><a href="/2019/12/05/eck-qustion/">2019-12-05-eck-qustion</a></li>
-                    
-                        <li><a href="/2019/12/03/k8s-jenkins-sonarqube/">2019-12-03-k8s-jenkins-sonarqube</a></li>
-                    
-                        <li><a href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/">2019-11-29-k8s-helm-install-postgresql-sonarqube</a></li>
                     
                 </ul>
             </div>
@@ -1628,7 +2225,7 @@ setenforce  0
                             <span class="name">
                                 kubernetes
                             </span>
-                            <span class="badge">23</span>
+                            <span class="badge">22</span>
                         </a>
                     </li>
                     
@@ -1651,11 +2248,11 @@ setenforce  0
                     </li>
                     
                     <li>
-                        <a href="/category/#hadoop" class="categories-list-item" cate="hadoop">
+                        <a href="/category/#kubernetes1.20" class="categories-list-item" cate="kubernetes1.20">
                             <span class="name">
-                                hadoop
+                                kubernetes1.20
                             </span>
-                            <span class="badge">1</span>
+                            <span class="badge">4</span>
                         </a>
                     </li>
                     
@@ -1709,7 +2306,7 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#Operator" style="font-size: 10pt; color: #888;">Operator</a>
+                      <a href="/tag/#Operator" style="font-size: 9.5pt; color: #888;">Operator</a>
                     
                       
                       
@@ -1793,7 +2390,7 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#on" style="font-size: 10pt; color: #888;">on</a>
+                      <a href="/tag/#on" style="font-size: 9.5pt; color: #888;">on</a>
                     
                       
                       
@@ -1814,7 +2411,7 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#helm" style="font-size: 10.5pt; color: #777;">helm</a>
+                      <a href="/tag/#helm" style="font-size: 10pt; color: #888;">helm</a>
                     
                       
                       
@@ -1835,14 +2432,14 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#kubernetes1.16" style="font-size: 10pt; color: #888;">kubernetes1.16</a>
+                      <a href="/tag/#kubernetes1.16" style="font-size: 9pt; color: #999;">kubernetes1.16</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#jenkins" style="font-size: 10.5pt; color: #777;">jenkins</a>
+                      <a href="/tag/#jenkins" style="font-size: 9.5pt; color: #888;">jenkins</a>
                     
                       
                       
@@ -1891,7 +2488,7 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#kuberadm" style="font-size: 10pt; color: #888;">kuberadm</a>
+                      <a href="/tag/#kuberadm" style="font-size: 9.5pt; color: #888;">kuberadm</a>
                     
                       
                       
@@ -1905,7 +2502,7 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#sonarqube" style="font-size: 10pt; color: #888;">sonarqube</a>
+                      <a href="/tag/#sonarqube" style="font-size: 9.5pt; color: #888;">sonarqube</a>
                     
                       
                       
@@ -1933,7 +2530,7 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10.5pt; color: #777;">kubernetes1.18.6</a>
+                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10pt; color: #888;">kubernetes1.18.6</a>
                     
                       
                       
@@ -1954,21 +2551,21 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 10pt; color: #888;">kubernetes-csi-tencentcloud</a>
+                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 9.5pt; color: #888;">kubernetes-csi-tencentcloud</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#kubernetes1.16.8" style="font-size: 10pt; color: #888;">kubernetes1.16.8</a>
+                      <a href="/tag/#kubernetes1.16.8" style="font-size: 9.5pt; color: #888;">kubernetes1.16.8</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#etcd" style="font-size: 10pt; color: #888;">etcd</a>
+                      <a href="/tag/#etcd" style="font-size: 9.5pt; color: #888;">etcd</a>
                     
                       
                       
@@ -2010,28 +2607,28 @@ setenforce  0
                       
                       
                       
-                      <a href="/tag/#hadoop" style="font-size: 9pt; color: #999;">hadoop</a>
+                      <a href="/tag/#cilium" style="font-size: 9pt; color: #999;">cilium</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#hbase" style="font-size: 9pt; color: #999;">hbase</a>
+                      <a href="/tag/#hubble" style="font-size: 9pt; color: #999;">hubble</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#hive" style="font-size: 9pt; color: #999;">hive</a>
+                      <a href="/tag/#CBS" style="font-size: 9pt; color: #999;">CBS</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#spark" style="font-size: 9pt; color: #999;">spark</a>
+                      <a href="/tag/#eck" style="font-size: 9pt; color: #999;">eck</a>
                     
                 </div>
             </div>

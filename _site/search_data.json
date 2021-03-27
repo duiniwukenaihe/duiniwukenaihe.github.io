@@ -1,11 +1,35 @@
 [
 
 {
-	"title"    : "2020-09-11-hadoop-ha-hbase-hive-spark",
-	"category" : "hadoop",
-	"tags"     : "hadoop, hbase, hive, spark",
-	"url"      : "/2020/09/11/hadoop-ha-hbase-hive-spark/",
-	"date"     : "2020-09-11 10:00:00 +0800"
+	"title"    : "Kuberentes 1.20.5搭建eck",
+	"category" : "kubernetes1.20",
+	"tags"     : "kubernetes, eck",
+	"url"      : "/2021/03/27/Kuberentes-eck/",
+	"date"     : "2021-03-27 02:00:00 +0800"
+} ,
+
+{
+	"title"    : "Kubernetes 1.20.5 安装traefik在腾讯云下的实践",
+	"category" : "kubernetes1.20",
+	"tags"     : "kubernetes, traefik",
+	"url"      : "/2021/03/27/Kubernetes-traefik/",
+	"date"     : "2021-03-27 01:00:00 +0800"
+} ,
+
+{
+	"title"    : "Kuberentes集群添加腾讯云CBS为默认存储",
+	"category" : "kubernetes1.20",
+	"tags"     : "kubernetes, CBS",
+	"url"      : "/2021/03/27/Kuberentes-cbs/",
+	"date"     : "2021-03-27 01:00:00 +0800"
+} ,
+
+{
+	"title"    : "centos8+kubeadm1.20.5+cilium+hubble环境搭建",
+	"category" : "kubernetes1.20",
+	"tags"     : "kubernetes, cilium, hubble",
+	"url"      : "/2021/03/26/centos8+kubeadm1.20.5+cilium+hubble/",
+	"date"     : "2021-03-26 01:00:00 +0800"
 } ,
 
 {
@@ -94,14 +118,6 @@
 	"tags"     : "question, no, space, left, on, device",
 	"url"      : "/2019/11/25/k8s-question2/",
 	"date"     : "2019-11-25 10:00:00 +0800"
-} ,
-
-{
-	"title"    : "k8s-install-jenkins",
-	"category" : "kubernetes",
-	"tags"     : "kubernetes1.16, jenkins",
-	"url"      : "/2019/11/19/cncf-ali/",
-	"date"     : "2019-11-19 14:00:33 +0800"
 } ,
 
 {

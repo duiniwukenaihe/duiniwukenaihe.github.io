@@ -154,6 +154,715 @@ var _hmt = _hmt || [];
             
               <li>
                 <h2>
+                  <a class="post-link" href="/2019/12/05/eck-qustion/">2019-12-05-eck-qustion</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-12-05
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#elastic-oparator" title="Category: elastic-oparator" rel="category">elastic-oparator</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#elastic-oparator" title="Tag: elastic-oparator" rel="tag">elastic-oparator</a>&nbsp;
+    
+        <a href="/tag/#ECK" title="Tag: ECK" rel="tag">ECK</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a>    <ul>
+      <li><a href="#1-kibana汉化" id="markdown-toc-1-kibana汉化">1. kibana汉化</a></li>
+      <li><a href="#kibana创建新用户" id="markdown-toc-kibana创建新用户">kibana创建新用户</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.3</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="描述背景">描述背景：</h1>
+<blockquote>
+  <p>elastic-oparator搭建完成eck, kibana管理界面汉化和建立新用户权限设置。</p>
+
+  <p>初始化环境参考https://duiniwukenaihe.github.io/2019/10/21/k8s-efk/。然后默认把7.4的镜像修改成7.5.0直接升级了一下</p>
+</blockquote>
+
+<h2 id="1-kibana汉化">1. kibana汉化</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> | kubectl apply -f -
+apiVersion: kibana.k8s.elastic.co/v1beta1
+kind: Kibana
+metadata:
+  name: kibana
+  namespace: elastic-system
+spec:
+  version: 7.5.0
+  count: 1
+  elasticsearchRef:
+    name: "elastic"
+  http:
+    tls:
+      selfSignedCertificate:
+        disabled: true
+  podTemplate:
+    spec:
+      containers:
+      - name: kibana
+        env:
+        - name: I18N_LOCALE
+          value: zh-CN
+        resources:
+          requests:
+            memory: 1Gi
+          limits:
+            memory: 2Gi
+        volumeMounts:
+        - name: timezone-volume
+          mountPath: /etc/localtime
+          readOnly: true
+      volumes:
+      - name: timezone-volume
+        hostPath:
+          path: /usr/share/zoneinfo/Asia/Shanghai
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<blockquote>
+  <p>这样就可以支持中文了</p>
+</blockquote>
+
+<p><img src="/assets/images/efk/chinese.png" alt="chinese" /></p>
+
+<h2 id="kibana创建新用户">kibana创建新用户</h2>
+<blockquote>
+  <p>按照官方教程 创建后貌似用户是无法登陆的，New user can’t login kibana。可参考https://discuss.elastic.co/t/new-user-cant-login-kibana/204810。</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> | kubectl apply -f -
+apiVersion: elasticsearch.k8s.elastic.co/v1beta1
+kind: Elasticsearch
+metadata:
+  name: elastic
+  namespace: elastic-system
+spec:
+  version: 7.5.0
+  nodeSets:
+  - name: elastic
+    count: 3
+    config:
+      node.master: true
+      node.data: true
+      node.ingest: true
+      node.store.allow_mmap: false
+      xpack.security.authc.realms:
+        native:
+          native1: 
+            order: 1
+    volumeClaimTemplates:
+    - metadata:
+        name: elasticsearch-data
+      spec:
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 30Gi
+        storageClassName: rook-ceph-block
+</span><span class="no">EOF
+</span></code></pre></div></div>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>增加了：
+      xpack.security.authc.realms:
+        native:
+          native1: 
+            order: 1
+</code></pre></div></div>
+<p><img src="/assets/images/efk/user.png" alt="user" /></p>
+<blockquote>
+  <p>其他参考官方文档即可。</p>
+</blockquote>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/12/05/eck-qustion/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
+                  <a class="post-link" href="/2019/12/03/k8s-jenkins-sonarqube/">2019-12-03-k8s-jenkins-sonarqube</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-12-03
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
+    
+        <a href="/tag/#jenkins" title="Tag: jenkins" rel="tag">jenkins</a>&nbsp;
+    
+        <a href="/tag/#sonarqube" title="Tag: sonarqube" rel="tag">sonarqube</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#sonarqube配置" id="markdown-toc-sonarqube配置">sonarqube配置</a>    <ul>
+      <li><a href="#1-禁用scm传感器" id="markdown-toc-1-禁用scm传感器">1. 禁用SCM传感器</a></li>
+      <li><a href="#2-安装-分析插件" id="markdown-toc-2-安装-分析插件">2. 安装 分析插件</a></li>
+      <li><a href="#2-生成token" id="markdown-toc-2-生成token">2. 生成token</a></li>
+    </ul>
+  </li>
+  <li><a href="#jenkins整合" id="markdown-toc-jenkins整合">jenkins整合</a>    <ul>
+      <li><a href="#1-安装相关插件" id="markdown-toc-1-安装相关插件">1. 安装相关插件</a></li>
+      <li><a href="#2-连接sonarqube" id="markdown-toc-2-连接sonarqube">2. 连接sonarqube</a></li>
+      <li><a href="#3-配置-sonarqube-scanner-插件" id="markdown-toc-3-配置-sonarqube-scanner-插件">3. 配置 SonarQube Scanner 插件</a></li>
+      <li><a href="#4-配置-maven插件" id="markdown-toc-4-配置-maven插件">4. 配置 maven插件</a></li>
+    </ul>
+  </li>
+  <li><a href="#创建pipeline流水线测试项目" id="markdown-toc-创建pipeline流水线测试项目">创建pipeline流水线测试项目</a>    <ul>
+      <li><a href="#1-创建流水线任务" id="markdown-toc-1-创建流水线任务">1. 创建流水线任务</a>        <ul>
+          <li><a href="#2-参数化构建流程-文本参数" id="markdown-toc-2-参数化构建流程-文本参数">2. 参数化构建流程-文本参数</a></li>
+          <li><a href="#3-创建pipeline-脚本-这里都是直接copy过来的" id="markdown-toc-3-创建pipeline-脚本-这里都是直接copy过来的">3. 创建pipeline 脚本 这里都是直接copy过来的</a></li>
+          <li><a href="#4-执行jenkins任务构建" id="markdown-toc-4-执行jenkins任务构建">4. 执行jenkins任务构建</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#登陆sonarqube查看扫描结果" id="markdown-toc-登陆sonarqube查看扫描结果">登陆sonarqube查看扫描结果.</a></li>
+</ul>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.3</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="描述背景">描述背景：</h1>
+<blockquote>
+  <p>示例过程参考http://www.mydlq.club/article/11/超级小豆丁文档进行操作，版本过程略有不同。初衷是没有进过大公司，羡慕大公司的工作流，安装下sonarqube与jenkins集成跑个测试用例自己安慰下自己……
+上一张抄来的流程图</p>
+</blockquote>
+
+<p><img src="/assets/images/sonar/jenkins-sonar1.png" alt="jenkins-sonar1" /></p>
+
+<h1 id="sonarqube配置">sonarqube配置</h1>
+
+<h2 id="1-禁用scm传感器">1. 禁用SCM传感器</h2>
+<blockquote>
+  <p>点击 配置—SCM—Disable the SCM Sensor 将其关闭
+<img src="/assets/images/sonar/jenkins-sonar2.png" alt="jenkins-sonar2" /></p>
+  <h2 id="2-安装-分析插件">2. 安装 分析插件</h2>
+  <p>点击配置-应用市场，搜索安装了java php js的相关插件，还安装了L10n，开始没有安装，pipeline后面编译maven示例的时候报错了，安装还是有必要的</p>
+</blockquote>
+
+<p><img src="/assets/images/sonar/jenkins-sonar3.png" alt="jenkins-sonar3" /></p>
+<h2 id="2-生成token">2. 生成token</h2>
+<blockquote>
+  <p>token 字符串是用于 Jenkins 在执行流水线时候将待检测信息发送到 SonarQube的安全凭证。
+点击右上角头像—我的账号—安全—生成令牌 生成验证的 Token。</p>
+</blockquote>
+
+<p><img src="/assets/images/sonar/jenkins-sonar4.png" alt="jenkins-sonar4" /></p>
+
+<h1 id="jenkins整合">jenkins整合</h1>
+<h2 id="1-安装相关插件">1. 安装相关插件</h2>
+<blockquote>
+
+  <p>Maven Integration plugin</p>
+
+  <p>Pipeline Maven Integration Plugin</p>
+
+  <p>Pipeline Utility Steps</p>
+
+  <p>SonarQube Scanner for Jenkins</p>
+
+  <p>打开 系统管理—插件管理—可选插件 输入 相关插件名称 进行插件筛选，直接安装就Ok了。</p>
+  <h2 id="2-连接sonarqube">2. 连接sonarqube</h2>
+  <p>点击凭据-系统-全局凭证-添加凭据-Secret text，复制sonarqube token到Secret ID,命名为sonar了 我就.
+<img src="/assets/images/sonar/jenkins-sonar5.png" alt="jenkins-sonar5" />
+系统管理-系统配置-SonarQube servers，添加sonarqube service配置。name 随便命名了一个jenkins,server url，由于我的jenkins和sonarqube 在一个namespace 我直接用了service 那么 通信，server authentication 添加了上一步创建的 sonar的secret text。
+<img src="/assets/images/sonar/jenkins-sonar6.png" alt="jenkins-sonar6" /></p>
+  <h2 id="3-配置-sonarqube-scanner-插件">3. 配置 SonarQube Scanner 插件</h2>
+  <p>打开 系统管理—全局工具配置—SonarQube Scanner 输入 Name，选择最新版本点击自动安装即可.
+<img src="/assets/images/sonar/jenkins-sonar7.png" alt="jenkins-sonar7" /></p>
+  <h2 id="4-配置-maven插件">4. 配置 maven插件</h2>
+  <p>打开 系统管理—全局工具配置—Maven 输入 Name，选择最新版本点击自动安装即可.（我的安装的时候一直下不下来包，就直接下载了一个最新版的包copy到了容器中的路径中去.）
+<img src="/assets/images/sonar/jenkins-sonar8.png" alt="jenkins-sonar8" /></p>
+  <h1 id="创建pipeline流水线测试项目">创建pipeline流水线测试项目</h1>
+  <h2 id="1-创建流水线任务">1. 创建流水线任务</h2>
+  <p><img src="/assets/images/sonar/jenkins-sonar9.png" alt="jenkins-sonar9" /></p>
+  <h3 id="2-参数化构建流程-文本参数">2. 参数化构建流程-文本参数</h3>
+  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>名称： sonar_project_properties
+默认值：
+sonar.sources<span class="o">=</span>src
+sonar.language<span class="o">=</span>java
+sonar.sourceEncoding<span class="o">=</span>UTF-8
+sonar.java.binaries<span class="o">=</span>target/classes
+sonar.java.source<span class="o">=</span>1.8
+sonar.java.target<span class="o">=</span>1.8
+</code></pre></div>  </div>
+  <p><img src="/assets/images/sonar/jenkins-sonar10.png" alt="jenkins-sonar10" /></p>
+  <h3 id="3-创建pipeline-脚本-这里都是直接copy过来的">3. 创建pipeline 脚本 这里都是直接copy过来的</h3>
+  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">**</span>// 设置超时时间为10分钟，如果未成功则结束任务
+<span class="nb">timeout</span><span class="o">(</span><span class="nb">time</span>: 600, unit: <span class="s1">'SECONDS'</span><span class="o">)</span> <span class="o">{</span>
+    node <span class="o">()</span> <span class="o">{</span>
+        stage<span class="o">(</span><span class="s1">'Git 拉取阶段'</span><span class="o">){</span>
+            // Git 拉取代码
+            git branch: <span class="s2">"master"</span> ,changelog: <span class="nb">true</span> , url: <span class="s2">"https://github.com/a324670547/springboot-helloworld"</span>
+        <span class="o">}</span>
+        stage<span class="o">(</span><span class="s1">'Maven 编译阶段'</span><span class="o">)</span> <span class="o">{</span>
+            // 设置 Maven 工具,引用先前全局工具配置中设置工具的名称
+            def m3 <span class="o">=</span> tool name: <span class="s1">'maven'</span>
+            // 执行 Maven 命令
+            sh <span class="s2">"</span><span class="k">${</span><span class="nv">m3</span><span class="k">}</span><span class="s2">/bin/mvn -B -e clean install -Dmaven.test.skip=true"</span>
+        <span class="o">}</span>
+        stage<span class="o">(</span><span class="s1">'SonarQube 扫描阶段'</span><span class="o">){</span>
+            // 读取maven变量
+            pom <span class="o">=</span> readMavenPom file: <span class="s2">"./pom.xml"</span>
+            // 创建SonarQube配置文件
+            writeFile file: <span class="s1">'sonar-project.properties'</span>, 
+                      text: <span class="s2">"""sonar.projectKey=</span><span class="k">${</span><span class="nv">pom</span><span class="p">.artifactId</span><span class="k">}</span><span class="s2">:</span><span class="k">${</span><span class="nv">pom</span><span class="p">.version</span><span class="k">}</span><span class="se">\n</span><span class="s2">"""</span>+
+                            <span class="s2">"""sonar.projectName=</span><span class="k">${</span><span class="nv">pom</span><span class="p">.artifactId</span><span class="k">}</span><span class="se">\n</span><span class="s2">"""</span>+
+                            <span class="s2">"""sonar.projectVersion=</span><span class="k">${</span><span class="nv">pom</span><span class="p">.version</span><span class="k">}</span><span class="se">\n</span><span class="s2">"""</span>+
+                            <span class="s2">"""</span><span class="k">${</span><span class="nv">sonar_project_properties</span><span class="k">}</span><span class="s2">"""</span>
+            // 设置 SonarQube 代码扫描工具,引用先前全局工具配置中设置工具的名称
+            def sonarqubeScanner <span class="o">=</span> tool name: <span class="s1">'sonar-scanner'</span>
+            // 设置 SonarQube 环境,其中参数设置为之前系统设置中SonarQuke服务器配置的 Name
+            withSonarQubeEnv<span class="o">(</span><span class="s1">'jenkins'</span><span class="o">)</span> <span class="o">{</span>
+                // 执行代码扫描
+                sh <span class="s2">"</span><span class="k">${</span><span class="nv">sonarqubeScanner</span><span class="k">}</span><span class="s2">/bin/sonar-scanner"</span>
+            <span class="o">}</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span><span class="k">**</span>
+</code></pre></div>  </div>
+  <p><img src="/assets/images/sonar/jenkins-sonar11.png" alt="jenkins-sonar11" /></p>
+  <h3 id="4-执行jenkins任务构建">4. 执行jenkins任务构建</h3>
+  <p>点击 Build with Parameters 执行 Jenkins 任务,由于插件安装不完整，sonarqube 少安装了L10n插件，开始失败率 好多次。等待确认成功
+<img src="/assets/images/sonar/jenkins-sonar12.png" alt="jenkins-sonar12" /></p>
+  <h1 id="登陆sonarqube查看扫描结果">登陆sonarqube查看扫描结果.</h1>
+</blockquote>
+
+<p><img src="/assets/images/sonar/jenkins-sonar13.png" alt="jenkins-sonar13" /></p>
+
+<blockquote>
+  <p>总结：流程算是草草完成，还有很多不明白的地方，因为工作环境都是php，也没有成熟的发布流程，对java的maven构建还是很陌生。而且sonarqube的配置还是十分不熟悉。后续先搞明白下sonarqube的各种配置设置参数，系统的看下maven gradle这些主流的java构建工具。</p>
+</blockquote>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/12/03/k8s-jenkins-sonarqube/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
+                  <a class="post-link" href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/">2019-11-29-k8s-helm-install-postgresql-sonarqube</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2019-11-29
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
+    
+        <a href="/tag/#helm" title="Tag: helm" rel="tag">helm</a>&nbsp;
+    
+        <a href="/tag/#postgresql" title="Tag: postgresql" rel="tag">postgresql</a>&nbsp;
+    
+        <a href="/tag/#sonarqube" title="Tag: sonarqube" rel="tag">sonarqube</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
+  <li><a href="#开始安装" id="markdown-toc-开始安装">开始安装</a>    <ul>
+      <li><a href="#1-git-clone-chart库" id="markdown-toc-1-git-clone-chart库">1. git clone chart库</a></li>
+      <li><a href="#2-helm-安装postgresql" id="markdown-toc-2-helm-安装postgresql">2. helm 安装postgresql</a></li>
+      <li><a href="#3-helm-安装sonar" id="markdown-toc-3-helm-安装sonar">3. helm 安装sonar</a></li>
+      <li><a href="#4-treafik代理-sonar" id="markdown-toc-4-treafik代理-sonar">4. treafik代理 sonar</a></li>
+      <li><a href="#5-登录sonar-修改密码设置语言包" id="markdown-toc-5-登录sonar-修改密码设置语言包">5. 登录sonar 修改密码设置语言包</a></li>
+    </ul>
+  </li>
+</ul>
+
+<p>集群配置：
+初始集群环境kubeadm 1.16.3</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">ip</th>
+      <th style="text-align: center">自定义域名</th>
+      <th style="text-align: center">主机名</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">192.168.3.8</td>
+      <td style="text-align: center">master.k8s.io</td>
+      <td style="text-align: center">k8s-vip</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.10</td>
+      <td style="text-align: center">master01.k8s.io</td>
+      <td style="text-align: center">k8s-master-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.5</td>
+      <td style="text-align: center">master02.k8s.io</td>
+      <td style="text-align: center">k8s-master-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.12</td>
+      <td style="text-align: center">master03.k8s.io</td>
+      <td style="text-align: center">k8s-master-03</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.6</td>
+      <td style="text-align: center">node01.k8s.io</td>
+      <td style="text-align: center">k8s-node-01</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.2</td>
+      <td style="text-align: center">node02.k8s.io</td>
+      <td style="text-align: center">k8s-node-02</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">192.168.3.4</td>
+      <td style="text-align: center">node03.k8s.io</td>
+      <td style="text-align: center">k8s-node-03</td>
+    </tr>
+  </tbody>
+</table>
+
+<h1 id="描述背景">描述背景：</h1>
+<blockquote>
+  <p>正常来说helm玩的好应该是直接安装的但是玩的不太好 ，postgresql 和sonarqube分成两部安装的。变量各种用的不熟悉，安装后sonarqube报错什么的， 就分成两步安装了。</p>
+</blockquote>
+
+<h1 id="开始安装">开始安装</h1>
+<h2 id="1-git-clone-chart库">1. git clone chart库</h2>
+<blockquote>
+  <p>git clone https://github.com/helm/charts</p>
+</blockquote>
+
+<h2 id="2-helm-安装postgresql">2. helm 安装postgresql</h2>
+
+<blockquote>
+  <p>cd charts/stable/sonarqube/postgresql</p>
+
+  <p>修改 values.yaml，就设置了用户密码和存储类storageClass。</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>postgresqlPassword: qmVy5wubfmcekZy3
+
+storageClass: <span class="s2">"rook-ceph-block"</span>
+</code></pre></div></div>
+
+<p><img src="/assets/images/sonar/sonar1.png" alt="sonar1.png" />
+<img src="/assets/images/sonar/sonar2.png" alt="sonar2.png" /></p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm <span class="nb">install</span> <span class="nt">--name</span> sonar-postgresql <span class="nt">-f</span> values.yaml <span class="nb">.</span> <span class="nt">--namespace</span> kube-ops
+</code></pre></div></div>
+
+<p><img src="/assets/images/sonar/sonar3.png" alt="sonar3.png" /></p>
+
+<blockquote>
+  <p>进入postgresql 创建sonar数据库</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="si">$(</span>kubectl get secret <span class="nt">--namespace</span> kube-ops sonar-postgresql <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">"{.data.postgresql-password}"</span> | <span class="nb">base64</span> <span class="nt">--decode</span><span class="si">)</span>
+
+kubectl run sonar-postgresql-client <span class="nt">--rm</span> <span class="nt">--tty</span> <span class="nt">-i</span> <span class="nt">--restart</span><span class="o">=</span><span class="s1">'Never'</span> <span class="nt">--namespace</span> kube-ops <span class="nt">--image</span> docker.io/bitnami/postgresql:11.6.0-debian-9-r0 <span class="nt">--env</span><span class="o">=</span><span class="s2">"PGPASSWORD=</span><span class="nv">$POSTGRES_PASSWORD</span><span class="s2">"</span> <span class="nt">--command</span> <span class="nt">--</span> psql <span class="nt">--host</span> sonar-postgresql <span class="nt">-U</span> postgres <span class="nt">-d</span> postgres <span class="nt">-p</span> 5432
+
+<span class="nv">postgres</span><span class="o">=</span><span class="c"># CREATE DATABASE sonar；</span>
+</code></pre></div></div>
+<blockquote>
+  <p>kubectl delete pods sonar-postgresql-client -n kube-ops 客户端就删除了就是看helm安装的输出试了一下呢。</p>
+</blockquote>
+
+<h2 id="3-helm-安装sonar">3. helm 安装sonar</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> ../sonarqube
+<span class="nb">rm</span> <span class="nt">-rf</span> requirements.yaml
+<span class="c"># 不删除的话还要检查依赖charts目录下放postgresql的 chart目录。放上试了几次没有整明白，就分开整了</span>
+修改values.yaml
+<span class="c">#配置storageclass</span>
+  storageClass: rook-ceph-block
+  accessMode: ReadWriteOnce
+  size: 10Gi
+<span class="c">#配置postgresql</span>
+postgresql:
+  <span class="c"># Enable to deploy the PostgreSQL chart</span>
+  enabled: <span class="nb">false</span>  
+  <span class="c"># To use an external PostgreSQL instance, set enabled to false and uncomment</span>
+  <span class="c"># the line below:</span>
+  postgresServer: <span class="s2">"sonar-postgresql"</span>
+  <span class="c"># To use an external secret for the password for an external PostgreSQL</span>
+  <span class="c"># instance, set enabled to false and provide the name of the secret on the</span>
+  <span class="c"># line below:</span>
+  <span class="c"># postgresPasswordSecret: ""</span>
+  postgresUser: <span class="s2">"postgres"</span>
+  postgresPassword: <span class="s2">"qmVy5wubfmcekZy3"</span>
+  postgresDatabase: <span class="s2">"sonar"</span>
+  <span class="c"># Specify the TCP port that PostgreSQL should use</span>
+  service:
+    port: 5432
+
+</code></pre></div></div>
+<blockquote>
+  <p>helm install –name sonar -f values.yaml . –namespace kube-ops</p>
+</blockquote>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods <span class="nt">-n</span> kube-ops
+
+kubectl get svc <span class="nt">-n</span> kube-ops
+</code></pre></div></div>
+<p><img src="/assets/images/sonar/sonar4.png" alt="sonar4.png" />
+<img src="/assets/images/sonar/sonar5.png" alt="sonar5.png" />
+<img src="/assets/images/sonar/sonar6.png" alt="sonar6.png" /></p>
+<h2 id="4-treafik代理-sonar">4. treafik代理 sonar</h2>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; sonarqube-https.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  namespace: kube-ops
+  name: sonar-sonarqube-https
+spec:
+  entryPoints:
+    - websecure
+  tls:
+    secretName: all-saynaihe-com
+  routes:
+    - match: Host(</span><span class="se">\`</span><span class="sh">sonarqube.sainaihe.com</span><span class="se">\`</span><span class="sh">)
+      kind: Rule
+      services:
+        - name: sonar-sonarqube
+          port: 9000
+</span><span class="no">EOF
+</span>kubectl apply <span class="nt">-f</span> sonarqube-https.yaml
+</code></pre></div></div>
+<p><img src="/assets/images/sonar/sonar7.png" alt="sonar7.png" /></p>
+<h2 id="5-登录sonar-修改密码设置语言包">5. 登录sonar 修改密码设置语言包</h2>
+<p><img src="/assets/images/sonar/sonar8.png" alt="sonar8.png" />
+<img src="/assets/images/sonar/sonar9.png" alt="sonar9.png" />
+<img src="/assets/images/sonar/sonar10.png" alt="sonar10.png" /></p>
+<blockquote>
+  <p>ok安装完成了，有时间整下和jenkins的结合跑个例子。</p>
+</blockquote>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
                   <a class="post-link" href="/2019/11/26/k8s-install-new/">2019-11-26-k8s-install-new</a>
                 </h2>
                 <div class="label">
@@ -834,341 +1543,6 @@ Are you sure you want to <span class="k">continue</span>? <span class="o">[</spa
                 </div>
                 <div class="read-all">
                     <a  href="/2019/11/25/k8s-question2/"><i class="fa fa-newspaper-o"></i>Read All</a>
-                </div>
-                <hr>
-              </li>
-            
-              <li>
-                <h2>
-                  <a class="post-link" href="/2019/11/19/cncf-ali/">k8s-install-jenkins</a>
-                </h2>
-                <div class="label">
-                    <div class="label-card">
-                        <i class="fa fa-calendar"></i>2019-11-19
-                    </div>
-                    <div class="label-card">
-                        <i class="fa fa-user"></i>duiniwukenaihe
-                        
-                    </div>
-                    <div class="label-card">
-                        
-                    </div>
-
-                    <div class="label-card">
-                    
-
-
-<!-- <span class="point">•</span> -->
-<span class="categories">
-  <i class="fa fa-th-list"></i>
-  
-    
-        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
-    
-  
-
-  <!-- <span class="point">•</span> -->
-</span>
-
-
-                    </div>
-
-                    <div class="label-card">
-                    
-<!-- <span class="point">•</span> -->
-<span class="pageTag">
-  <i class="fa fa-tags"></i>
-  
-    
-        <a href="/tag/#kubernetes1.16" title="Tag: kubernetes1.16" rel="tag">kubernetes1.16</a>&nbsp;
-    
-        <a href="/tag/#jenkins" title="Tag: jenkins" rel="tag">jenkins</a>
-    
-  
-
-</span>
-
-                    </div>
-                </div>
-                <div class="excerpt">
-                    <ul id="markdown-toc">
-  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
-  <li><a href="#安装jenkins" id="markdown-toc-安装jenkins">安装jenkins</a>    <ul>
-      <li><a href="#登陆jenkins初始化配置" id="markdown-toc-登陆jenkins初始化配置">登陆jenkins。初始化配置</a></li>
-    </ul>
-  </li>
-</ul>
-
-<h1 id="描述背景">描述背景：</h1>
-<p>注：kubernetes基本环境搭建完成，存储rook-ceph，rbd方式。代码仓库gitlab,容器仓库harbor,监控prometheus，负载方式都用了内部clusterip然后 traefik代理的方式。为了完善工具链，容器中搭建jenkins工具。</p>
-
-<p>集群配置：
-初始集群环境kubeadm 1.16.1</p>
-
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: center">ip</th>
-      <th style="text-align: center">自定义域名</th>
-      <th style="text-align: center">主机名</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: center">192.168.3.8</td>
-      <td style="text-align: center">master.k8s.io</td>
-      <td style="text-align: center">k8s-vip</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.10</td>
-      <td style="text-align: center">master01.k8s.io</td>
-      <td style="text-align: center">k8s-master-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.5</td>
-      <td style="text-align: center">master02.k8s.io</td>
-      <td style="text-align: center">k8s-master-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.12</td>
-      <td style="text-align: center">master03.k8s.io</td>
-      <td style="text-align: center">k8s-master-03</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.6</td>
-      <td style="text-align: center">node01.k8s.io</td>
-      <td style="text-align: center">k8s-node-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.2</td>
-      <td style="text-align: center">node02.k8s.io</td>
-      <td style="text-align: center">k8s-node-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.4</td>
-      <td style="text-align: center">node03.k8s.io</td>
-      <td style="text-align: center">k8s-node-03</td>
-    </tr>
-  </tbody>
-</table>
-
-<h1 id="安装jenkins">安装jenkins</h1>
-<blockquote>
-  <ol>
-    <li>建立命名空间
-      <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl create namespace kube-ops
-注：后续所有工具类应用程序都创建在此命名空间内。
-</code></pre></div>      </div>
-      <hr />
-    </li>
-    <li>创建ServiceAccount &amp; ClusterRoleBinding</li>
-  </ol>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>注：都是用的默认的，权限的管理还没有深入进行学习下。
-
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; rabc.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: jenkins2
-  namespace: kube-ops
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: jenkins2
-rules:
-  - apiGroups: ["extensions", "apps"]
-    resources: ["deployments"]
-    verbs: ["create", "delete", "get", "list", "watch", "patch", "update"]
-  - apiGroups: [""]
-    resources: ["services"]
-    verbs: ["create", "delete", "get", "list", "watch", "patch", "update"]
-  - apiGroups: [""]
-    resources: ["pods"]
-    verbs: ["create","delete","get","list","patch","update","watch"]
-  - apiGroups: [""]
-    resources: ["pods/exec"]
-    verbs: ["create","delete","get","list","patch","update","watch"]
-  - apiGroups: [""]
-    resources: ["pods/log"]
-    verbs: ["get","list","watch"]
-  - apiGroups: [""]
-    resources: ["secrets"]
-    verbs: ["get"]
-
----
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: jenkins2
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: jenkins2
-subjects:
-  - kind: ServiceAccount
-    name: jenkins2
-    namespace: kube-ops
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span> rabc.yaml
-</code></pre></div></div>
-
-<blockquote>
-  <p>3.deployment jenkins</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; jenkins.yaml
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: opspvc
-  labels:
-    app: jenkins2
-  namespace: kube-ops
-spec:
-  storageClassName: rook-ceph-block
-  accessModes:
-  - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: jenkins2
-  namespace: kube-ops
-spec:
-  selector:
-    matchLabels:
-      app: jenkins2
-  template:
-    metadata:
-      labels:
-        app: jenkins2
-    spec:
-      terminationGracePeriodSeconds: 10
-      serviceAccountName: jenkins2
-      containers:
-      - name: jenkins
-        image: jenkins/jenkins:lts
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 8080
-          name: web
-          protocol: TCP
-        - containerPort: 50000
-          name: agent
-          protocol: TCP
-        resources:
-          limits:
-            cpu: 1000m
-            memory: 1Gi
-          requests:
-            cpu: 500m
-            memory: 512Mi
-        livenessProbe:
-          httpGet:
-            path: /login
-            port: 8080
-          initialDelaySeconds: 60
-          timeoutSeconds: 5
-          failureThreshold: 12
-        readinessProbe:
-          httpGet:
-            path: /login
-            port: 8080
-          initialDelaySeconds: 60
-          timeoutSeconds: 5
-          failureThreshold: 12
-        volumeMounts:
-        - name: jenkinshome
-          subPath: jenkins2
-          mountPath: /var/jenkins_home
-        env:
-        - name: LIMITS_MEMORY
-          valueFrom:
-            resourceFieldRef:
-              resource: limits.memory
-              divisor: 1Mi
-        - name: JAVA_OPTS
-          value: -Xmx</span><span class="si">$(</span>LIMITS_MEMORY<span class="si">)</span><span class="sh">m -XshowSettings:vm -Dhudson.slaves.NodeProvisioner.initialDelay=0 -Dhudson.slaves.NodeProvisioner.MARGIN=50 -Dhudson.slaves.NodeProvisioner.MARGIN0=0.85 -Duser.timezone=Asia/Shanghai
-      securityContext:
-        fsGroup: 1000
-      volumes:
-      - name: jenkinshome
-        persistentVolumeClaim:
-          claimName: opspvc
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: jenkins2
-  namespace: kube-ops
-  labels:
-    app: jenkins2
-spec:
-  selector:
-    app: jenkins2
-  ports:
-  - name: web
-    port: 8080
-    targetPort: web
-  - name: agent
-    port: 50000
-    targetPort: agent
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span> jenkins.yaml
-注： kubernetes 1.16 取消了extensions/v1beta1 api，使用apps/v1。
-</code></pre></div></div>
-<p><img src="/assets/images/jenkins/deployment.png" alt="deployment.png" /></p>
-<blockquote>
-  <p>4.traefik对外暴露服务</p>
-  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; ingress.yaml
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: kube-ops
-  name: jenkins2-https
-spec:
-  entryPoints:
-    - websecure
-  tls:
-    secretName: all-saynaihe-com
-  routes:
-    - match: Host(</span><span class="se">\`</span><span class="sh">jenkins.sainaihe.com</span><span class="se">\`</span><span class="sh">)
-      kind: Rule
-      services:
-        - name: jenkins2
-          port: 8080
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span> ingress.yaml
-</code></pre></div>  </div>
-  <p><img src="/assets/images/jenkins/ingressroute.png" alt="ingressroute.png" />
-<img src="/assets/images/jenkins/traefik.png" alt="traefik.png" /></p>
-  <h2 id="登陆jenkins初始化配置">登陆jenkins。初始化配置</h2>
-  <ol>
-    <li>访问 https://jenkins.saynaihe.com,出现：
-<img src="/assets/images/jenkins/jenkins1.png" alt="jenkins1.png" />
-获取初始密码
-      <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl <span class="nb">exec</span> <span class="nt">-it</span> jenkins2-9f55b98b6-xtffb <span class="nb">cat</span> /var/jenkins_home/secrets/initialAdminPassword <span class="nt">-n</span> kube-ops
-</code></pre></div>      </div>
-      <p><img src="/assets/images/jenkins/jenkins2.png" alt="jenkins2.png" /></p>
-    </li>
-    <li>设置管理员账号密码，进入登陆界面
-<img src="/assets/images/jenkins/jenkins3.png" alt="jenkins3.png" /></li>
-    <li>安装插件，安装了中文插件，pipeline，gitlab,git,github 参数化插件等，看个人需要安装吧。
-<img src="/assets/images/jenkins/jenkins4.png" alt="jenkins4.png" />
-<img src="/assets/images/jenkins/jenkins5.png" alt="jenkins5.png" />
-注：因为国外源不稳定 国内有其他备用源可以切换比如清华的源。jenkins中文社区有篇文章：https://mp.weixin.qq.com/s/rqx93WI0UEvzqaFrt84i8A可以参考。</li>
-  </ol>
-</blockquote>
-
-                </div>
-                <div class="read-all">
-                    <a  href="/2019/11/19/cncf-ali/"><i class="fa fa-newspaper-o"></i>Read All</a>
                 </div>
                 <hr>
               </li>
@@ -2698,603 +3072,6 @@ net.bridge.bridge-nf-call-iptables = 1
                 <hr>
               </li>
             
-              <li>
-                <h2>
-                  <a class="post-link" href="/2019/10/21/k8s-efk/">kuberntes1.16安装efk</a>
-                </h2>
-                <div class="label">
-                    <div class="label-card">
-                        <i class="fa fa-calendar"></i>2019-10-21
-                    </div>
-                    <div class="label-card">
-                        <i class="fa fa-user"></i>duiniwukenaihe
-                        
-                    </div>
-                    <div class="label-card">
-                        
-                    </div>
-
-                    <div class="label-card">
-                    
-
-
-<!-- <span class="point">•</span> -->
-<span class="categories">
-  <i class="fa fa-th-list"></i>
-  
-    
-        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
-    
-  
-
-  <!-- <span class="point">•</span> -->
-</span>
-
-
-                    </div>
-
-                    <div class="label-card">
-                    
-<!-- <span class="point">•</span> -->
-<span class="pageTag">
-  <i class="fa fa-tags"></i>
-  
-    
-        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
-    
-        <a href="/tag/#elastic" title="Tag: elastic" rel="tag">elastic</a>&nbsp;
-    
-        <a href="/tag/#fluent-bit" title="Tag: fluent-bit" rel="tag">fluent-bit</a>&nbsp;
-    
-        <a href="/tag/#Elasticsearch" title="Tag: Elasticsearch" rel="tag">Elasticsearch</a>&nbsp;
-    
-        <a href="/tag/#Operator" title="Tag: Operator" rel="tag">Operator</a>&nbsp;
-    
-        <a href="/tag/#Elastic" title="Tag: Elastic" rel="tag">Elastic</a>&nbsp;
-    
-        <a href="/tag/#Cloud" title="Tag: Cloud" rel="tag">Cloud</a>&nbsp;
-    
-        <a href="/tag/#on" title="Tag: on" rel="tag">on</a>&nbsp;
-    
-        <a href="/tag/#Kubernetes" title="Tag: Kubernetes" rel="tag">Kubernetes</a>
-    
-  
-
-</span>
-
-                    </div>
-                </div>
-                <div class="excerpt">
-                    <ul id="markdown-toc">
-  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
-  <li><a href="#关于elastic-cloud-on-kubernetes" id="markdown-toc-关于elastic-cloud-on-kubernetes">关于Elastic Cloud on Kubernetes</a></li>
-  <li><a href="#安装elastic-cloud-on-kubernetes" id="markdown-toc-安装elastic-cloud-on-kubernetes">安装Elastic Cloud on Kubernetes</a></li>
-  <li><a href="#安装elasticsearch-on-cluster" id="markdown-toc-安装elasticsearch-on-cluster">安装elasticsearch on cluster</a></li>
-  <li><a href="#安装kibana-on-cluaster" id="markdown-toc-安装kibana-on-cluaster">安装kibana on cluaster</a></li>
-  <li><a href="#kibana-traefik对外暴露" id="markdown-toc-kibana-traefik对外暴露">kibana traefik对外暴露</a></li>
-  <li><a href="#接下来fluent-bit-安装" id="markdown-toc-接下来fluent-bit-安装">接下来fluent-bit 安装</a></li>
-  <li><a href="#登录kibana-进行相关配置" id="markdown-toc-登录kibana-进行相关配置">登录kibana 进行相关配置</a></li>
-</ul>
-
-<h1 id="描述背景">描述背景：</h1>
-<p>注：  文章配置文件示例都是拿阳明大佬博客https://www.qikqiak.com/post/elastic-cloud-on-k8s/ 还有elastic官方文档，阳明大佬文档是旧的新版本有所改变尽量参考官方文档，fluent-bit也有必要看下官方文档 —</p>
-
-<p>集群配置：
-初始集群环境kubeadm 1.16.1</p>
-
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: center">ip</th>
-      <th style="text-align: center">自定义域名</th>
-      <th style="text-align: center">主机名</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: center">192.168.3.8</td>
-      <td style="text-align: center">master.k8s.io</td>
-      <td style="text-align: center">k8s-vip</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.10</td>
-      <td style="text-align: center">master01.k8s.io</td>
-      <td style="text-align: center">k8s-master-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.5</td>
-      <td style="text-align: center">master02.k8s.io</td>
-      <td style="text-align: center">k8s-master-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.12</td>
-      <td style="text-align: center">master03.k8s.io</td>
-      <td style="text-align: center">k8s-master-03</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.6</td>
-      <td style="text-align: center">node01.k8s.io</td>
-      <td style="text-align: center">k8s-node-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.2</td>
-      <td style="text-align: center">node02.k8s.io</td>
-      <td style="text-align: center">k8s-node-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.4</td>
-      <td style="text-align: center">node03.k8s.io</td>
-      <td style="text-align: center">k8s-node-03</td>
-    </tr>
-  </tbody>
-</table>
-
-<h1 id="关于elastic-cloud-on-kubernetes">关于Elastic Cloud on Kubernetes</h1>
-
-<p>Elastic Cloud on Kubernetes(ECK)是一个 Elasticsearch Operator，elastic推出的一个便于部署管理的项目，而且内部集成了核心安全功能（TLS 加密、基于角色的访问控制，以及文件和原生身份验证）免费提供。</p>
-
-<h1 id="安装elastic-cloud-on-kubernetes">安装Elastic Cloud on Kubernetes</h1>
-
-<p>当前最新版本为1.0，参考：https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-quickstart.html。</p>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply <span class="nt">-f</span> https://download.elastic.co/downloads/eck/1.0.0-beta1/all-in-one.yaml
-kubectl get pods <span class="nt">-n</span> elastic-system
-kubectl <span class="nt">-n</span> elastic-system logs <span class="nt">-f</span> statefulset.apps/elastic-operator
-</code></pre></div></div>
-<p><img src="/assets/images/efk/eck1.png" alt="eck1.png" /></p>
-
-<h1 id="安装elasticsearch-on-cluster">安装elasticsearch on cluster</h1>
-
-<p>官方示例  0.8 示例中apiversion还是elasticsearch.k8s.elastic.co/v1alpha1，1.0更新为elasticsearch.k8s.elastic.co/v1beta1。所以最好能看下最新的官方文档。</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> | kubectl apply -f -
-apiVersion: elasticsearch.k8s.elastic.co/v1beta1
-kind: Elasticsearch
-metadata:
-  name: elastic
-  namespace: elastic-system
-spec:
-  version: 7.4.0
-  nodeSets:
-  - name: default
-    count: 3
-    config:
-      node.master: true
-      node.data: true
-      node.ingest: true
-      node.store.allow_mmap: false
-    volumeClaimTemplates:
-    - metadata:
-        name: elasticsearch-data
-      spec:
-        accessModes:
-        - ReadWriteOnce
-        resources:
-          requests:
-            storage: 5Gi
-        storageClassName: rook-ceph-block
-</span><span class="no">EOF
-</span>注：采用默认官方的了,个人安装了rook ceph 就用了rook-ceph-block，由于是测试storage就设置为5G。另外如果指定运行node节点可以设置lable根据个人需求设置
-</code></pre></div></div>
-<p><img src="/assets/images/efk/storageclass.png" alt="storageclass.png" />
-<img src="/assets/images/efk/elastic1.png" alt="elastic1.png" /></p>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods <span class="nt">-n</span> elastic-system <span class="nt">-o</span> wide
-kubectl <span class="nt">-n</span> elastic-system get pods <span class="nt">--selector</span><span class="o">=</span><span class="s1">'elasticsearch.k8s.elastic.co/cluster-name=elastic'</span>（官方文档的查看方式，看个人使用习惯了呢）
-
-kubectl get elasticsearch <span class="nt">-n</span> elastic-system
-
-kubectl get service <span class="nt">-n</span> elastic-system
-
-获取elastic链接用户密码，默认用户为elastic
-kubectl <span class="nt">-n</span> elastic-system get secret elastic-es-elastic-user <span class="nt">-o</span><span class="o">=</span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">'{.data.elastic}'</span> | <span class="nb">base64</span> <span class="nt">--decode</span><span class="p">;</span> <span class="nb">echo</span>
-
-</code></pre></div></div>
-<p><img src="/assets/images/efk/elastic2.png" alt="elastic2.png" />
-<img src="/assets/images/efk/svc.png" alt="svc.png" />
-<img src="/assets/images/efk/secret.png" alt="secret.png" /></p>
-
-<h1 id="安装kibana-on-cluaster">安装kibana on cluaster</h1>
-<p>依然官方示例</p>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> | kubectl apply -f -
-apiVersion: kibana.k8s.elastic.co/v1beta1
-kind: Kibana
-metadata:
-  name: kibana
-  namespace: elastic-system
-spec:
-  version: 7.4.0
-  count: 1
-  elasticsearchRef:
-    name: elastic
-  http:
-    tls:
-      selfSignedCertificate:
-        disabled: true
-</span><span class="no">EOF
-</span>注意：属性spec.elasticsearchRef.name的值为上面我们创建的 Elasticsearch 对象的 name：elastic。直接添加这个资源对象即可，配置文件下方关于http的配置参照https://www.elastic.co/guide/en/cloud-on-k8s/current/k8s-kibana.html#k8s-kibana-http-configuration disable tls为了方便外部traefik负载。
-
-kubectl get kibana <span class="nt">-n</span> elastic-system
-
-kubectl <span class="nt">-n</span> elastic-system get pod <span class="nt">--selector</span><span class="o">=</span><span class="s1">'kibana.k8s.elastic.co/name=kibana'</span>
-
-
-kuberctl get svc <span class="nt">-n</span> elastic-system
-
-</code></pre></div></div>
-<p><img src="/assets/images/efk/kibana.png" alt="kibana.png" /></p>
-
-<h1 id="kibana-traefik对外暴露">kibana traefik对外暴露</h1>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  ingress.yaml
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  name: kibana-kb-http
-  namespace: elastic-system
-spec:
-  entryPoints:
-    - websecure
-  tls:
-    secretName: all-sainaihe-com
-  routes:
-    - match: Host(`kibana123.saynaihe.com`)
-      kind: Rule
-      services:
-        - name: kibana-kb-http
-          port: 5601
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span> ingress.yaml
-kubectl get ingressroute <span class="nt">-n</span> elastic-system
-</code></pre></div></div>
-<p><img src="/assets/images/efk/ingress.png" alt="ingress.png" />
-<img src="/assets/images/efk/ingess1.png" alt="ingess1.png" />
-<img src="/assets/images/efk/welcome.png" alt="welcome.png" /></p>
-<h1 id="接下来fluent-bit-安装">接下来fluent-bit 安装</h1>
-<p>kubernetes 采集日志比较常用的有很多比如elasitc自己的logstash  filebeat ，
-还有fluent，另外fluent还有专门针对kubernetes的fluent-bit，各种优劣 可以找文档对比，最终我选择了fluent-bit.先按照https://github.com/fluent/fluent-bit-kubernetes-logging。 README.md修改下配置文件。</p>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/fluent/fluent-bit-kubernetes-logging
-<span class="nb">cd</span> /fluent/fluent-bit-kubernetes-logging
-注： 修改下配置文件将默认的namespace修改下与eck在同一命名空间下
-修改后文件如下：
-<span class="nt">------</span>
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  fluent-bit-service-account.yaml
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: fluent-bit
-  namespace: elastic-system
-</span><span class="no">EOF
-</span><span class="nt">------</span>
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  fluent-bit-role.yaml
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRole
-metadata:
-  name: fluent-bit-read
-  namespace: elastic-system
-rules:
-- apiGroups: [""]
-  resources:
-  - namespaces
-  - pods
-  verbs: ["get", "list", "watch"]
-</span><span class="no">EOF
-</span><span class="nt">------</span>
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt;  fluent-bit-role-binding.yaml
-apiVersion: rbac.authorization.k8s.io/v1beta1
-kind: ClusterRoleBinding
-metadata:
-  name: fluent-bit-read
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: fluent-bit-read
-subjects:
-- kind: ServiceAccount
-  name: fluent-bit
-  namespace: elastic-system
-</span><span class="no">EOF
-</span><span class="nt">------</span>
-
-kubectl apply <span class="nt">-f</span> fluent-bit-service-account.yaml
-kubectl apply <span class="nt">-f</span> fluent-bit-role.yaml
-kubectl apply <span class="nt">-f</span> fluent-bit-role-binding.yaml
-<span class="nt">------</span>
-<span class="nb">cd </span>output/elasticsearch/
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; fluent-bit-configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: fluent-bit-config
-  namespace: elastic-system
-  labels:
-    k8s-app: fluent-bit
-data:
-  # Configuration files: server, input, filters and output
-  # ======================================================
-  fluent-bit.conf: |
-    [SERVICE]
-        Flush         1
-        Log_Level     info
-        Daemon        off
-        Parsers_File  parsers.conf
-        HTTP_Server   On
-        HTTP_Listen   0.0.0.0
-        HTTP_Port     2020
-
-    @INCLUDE input-kubernetes.conf
-    @INCLUDE filter-kubernetes.conf
-    @INCLUDE output-elasticsearch.conf
-
-  input-kubernetes.conf: |
-    [INPUT]
-        Name              tail
-        Tag               kube.*
-        Path              /var/log/containers/*.log
-        Parser            docker
-        DB                /var/log/flb_kube.db
-        Mem_Buf_Limit     5MB
-        Skip_Long_Lines   On
-        Refresh_Interval  10
-
-  filter-kubernetes.conf: |
-    [FILTER]
-        Name                kubernetes
-        Match               kube.*
-        Kube_URL            https://kubernetes.default.svc:443
-        Kube_CA_File        /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        Kube_Token_File     /var/run/secrets/kubernetes.io/serviceaccount/token
-        Kube_Tag_Prefix     kube.var.log.containers.
-        Merge_Log           On
-        Merge_Log_Key       log_processed
-        K8S-Logging.Parser  On
-        K8S-Logging.Exclude Off
-
-  output-elasticsearch.conf: |
-    [OUTPUT]
-        Name            es
-        Match           *
-        Host            elastic-es-http
-        Port            9200
-        HTTP_User       elastic
-        HTTP_Passwd     *********
-        tls   on
-        tls.verify   off
-        Logstash_Format On
-        Replace_Dots    On
-        Retry_Limit     False
-
-  parsers.conf: |
-    [PARSER]
-        Name   apache
-        Format regex
-        Regex  ^(?&lt;host&gt;[^ ]*) [^ ]* (?&lt;user&gt;[^ ]*) </span><span class="se">\[</span><span class="sh">(?&lt;time&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh"> "(?&lt;method&gt;</span><span class="se">\S</span><span class="sh">+)(?: +(?&lt;path&gt;[^</span><span class="se">\"</span><span class="sh">]*?)(?: +</span><span class="se">\S</span><span class="sh">*)?)?" (?&lt;code&gt;[^ ]*) (?&lt;size&gt;[^ ]*)(?: "(?&lt;referer&gt;[^</span><span class="se">\"</span><span class="sh">]*)" "(?&lt;agent&gt;[^</span><span class="se">\"</span><span class="sh">]*)")?$
-        Time_Key time
-        Time_Format %d/%b/%Y:%H:%M:%S %z
-
-    [PARSER]
-        Name   apache2
-        Format regex
-        Regex  ^(?&lt;host&gt;[^ ]*) [^ ]* (?&lt;user&gt;[^ ]*) </span><span class="se">\[</span><span class="sh">(?&lt;time&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh"> "(?&lt;method&gt;</span><span class="se">\S</span><span class="sh">+)(?: +(?&lt;path&gt;[^ ]*) +</span><span class="se">\S</span><span class="sh">*)?" (?&lt;code&gt;[^ ]*) (?&lt;size&gt;[^ ]*)(?: "(?&lt;referer&gt;[^</span><span class="se">\"</span><span class="sh">]*)" "(?&lt;agent&gt;[^</span><span class="se">\"</span><span class="sh">]*)")?$
-        Time_Key time
-        Time_Format %d/%b/%Y:%H:%M:%S %z
-
-    [PARSER]
-        Name   apache_error
-        Format regex
-        Regex  ^</span><span class="se">\[</span><span class="sh">[^ ]* (?&lt;time&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh"> </span><span class="se">\[</span><span class="sh">(?&lt;level&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh">(?: </span><span class="se">\[</span><span class="sh">pid (?&lt;pid&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh">)?( </span><span class="se">\[</span><span class="sh">client (?&lt;client&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh">)? (?&lt;message&gt;.*)$
-
-    [PARSER]
-        Name   nginx
-        Format regex
-        Regex ^(?&lt;remote&gt;[^ ]*) (?&lt;host&gt;[^ ]*) (?&lt;user&gt;[^ ]*) </span><span class="se">\[</span><span class="sh">(?&lt;time&gt;[^</span><span class="se">\]</span><span class="sh">]*)</span><span class="se">\]</span><span class="sh"> "(?&lt;method&gt;</span><span class="se">\S</span><span class="sh">+)(?: +(?&lt;path&gt;[^</span><span class="se">\"</span><span class="sh">]*?)(?: +</span><span class="se">\S</span><span class="sh">*)?)?" (?&lt;code&gt;[^ ]*) (?&lt;size&gt;[^ ]*)(?: "(?&lt;referer&gt;[^</span><span class="se">\"</span><span class="sh">]*)" "(?&lt;agent&gt;[^</span><span class="se">\"</span><span class="sh">]*)")?$
-        Time_Key time
-        Time_Format %d/%b/%Y:%H:%M:%S %z
-
-    [PARSER]
-        Name   json
-        Format json
-        Time_Key time
-        Time_Format %d/%b/%Y:%H:%M:%S %z
-
-    [PARSER]
-        Name        docker
-        Format      json
-        Time_Key    time
-        Time_Format %Y-%m-%dT%H:%M:%S.%L
-        Time_Keep   On
-
-    [PARSER]
-        Name        syslog
-        Format      regex
-        Regex       ^</span><span class="se">\&lt;</span><span class="sh">(?&lt;pri&gt;[0-9]+)</span><span class="se">\&gt;</span><span class="sh">(?&lt;time&gt;[^ ]* {1,2}[^ ]* [^ ]*) (?&lt;host&gt;[^ ]*) (?&lt;ident&gt;[a-zA-Z0-9_</span><span class="se">\/\.\-</span><span class="sh">]*)(?:</span><span class="se">\[</span><span class="sh">(?&lt;pid&gt;[0-9]+)</span><span class="se">\]</span><span class="sh">)?(?:[^</span><span class="se">\:</span><span class="sh">]*</span><span class="se">\:</span><span class="sh">)? *(?&lt;message&gt;.*)$
-        Time_Key    time
-        Time_Format %b %d %H:%M:%S
-</span><span class="no">EOF
-</span><span class="nt">------</span>
-注：基本还是默认的就修改了namespace 还有output-elasticsearch.conf中 Host  Port   HTTP_User  HTTP_Passwd  tls   tls.verify具体参考https://docs.fluentbit.io/manual/configuration 官方文档
-<span class="nt">------</span>
-<span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; fluent-bit-ds.yaml
-apiVersion: apps/v1
-kind: DaemonSet
-metadata:
-  name: fluent-bit
-  namespace: elastic-system
-  labels:
-    k8s-app: fluent-bit-logging
-    version: v1
-    kubernetes.io/cluster-service: "true"
-spec:
-  selector:
-    matchLabels:
-      k8s-app: fluent-bit-logging
-  template:
-    metadata:
-      labels:
-        k8s-app: fluent-bit-logging
-        version: v1
-        kubernetes.io/cluster-service: "true"
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/port: "2020"
-        prometheus.io/path: /api/v1/metrics/prometheus
-    spec:
-      containers:
-      - name: fluent-bit
-        image: fluent/fluent-bit:1.2.1
-        imagePullPolicy: Always
-        ports:
-          - containerPort: 2020
-        env:
-        - name: FLUENT_ELASTICSEARCH_HOST
-          value: "elastic-es-http"
-        - name: FLUENT_ELASTICSEARCH_PORT
-          value: "9200"
-        volumeMounts:
-        - name: varlog
-          mountPath: /var/log
-        - name: varlibdockercontainers
-          mountPath: /var/lib/docker/containers
-          readOnly: true
-        - name: fluent-bit-config
-          mountPath: /fluent-bit/etc/
-      terminationGracePeriodSeconds: 10
-      volumes:
-      - name: varlog
-        hostPath:
-          path: /var/log
-      - name: varlibdockercontainers
-        hostPath:
-          path: /var/lib/docker/containers
-      - name: fluent-bit-config
-        configMap:
-          name: fluent-bit-config
-      serviceAccountName: fluent-bit
-      tolerations:
-      - key: node-role.kubernetes.io/master
-        operator: Exists
-        effect: NoSchedule
-      - operator: "Exists"
-        effect: "NoExecute"
-      - operator: "Exists"
-        effect: "NoSchedule"
-</span><span class="no">EOF
-</span><span class="nt">------</span>
-注: 修改了下apiversion  1.16取消了extensions/v1beta1  更改为apps/v1
-配置文件增加  selector: 相关配置。FLUENT_ELASTICSEARCH_HOST  FLUENT_ELASTICSEARCH_PORT  对应value输入
-<span class="nt">------</span>
-kubectl apply <span class="nt">-f</span> fluent-bit-configmap.yaml
-kubectl apply <span class="nt">-f</span> fluent-bit-ds.yaml
-kubectl get pods <span class="nt">-n</span> elastic-system
-
-</code></pre></div></div>
-<p><img src="/assets/images/efk/fluent-bit.png" alt="fluent-bit.png" /></p>
-<h1 id="登录kibana-进行相关配置">登录kibana 进行相关配置</h1>
-
-<p><img src="/assets/images/efk/kibana1.png" alt="kibana1.png" />
-<img src="/assets/images/efk/kibana2.png" alt="kibana2.png" />
-<img src="/assets/images/efk/kibana3.png" alt="kibana3.png" />
-<img src="/assets/images/efk/kibana4.png" alt="kibana3.png" /></p>
-
-<p>注：发现rook的日志单行了 后续将完善下各种日志的格式还有其他相关问题</p>
-
-                </div>
-                <div class="read-all">
-                    <a  href="/2019/10/21/k8s-efk/"><i class="fa fa-newspaper-o"></i>Read All</a>
-                </div>
-                <hr>
-              </li>
-            
-              <li>
-                <h2>
-                  <a class="post-link" href="/2019/10/17/k8s-traefik2/">traefik2 安装实现 http  https</a>
-                </h2>
-                <div class="label">
-                    <div class="label-card">
-                        <i class="fa fa-calendar"></i>2019-10-17
-                    </div>
-                    <div class="label-card">
-                        <i class="fa fa-user"></i>duiniwukenaihe
-                        
-                    </div>
-                    <div class="label-card">
-                        
-                    </div>
-
-                    <div class="label-card">
-                    
-
-
-<!-- <span class="point">•</span> -->
-<span class="categories">
-  <i class="fa fa-th-list"></i>
-  
-    
-        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
-    
-  
-
-  <!-- <span class="point">•</span> -->
-</span>
-
-
-                    </div>
-
-                    <div class="label-card">
-                    
-<!-- <span class="point">•</span> -->
-<span class="pageTag">
-  <i class="fa fa-tags"></i>
-  
-    
-        <a href="/tag/#traefik2" title="Tag: traefik2" rel="tag">traefik2</a>&nbsp;
-    
-        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>
-    
-  
-
-</span>
-
-                    </div>
-                </div>
-                <div class="excerpt">
-                    <ul id="markdown-toc">
-  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
-  <li><a href="#关于traefik" id="markdown-toc-关于traefik">关于Traefik</a></li>
-</ul>
-
-<h1 id="描述背景">描述背景：</h1>
-<blockquote>
-  <p>注：  文章配置文件示例都是拿阳明大佬的还有良哥转发的http://www.mydlq.club/article/41 超级小豆丁的文章中参考的。个人只是拿来整合测试了下整合，鸣谢各位大佬。</p>
-</blockquote>
-
-<blockquote>
-  <p>开始使用腾讯云tke,slb对外映射方式 还需要对外开启Nodeport  然后slb对端口映射，个人觉得比较反人类，然后看到阳明 良哥两位大佬都发了traefik的方式就试用了一下。</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>集群配置：
-初始集群环境kubeadm 1.16.1
-
-|  ip           | 自定义域名         |    主机名 |
-|  :----:       |     :----:        |   :----:  |
-|192.168.3.8      |  master.k8s.io    |  k8s-vip  |
-|192.168.3.10    |  master01.k8s.io  |  k8s-master-01|
-|192.168.3.5   |  master02.k8s.io  |  k8s-master-02| 
-|192.168.3.12   |  master03.k8s.io  |  k8s-master-03|
-|192.168.3.6    |  node01.k8s.io    |  k8s-node-01|
-|192.168.3.2    |  node02.k8s.io    |  k8s-node-02|
-|192.168.3.4    |  node03.k8s.io    |  k8s-node-03|
-k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载均衡并对外暴露了80  443两个端口，开始443想放在https监听器哪里，但是这样一个sbl负载均衡只能绑定一个证书的，业务不太多，不想用多个slb，就将443端口监听放在了tcp/udp监听器这里，然后证书在kubernetes集群中创建绑定在traefik上。
-</code></pre></div></div>
-<h1 id="关于traefik">关于Traefik</h1>
-<blockquote>
-  <p>Traefik 2.0 官方文档：https://docs.traefik.io/v2.0/ 比较乱，中文的可参照阳明大佬的中文翻译https://www.qikqiak.com/traefik-book/</p>
-</blockquote>
-
-                </div>
-                <div class="read-all">
-                    <a  href="/2019/10/17/k8s-traefik2/"><i class="fa fa-newspaper-o"></i>Read All</a>
-                </div>
-                <hr>
-              </li>
-            
         </ul>
 
 
@@ -3397,7 +3174,13 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                 </div>
                 <ul class="content-ul" recent>
                     
-                        <li><a href="/2020/09/11/hadoop-ha-hbase-hive-spark/">2020-09-11-hadoop-ha-hbase-hive-spark</a></li>
+                        <li><a href="/2021/03/27/Kuberentes-eck/">Kuberentes 1.20.5搭建eck</a></li>
+                    
+                        <li><a href="/2021/03/27/Kubernetes-traefik/">Kubernetes 1.20.5 安装traefik在腾讯云下的实践</a></li>
+                    
+                        <li><a href="/2021/03/27/Kuberentes-cbs/">Kuberentes集群添加腾讯云CBS为默认存储</a></li>
+                    
+                        <li><a href="/2021/03/26/centos8+kubeadm1.20.5+cilium+hubble/">centos8+kubeadm1.20.5+cilium+hubble环境搭建</a></li>
                     
                         <li><a href="/2020/07/31/kubernetes-csi-tencentcloud-cosfs/">2020-07-31-kubernetes集群使用腾讯云cos存储</a></li>
                     
@@ -3410,12 +3193,6 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                         <li><a href="/2020/07/22/tencent-slb-kubeadm-ha/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a></li>
                     
                         <li><a href="/2019/12/27/traefik/">2019-12-27-traefik</a></li>
-                    
-                        <li><a href="/2019/12/05/eck-qustion/">2019-12-05-eck-qustion</a></li>
-                    
-                        <li><a href="/2019/12/03/k8s-jenkins-sonarqube/">2019-12-03-k8s-jenkins-sonarqube</a></li>
-                    
-                        <li><a href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/">2019-11-29-k8s-helm-install-postgresql-sonarqube</a></li>
                     
                 </ul>
             </div>
@@ -3442,7 +3219,7 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                             <span class="name">
                                 kubernetes
                             </span>
-                            <span class="badge">23</span>
+                            <span class="badge">22</span>
                         </a>
                     </li>
                     
@@ -3465,11 +3242,11 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                     </li>
                     
                     <li>
-                        <a href="/category/#hadoop" class="categories-list-item" cate="hadoop">
+                        <a href="/category/#kubernetes1.20" class="categories-list-item" cate="kubernetes1.20">
                             <span class="name">
-                                hadoop
+                                kubernetes1.20
                             </span>
-                            <span class="badge">1</span>
+                            <span class="badge">4</span>
                         </a>
                     </li>
                     
@@ -3523,7 +3300,7 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                       
                       
                       
-                      <a href="/tag/#Operator" style="font-size: 10pt; color: #888;">Operator</a>
+                      <a href="/tag/#Operator" style="font-size: 9.5pt; color: #888;">Operator</a>
                     
                       
                       
@@ -3607,7 +3384,7 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                       
                       
                       
-                      <a href="/tag/#on" style="font-size: 10pt; color: #888;">on</a>
+                      <a href="/tag/#on" style="font-size: 9.5pt; color: #888;">on</a>
                     
                       
                       
@@ -3628,7 +3405,7 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                       
                       
                       
-                      <a href="/tag/#helm" style="font-size: 10.5pt; color: #777;">helm</a>
+                      <a href="/tag/#helm" style="font-size: 10pt; color: #888;">helm</a>
                     
                       
                       
@@ -3649,14 +3426,14 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                       
                       
                       
-                      <a href="/tag/#kubernetes1.16" style="font-size: 10pt; color: #888;">kubernetes1.16</a>
+                      <a href="/tag/#kubernetes1.16" style="font-size: 9pt; color: #999;">kubernetes1.16</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#jenkins" style="font-size: 10.5pt; color: #777;">jenkins</a>
+                      <a href="/tag/#jenkins" style="font-size: 9.5pt; color: #888;">jenkins</a>
                     
                       
                       
@@ -3705,7 +3482,7 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                       
                       
                       
-                      <a href="/tag/#kuberadm" style="font-size: 10pt; color: #888;">kuberadm</a>
+                      <a href="/tag/#kuberadm" style="font-size: 9.5pt; color: #888;">kuberadm</a>
                     
                       
                       
@@ -3719,7 +3496,7 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                       
                       
                       
-                      <a href="/tag/#sonarqube" style="font-size: 10pt; color: #888;">sonarqube</a>
+                      <a href="/tag/#sonarqube" style="font-size: 9.5pt; color: #888;">sonarqube</a>
                     
                       
                       
@@ -3747,7 +3524,7 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                       
                       
                       
-                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10.5pt; color: #777;">kubernetes1.18.6</a>
+                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10pt; color: #888;">kubernetes1.18.6</a>
                     
                       
                       
@@ -3768,21 +3545,21 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                       
                       
                       
-                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 10pt; color: #888;">kubernetes-csi-tencentcloud</a>
+                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 9.5pt; color: #888;">kubernetes-csi-tencentcloud</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#kubernetes1.16.8" style="font-size: 10pt; color: #888;">kubernetes1.16.8</a>
+                      <a href="/tag/#kubernetes1.16.8" style="font-size: 9.5pt; color: #888;">kubernetes1.16.8</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#etcd" style="font-size: 10pt; color: #888;">etcd</a>
+                      <a href="/tag/#etcd" style="font-size: 9.5pt; color: #888;">etcd</a>
                     
                       
                       
@@ -3824,28 +3601,28 @@ k8s-node-01 k8s-node-02 k8s-node-03 绑定了腾讯云负载均衡应用负载�
                       
                       
                       
-                      <a href="/tag/#hadoop" style="font-size: 9pt; color: #999;">hadoop</a>
+                      <a href="/tag/#cilium" style="font-size: 9pt; color: #999;">cilium</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#hbase" style="font-size: 9pt; color: #999;">hbase</a>
+                      <a href="/tag/#hubble" style="font-size: 9pt; color: #999;">hubble</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#hive" style="font-size: 9pt; color: #999;">hive</a>
+                      <a href="/tag/#CBS" style="font-size: 9pt; color: #999;">CBS</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#spark" style="font-size: 9pt; color: #999;">spark</a>
+                      <a href="/tag/#eck" style="font-size: 9pt; color: #999;">eck</a>
                     
                 </div>
             </div>

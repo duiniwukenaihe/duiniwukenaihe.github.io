@@ -152,11 +152,11 @@ var _hmt = _hmt || [];
             
               <li>
                 <h2>
-                  <a class="post-link" href="/2020/09/11/hadoop-ha-hbase-hive-spark/">2020-09-11-hadoop-ha-hbase-hive-spark</a>
+                  <a class="post-link" href="/2021/03/27/Kuberentes-eck/">Kuberentes 1.20.5搭建eck</a>
                 </h2>
                 <div class="label">
                     <div class="label-card">
-                        <i class="fa fa-calendar"></i>2020-09-11
+                        <i class="fa fa-calendar"></i>2021-03-27
                     </div>
                     <div class="label-card">
                         <i class="fa fa-user"></i>duiniwukenaihe
@@ -175,7 +175,7 @@ var _hmt = _hmt || [];
   <i class="fa fa-th-list"></i>
   
     
-        <a href="/category/#hadoop" title="Category: hadoop" rel="category">hadoop</a>
+        <a href="/category/#kubernetes1.20" title="Category: kubernetes1.20" rel="category">kubernetes1.20</a>
     
   
 
@@ -192,13 +192,9 @@ var _hmt = _hmt || [];
   <i class="fa fa-tags"></i>
   
     
-        <a href="/tag/#hadoop" title="Tag: hadoop" rel="tag">hadoop</a>&nbsp;
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
     
-        <a href="/tag/#hbase" title="Tag: hbase" rel="tag">hbase</a>&nbsp;
-    
-        <a href="/tag/#hive" title="Tag: hive" rel="tag">hive</a>&nbsp;
-    
-        <a href="/tag/#spark" title="Tag: spark" rel="tag">spark</a>
+        <a href="/tag/#eck" title="Tag: eck" rel="tag">eck</a>
     
   
 
@@ -208,75 +204,1423 @@ var _hmt = _hmt || [];
                 </div>
                 <div class="excerpt">
                     
-<p>集群配置：
-centos8 64位</p>
+                </div>
+                <div class="read-all">
+                    <a  href="/2021/03/27/Kuberentes-eck/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
+                  <a class="post-link" href="/2021/03/27/Kubernetes-traefik/">Kubernetes 1.20.5 安装traefik在腾讯云下的实践</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2021-03-27
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes1.20" title="Category: kubernetes1.20" rel="category">kubernetes1.20</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
+    
+        <a href="/tag/#traefik" title="Tag: traefik" rel="tag">traefik</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#背景" id="markdown-toc-背景">背景</a>    <ul>
+      <li><a href="#关于traefik的结缘" id="markdown-toc-关于traefik的结缘">关于traefik的结缘</a></li>
+      <li><a href="#ingress-controller对比" id="markdown-toc-ingress-controller对比">ingress controller对比：</a></li>
+    </ul>
+  </li>
+  <li><a href="#1-kubernetes-gateway-api" id="markdown-toc-1-kubernetes-gateway-api">1. Kubernetes Gateway API</a>    <ul>
+      <li><a href="#1gateway-api-是什么" id="markdown-toc-1gateway-api-是什么">1、Gateway API 是什么</a></li>
+      <li><a href="#2gateway-api-的目标" id="markdown-toc-2gateway-api-的目标">2、Gateway API 的目标</a></li>
+    </ul>
+  </li>
+  <li><a href="#2-traefik-on-kubernetes实践" id="markdown-toc-2-traefik-on-kubernetes实践">2. traefik on kubernetes实践</a>    <ul>
+      <li><a href="#1-创建crd" id="markdown-toc-1-创建crd">1. 创建CRD</a></li>
+      <li><a href="#2-创建rbac权限" id="markdown-toc-2-创建rbac权限">2. 创建RBAC权限</a></li>
+      <li><a href="#3-创建-traefik-配置文件" id="markdown-toc-3-创建-traefik-配置文件">3. 创建 Traefik 配置文件</a></li>
+      <li><a href="#4-设置节点label标签" id="markdown-toc-4-设置节点label标签">4. 设置节点label标签</a></li>
+      <li><a href="#5安装-kubernetes-gateway-crd-资源" id="markdown-toc-5安装-kubernetes-gateway-crd-资源">5、安装 Kubernetes Gateway CRD 资源</a></li>
+      <li><a href="#6-kubernetes-部署-traefik" id="markdown-toc-6-kubernetes-部署-traefik">6. Kubernetes 部署 Traefik</a></li>
+    </ul>
+  </li>
+  <li><a href="#3-配置路由规则与腾讯云clb整合" id="markdown-toc-3-配置路由规则与腾讯云clb整合">3. 配置路由规则，与腾讯云clb整合</a>    <ul>
+      <li><a href="#1-slb-绑定traefik--http端口" id="markdown-toc-1-slb-绑定traefik--http端口">1. slb 绑定traefik  http端口</a></li>
+      <li><a href="#2-配置路由规则" id="markdown-toc-2-配置路由规则">2. 配置路由规则</a>        <ul>
+          <li><a href="#1-crd方式" id="markdown-toc-1-crd方式">1. CRD方式</a></li>
+          <li><a href="#2-ingress方式" id="markdown-toc-2-ingress方式">2. Ingress方式</a></li>
+        </ul>
+      </li>
+      <li><a href="#3方式三使用-kubernetes-gateway-api" id="markdown-toc-3方式三使用-kubernetes-gateway-api">3、方式三：使用 Kubernetes Gateway API</a>        <ul>
+          <li><a href="#1-创建-gatewayclass" id="markdown-toc-1-创建-gatewayclass">1. 创建 GatewayClass</a></li>
+          <li><a href="#2-配置-http-路由规则-traefik-dashboard-为例" id="markdown-toc-2-配置-http-路由规则-traefik-dashboard-为例">2 配置 HTTP 路由规则 （Traefik Dashboard 为例）</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+</ul>
+<h1 id="背景">背景</h1>
+<p>个人使用traefik有差不多1-2年时间，kubernetes ingress controller 代理有很多种方式 例如 ingress-nginx  kong  istio 等等。个人比较习惯traefik。从19年就开始使用。最早使用traefik 不直接使用腾讯云公有云的slb是因为当时slb不能挂载多个证书，而我kubernetes的自建集群实在不想挂载多个slb.就偷懒用了slb  udp绑定运行traefik节点的 80  443端口。证书tls的secret 直接挂载在traefik代理层上面。hsts  http跳转https的特性都配置在了traefik代理层上面。应用比较少。qps也没有那么高，这样的简单应用就满足了我的需求了</p>
+<h2 id="关于traefik的结缘">关于traefik的结缘</h2>
+<p>最早接触traefik是Google上面看ingress controller 找到的 然后再阳明大佬的博客看到了traefik的实践<a href="https://www.qikqiak.com/post/traefik2-ga/">https://www.qikqiak.com/post/traefik2-ga/</a>，还有超级小豆丁的博客<a href="http://www.mydlq.club/article/41">http://www.mydlq.club/article/41</a> 。两位大佬的博客是kubernetes初学者的宝藏博客值得收藏拜读。
+顺便吐个糟，用的traefik2.4版本… 抄的豆丁大佬的..<a href="http://www.mydlq.club/article/107/">http://www.mydlq.club/article/107/</a>哈哈哈</p>
+<h2 id="ingress-controller对比">ingress controller对比：</h2>
+<p>参照<a href="https://zhuanlan.zhihu.com/p/109458069">https://zhuanlan.zhihu.com/p/109458069</a>。
+<img src="https://img-blog.csdnimg.cn/img_convert/b31233969a25874c0e348aea86bfba47.png#align=left&amp;display=inline&amp;height=742&amp;margin=[objectObject]&amp;originHeight=742&amp;originWidth=1600&amp;size=0&amp;status=done&amp;style=none&amp;width=1600" alt="" /></p>
+<h1 id="1-kubernetes-gateway-api">1. Kubernetes Gateway API</h1>
+<p>v2.4版本的改变（在 Traefik v2.4 版本中增加了对 Kubernetes Gateway API 的支持）一下部分抄自豆丁大佬与官方文档<a href="https://gateway-api.sigs.k8s.io/">https://gateway-api.sigs.k8s.io/</a>。</p>
+<h2 id="1gateway-api-是什么">1、Gateway API 是什么</h2>
+<p>Gateway API是由<a href="https://github.com/kubernetes/community/tree/master/sig-network">SIG-NETWORK</a> 社区管理的一个开源项目。它是在Kubernetes中对服务网络建模的资源的集合。这些资源- ，<code class="language-plaintext highlighter-rouge">GatewayClass</code>，<code class="language-plaintext highlighter-rouge">Gateway</code>，<code class="language-plaintext highlighter-rouge">HTTPRoute</code>， <code class="language-plaintext highlighter-rouge">TCPRoute</code>，<code class="language-plaintext highlighter-rouge">Service</code>等-旨在通过表现力，可扩展和面向角色由很多供应商实现的，并具有广泛的行业支持接口演进Kubernetes服务网络。
+<em>注意：此项目以前被称为“服务API”，直到2021年2月被重命名为“_Gateway API _”。</em></p>
+<h2 id="2gateway-api-的目标">2、Gateway API 的目标</h2>
+<p>Gateway API 旨在通过提供可表达的，可扩展的，面向角色的接口来改善服务网络，这些接口已由许多供应商实施并获得了广泛的行业支持。
+网关 API 是 API 资源（服务、网关类、网关、HTTPRoute、TCPRoute等）的集合。这些资源共同为各种网络用例建模。
+<img src="https://img-blog.csdnimg.cn/img_convert/45e617bd8f628b4198fdc35ff75d04b3.png#align=left&amp;display=inline&amp;height=1418&amp;margin=[objectObject]&amp;originHeight=1418&amp;originWidth=2414&amp;size=0&amp;status=done&amp;style=none&amp;width=2414" alt="" />
+Gateway API 如何根据 Ingress 等当前标准进行改进？</p>
+
+<ul>
+  <li>以下设计目标驱动了Gateway API的概念。这些证明了Gateway如何旨在改进Ingress等当前标准。</li>
+  <li><strong>面向角色</strong>-网关由API资源组成，这些API资源对使用和配置Kubernetes服务网络的组织角色进行建模。</li>
+  <li><strong>便携式</strong>-这不是改进，而是应该保持不变。就像Ingress是具有<a href="https://kubernetes.io/docs/concepts/services-networking/ingress-controllers/">许多实现</a>的通用规范一样 ，Gateway API也被设计为受许多实现支持的可移植规范。</li>
+  <li><strong>富有表现力</strong>-网关API资源支持核心功能，例如基于标头的匹配，流量加权以及其他只能通过自定义批注在Ingress中实现的功能。</li>
+  <li><strong>可扩展</strong>-网关API允许在API的各个层上链接自定义资源。这样就可以在API结构内的适当位置进行精细的自定义。</li>
+</ul>
+
+<p>其他一些值得注意的功能包括：</p>
+
+<ul>
+  <li><strong>GatewayClasses</strong> -GatewayClasses形式化负载平衡实现的类型。这些类使用户可以轻松，明确地了解通过Kubernetes资源模型可以使用的功能。</li>
+  <li><strong>共享网关和跨命名空间支持</strong>-通过允许独立的Route资源绑定到同一网关，它们可以共享负载平衡器和VIP。这允许团队（甚至跨命名空间）在没有直接协调的情况下安全地共享基础结构。</li>
+  <li><strong>类型化路由和类型化后端</strong>-网关API支持类型化路由资源以及不同类型的后端。这使API可以灵活地支持各种协议（例如HTTP和gRPC）和各种后端目标（例如Kubernetes Services，存储桶或函数）。</li>
+</ul>
+
+<p>如果想了解更多内容，可以访问 <a href="https://gateway-api.sigs.k8s.io/">Kubernetes Gateway API 文档</a> 。</p>
+<h1 id="2-traefik-on-kubernetes实践">2. traefik on kubernetes实践</h1>
+<p>部署玩Traefik 应用后，创建外部访问 Kubernetes 内部应用的路由规则，才能从外部访问kubernetes内部应用。Traefik 目前支持三种方式创建路由规则方式，一种是创建 Traefik 自定义 <code class="language-plaintext highlighter-rouge">Kubernetes CRD</code> 资源，另一种是创建 <code class="language-plaintext highlighter-rouge">Kubernetes Ingress</code> 资源，还有就是 v2.4 版本对 Kubernetes 扩展 API <code class="language-plaintext highlighter-rouge">Kubernetes Gateway API</code> 适配的一种方式，创建 <code class="language-plaintext highlighter-rouge">GatewayClass</code>、<code class="language-plaintext highlighter-rouge">Gateway</code> 与 <code class="language-plaintext highlighter-rouge">HTTPRoute</code> 资源
+<strong>注意：这里 Traefik 是部署在 kube-system namespace 下，如果不想部署到配置的 namespace，需要修改下面部署文件中的 namespace 参数。当然了也可以新建一个单独的namespace去部署traefik</strong></p>
+<h2 id="1-创建crd">1. 创建CRD</h2>
+<p>参照<a href="https://doc.traefik.io/traefik/reference/dynamic-configuration/kubernetes-crd/">https://doc.traefik.io/traefik/reference/dynamic-configuration/kubernetes-crd/</a></p>
+
+<p>traefik-crd.yaml</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt;EOF &gt;  traefik-crd.yaml 
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ingressroutes.traefik.containo.us
+
+spec:
+  group: traefik.containo.us
+  version: v1alpha1
+  names:
+    kind: IngressRoute
+    plural: ingressroutes
+    singular: ingressroute
+  scope: Namespaced
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: middlewares.traefik.containo.us
+
+spec:
+  group: traefik.containo.us
+  version: v1alpha1
+  names:
+    kind: Middleware
+    plural: middlewares
+    singular: middleware
+  scope: Namespaced
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ingressroutetcps.traefik.containo.us
+
+spec:
+  group: traefik.containo.us
+  version: v1alpha1
+  names:
+    kind: IngressRouteTCP
+    plural: ingressroutetcps
+    singular: ingressroutetcp
+  scope: Namespaced
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ingressrouteudps.traefik.containo.us
+
+spec:
+  group: traefik.containo.us
+  version: v1alpha1
+  names:
+    kind: IngressRouteUDP
+    plural: ingressrouteudps
+    singular: ingressrouteudp
+  scope: Namespaced
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tlsoptions.traefik.containo.us
+
+spec:
+  group: traefik.containo.us
+  version: v1alpha1
+  names:
+    kind: TLSOption
+    plural: tlsoptions
+    singular: tlsoption
+  scope: Namespaced
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: tlsstores.traefik.containo.us
+
+spec:
+  group: traefik.containo.us
+  version: v1alpha1
+  names:
+    kind: TLSStore
+    plural: tlsstores
+    singular: tlsstore
+  scope: Namespaced
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: traefikservices.traefik.containo.us
+
+spec:
+  group: traefik.containo.us
+  version: v1alpha1
+  names:
+    kind: TraefikService
+    plural: traefikservices
+    singular: traefikservice
+  scope: Namespaced
+
+---
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: serverstransports.traefik.containo.us
+
+spec:
+  group: traefik.containo.us
+  version: v1alpha1
+  names:
+    kind: ServersTransport
+    plural: serverstransports
+    singular: serverstransport
+  scope: Namespaced
+EOF
+kubectl apply -f traefik-crd.yaml
+  
+</code></pre></div></div>
+
+<h2 id="2-创建rbac权限">2. 创建RBAC权限</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt;EOF &gt; traefik-rbac.yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: traefik-ingress-controller
+  namespace: kube-system
+
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - services
+      - endpoints
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+      - networking.k8s.io
+    resources:
+      - ingresses
+      - ingressclasses
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - extensions
+    resources:
+      - ingresses/status
+    verbs:
+      - update
+  - apiGroups:
+      - traefik.containo.us
+    resources:
+      - middlewares
+      - ingressroutes
+      - traefikservices
+      - ingressroutetcps
+      - ingressrouteudps
+      - tlsoptions
+      - tlsstores
+      - serverstransports
+    verbs:
+      - get
+      - list
+      - watch
+
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: traefik-ingress-controller
+
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: traefik-ingress-controller
+subjects:
+  - kind: ServiceAccount
+    name: traefik-ingress-controller
+    namespace: kube-system
+EOF
+ kubectl apply -f traefik-rbac.yaml 
+</code></pre></div></div>
+<h2 id="3-创建-traefik-配置文件">3. 创建 Traefik 配置文件</h2>
+<p>#号后为注释，跟2.X前几个版本一样。增加了kubernetesIngress  kubernetesGateway两种路由方式，过去只部署了CRD的方式。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt;EOF &gt; traefik-config.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: traefik-config
+  namespace: kube-system
+data:
+  traefik.yaml: |-
+    ping: ""                    ## 启用 Ping
+    serversTransport:
+      insecureSkipVerify: true  ## Traefik 忽略验证代理服务的 TLS 证书
+    api:
+      insecure: true            ## 允许 HTTP 方式访问 API
+      dashboard: true           ## 启用 Dashboard
+      debug: false              ## 启用 Debug 调试模式
+    metrics:
+      prometheus: ""            ## 配置 Prometheus 监控指标数据，并使用默认配置
+    entryPoints:
+      web:
+        address: ":80"          ## 配置 80 端口，并设置入口名称为 web
+      websecure:
+        address: ":443"         ## 配置 443 端口，并设置入口名称为 websecure
+    providers:
+      kubernetesCRD: ""         ## 启用 Kubernetes CRD 方式来配置路由规则
+      kubernetesIngress: ""     ## 启用 Kubernetes Ingress 方式来配置路由规则
+      kubernetesGateway: ""     ## 启用 Kubernetes Gateway API
+    experimental:               
+      kubernetesGateway: true   ## 允许使用 Kubernetes Gateway API
+    log:
+      filePath: ""              ## 设置调试日志文件存储路径，如果为空则输出到控制台
+      level: error              ## 设置调试日志级别
+      format: json              ## 设置调试日志格式
+    accessLog:
+      filePath: ""              ## 设置访问日志文件存储路径，如果为空则输出到控制台
+      format: json              ## 设置访问调试日志格式
+      bufferingSize: 0          ## 设置访问日志缓存行数
+      filters:
+        #statusCodes: ["200"]   ## 设置只保留指定状态码范围内的访问日志
+        retryAttempts: true     ## 设置代理访问重试失败时，保留访问日志
+        minDuration: 20         ## 设置保留请求时间超过指定持续时间的访问日志
+      fields:                   ## 设置访问日志中的字段是否保留（keep 保留、drop 不保留）
+        defaultMode: keep       ## 设置默认保留访问日志字段
+        names:                  ## 针对访问日志特别字段特别配置保留模式
+          ClientUsername: drop  
+        headers:                ## 设置 Header 中字段是否保留
+          defaultMode: keep     ## 设置默认保留 Header 中字段
+          names:                ## 针对 Header 中特别字段特别配置保留模式
+            User-Agent: redact
+            Authorization: drop
+            Content-Type: keep
+    #tracing:                     ## 链路追踪配置,支持 zipkin、datadog、jaeger、instana、haystack 等 
+    #  serviceName:               ## 设置服务名称（在链路追踪端收集后显示的服务名）
+    #  zipkin:                    ## zipkin配置
+    #    sameSpan: true           ## 是否启用 Zipkin SameSpan RPC 类型追踪方式
+    #    id128Bit: true           ## 是否启用 Zipkin 128bit 的跟踪 ID
+    #    sampleRate: 0.1          ## 设置链路日志采样率（可以配置0.0到1.0之间的值）
+    #    httpEndpoint: http://localhost:9411/api/v2/spans     ## 配置 Zipkin Server 端点
+EOF
+kubectl apply -f traefik-config.yaml
+</code></pre></div></div>
+<h2 id="4-设置节点label标签">4. 设置节点label标签</h2>
+<p>Traefix 采用 DaemonSet方式构建，在需要安装的节点上面打上标签，这里在三个work节点都安装上了默认：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl label nodes {sh-work-01,sh-work-02,sh-work-02} IngressProxy=true
+kubectl get nodes --show-labels
+</code></pre></div></div>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/a0f87f352f1ca682216e7050a3be3161.png#align=left&amp;display=inline&amp;height=339&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=677&amp;originWidth=1188&amp;size=126050&amp;status=done&amp;style=none&amp;width=594" alt="image.png" />
+<img src="https://img-blog.csdnimg.cn/img_convert/4ada6304aa4835f6c0e6f2a2b13161b8.png#align=left&amp;display=inline&amp;height=120&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=239&amp;originWidth=1563&amp;size=57181&amp;status=done&amp;style=none&amp;width=781.5" alt="image.png" />
+注意：如果想删除标签，可以使用 **kubectl label nodes k8s-node-03 IngressProxy- **命令。哈哈哈偶尔需要去掉标签，不调度。</p>
+<h2 id="5安装-kubernetes-gateway-crd-资源">5、安装 Kubernetes Gateway CRD 资源</h2>
+<p>由于目前 Kubernetes 集群上默认没有安装 Service APIs，我们需要提前安装 Gateway API 的 CRD 资源，需要确保在 Traefik 安装之前启用 Service APIs 资源。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -k "github.com/kubernetes-sigs/service-apis/config/crd?ref=v0.2.0"
+</code></pre></div></div>
+<p>不过由于github网络问题，基本无法安装的。我是直接把github上包下载到本地采用本地安装的方式安装
+进入
+<img src="https://img-blog.csdnimg.cn/img_convert/36138353fc0d487898dee680e5d06fd1.png#align=left&amp;display=inline&amp;height=381&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=762&amp;originWidth=1672&amp;size=114244&amp;status=done&amp;style=none&amp;width=836" alt="image.png" />
+进入base目录直接全部安装:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl  apply  -f .
+</code></pre></div></div>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/3c4d199cf29cd3b486c429349b400ec6.png#align=left&amp;display=inline&amp;height=309&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=618&amp;originWidth=1446&amp;size=101285&amp;status=done&amp;style=none&amp;width=723" alt="image.png" /></p>
+<h2 id="6-kubernetes-部署-traefik">6. Kubernetes 部署 Traefik</h2>
+<p>其实我就可以忽略443了….因为我想在<a href="https://console.cloud.tencent.com/clb">slb</a>  哦 对也叫<a href="https://console.cloud.tencent.com/clb">clb</a>.直接做限制。对外只保留80端口。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt;EOF &gt; traefik-deploy.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: traefik
+  namespace： kube-system
+spec:
+  ports:
+    - name: web
+      port: 80
+    - name: websecure
+      port: 443
+    - name: admin
+      port: 8080
+  selector:
+    app: traefik
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  namespace： kube-system
+  name: traefik-ingress-controller
+  labels:
+    app: traefik
+spec:
+  selector:
+    matchLabels:
+      app: traefik
+  template:
+    metadata:
+      name: traefik
+      labels:
+        app: traefik
+    spec:
+      serviceAccountName: traefik-ingress-controller
+      terminationGracePeriodSeconds: 1
+      containers:
+        - image: ccr.ccs.tencentyun.com/XXXX/traefik:v2.4.3 
+          name: traefik-ingress-lb
+          ports:
+            - name: web
+              containerPort: 80
+              hostPort: 80     
+            - name: websecure
+              containerPort: 443
+              hostPort: 443        
+            - name: admin
+              containerPort: 8080  
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 1024Mi
+            requests:
+              cpu: 1000m
+              memory: 1024Mi
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+              add:
+                - NET_BIND_SERVICE
+          args:
+            - --configfile=/config/traefik.yaml
+          volumeMounts:
+            - mountPath: "/config"
+              name: "config"
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 8080
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 8080
+            failureThreshold: 3
+            initialDelaySeconds: 10
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5    
+      volumes:
+        - name: config
+          configMap:
+            name: traefik-config 
+      tolerations:              ## 设置容忍所有污点，防止节点被设置污点
+        - operator: "Exists"
+      nodeSelector:             ## 设置node筛选器，在特定label的节点上启动
+        IngressProxy: "true
+EOF
+kubectl apply -f traefik-deploy.yaml 
+</code></pre></div></div>
+<p>kubectl get pods -n kube-system 验证
+<img src="https://img-blog.csdnimg.cn/img_convert/75325eac6c89406f5abbb9c6352323c9.png#align=left&amp;display=inline&amp;height=342&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=683&amp;originWidth=1009&amp;size=91180&amp;status=done&amp;style=none&amp;width=504.5" alt="image.png" /></p>
+<h1 id="3-配置路由规则与腾讯云clb整合">3. 配置路由规则，与腾讯云clb整合</h1>
+<h2 id="1-slb-绑定traefik--http端口">1. slb 绑定traefik  http端口</h2>
+<p>关于腾讯云负载均衡 slb  or  clb可以参照文档<a href="https://cloud.tencent.com/document/product/214">https://cloud.tencent.com/document/product/214</a>了解。过去使用slb用的tcp代理方式有一下原因：</p>
+
+<ol>
+  <li>过去的腾讯云slb不支持一个负载均衡挂载多个证书，个人不想启用多个slb绑定。</li>
+  <li>在slb上面配置域名比较麻烦…..没有再traefik配置文件里面写对我个人来说方便。</li>
+</ol>
+
+<p>那我现在怎么就用slb http  https代理方式了呢？</p>
+
+<ol>
+  <li>当然了  首先是可以挂载多个证书了</li>
+  <li>我在slb上面直接绑定了泛域名，后面的具体域名解析还是在我的traefik配置。但是我不用绑定证书了….</li>
+  <li>http  https的方式我可以把日志直接写入他的cos对象存储和腾讯云自己的日志服务（感觉也是一个kibana）可以直接分析日志啊…..</li>
+</ol>
+
+<p><img src="https://img-blog.csdnimg.cn/img_convert/6bfbd82e0ccdf068eb7cb153e56167c2.png#align=left&amp;display=inline&amp;height=244&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=489&amp;originWidth=1676&amp;size=41701&amp;status=done&amp;style=none&amp;width=838" alt="image.png" />
+综上所述，来实现一下我个人的过程与思路</p>
+
+<ol>
+  <li>创建slb .slb绑定 work节点 80端口(这里我用的是负载均衡型，没有用传统型)，没有问题吧？老老实实ipv4了没有启用ipv6这个就看个人具体需求吧。</li>
+</ol>
+
+<p><img src="https://img-blog.csdnimg.cn/img_convert/3b31852d3b61b3f67201c75c397f1a1f.png#align=left&amp;display=inline&amp;height=374&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=748&amp;originWidth=1275&amp;size=65362&amp;status=done&amp;style=none&amp;width=637.5" alt="image.png" />
+<img src="https://img-blog.csdnimg.cn/img_convert/6f332352d5c769f347b398fa0ba50526.png#align=left&amp;display=inline&amp;height=278&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=556&amp;originWidth=687&amp;size=26931&amp;status=done&amp;style=none&amp;width=343.5" alt="image.png" />
+使用了极度不要脸的方式 泛域名….因为我常用的也就这两个域名，具体的解析都还是我自己在traefik配置了。
+<img src="https://img-blog.csdnimg.cn/img_convert/f6fadafaaf63151bad81749038136293.png#align=left&amp;display=inline&amp;height=267&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=534&amp;originWidth=1450&amp;size=34521&amp;status=done&amp;style=none&amp;width=725" alt="image.png" />
+关于证书 我这里可是扔好了 两个主二级域名，泛域名证书直接扔上了……
+<img src="https://img-blog.csdnimg.cn/img_convert/49422018f2f9b647fffc93c380925b53.png#align=left&amp;display=inline&amp;height=187&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=374&amp;originWidth=1115&amp;size=27298&amp;status=done&amp;style=none&amp;width=557.5" alt="image.png" />
+四个后面配置我都绑定了80交给traefik处理吧。权重我都设置的一样的，有其他需求的可以根据自己需要设置呢。
+<img src="https://img-blog.csdnimg.cn/img_convert/b7ebbe0745cec6af1f2958b0b46e927e.png#align=left&amp;display=inline&amp;height=258&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=516&amp;originWidth=1376&amp;size=42590&amp;status=done&amp;style=none&amp;width=688" alt="image.png" /></p>
+<h2 id="2-配置路由规则">2. 配置路由规则</h2>
+<p>Traefik 应用已经部署完成，并且和slb负载均衡集成也大致完成了。但是想让外部访问 Kubernetes 内部服务，还需要配置路由规则，上面部署 Traefik 时开启了 <code class="language-plaintext highlighter-rouge">traefik dashboard</code>，这是 Traefik 提供的视图看板，所以，首先配置基于 <code class="language-plaintext highlighter-rouge">http</code> 的 <code class="language-plaintext highlighter-rouge">Traefik Dashboard</code> 路由规则，使外部能够访问 <code class="language-plaintext highlighter-rouge">Traefik Dashboard</code>。这里分别使用 <code class="language-plaintext highlighter-rouge">CRD</code>、<code class="language-plaintext highlighter-rouge">Ingress</code> 和 <code class="language-plaintext highlighter-rouge">Kubernetes Gateway API</code> 三种方式进行演示，过去版本常用的是CRD的方式。https的方式我就忽略了交给slb负载均衡层了。</p>
+<h3 id="1-crd方式">1. CRD方式</h3>
+<p>过去我个人部署应用都是crd方式，自己老把这种方式叫做ingressroute方式。</p>
+
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt;EOF&gt; traefik-dashboard-route-http.yaml
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: traefik-dashboard-route
+  namespaces: kube-system
+spec:
+  entryPoints:
+  - web
+  routes:
+  - match: Host(\`traefik.saynaihe.com\`)
+    kind: Rule
+    services:
+      - name: traefik
+        port: 8080
+EOF
+kubectl apply -f traefik-dashboard-route-http.yaml       
+</code></pre></div></div>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/f27ea6bbe0da83127e697ed607f90444.png#align=left&amp;display=inline&amp;height=143&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=286&amp;originWidth=770&amp;size=23942&amp;status=done&amp;style=none&amp;width=385" alt="image.png" />
+关于   match: Host(`traefik.saynaihe.com`)  加转义符应该都能看明白了，不加转义符会是这样的
+<img src="https://img-blog.csdnimg.cn/img_convert/00bbe950a12cd3fc8316f24af0ba80b0.png#align=left&amp;display=inline&amp;height=284&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=567&amp;originWidth=876&amp;size=50579&amp;status=done&amp;style=none&amp;width=438" alt="image.png" />
+我貌似又忘了加namespace 截图中，实际我可是加上了…老容易往事。哎，我不是两个泛域名吗 ？ 特意做了两个ingressoute 做下测试
+<img src="https://img-blog.csdnimg.cn/img_convert/3ee43493144ebb7ea5eaeeedf46dc043.png#align=left&amp;display=inline&amp;height=42&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=83&amp;originWidth=749&amp;size=8609&amp;status=done&amp;style=none&amp;width=374.5" alt="image.png" />
+然后绑定本地hosts绑定host</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>C:\Windows\System32\drivers\etc
+</code></pre></div></div>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/65953fe87d4996c00c229f6253570a80.png#align=left&amp;display=inline&amp;height=151&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=301&amp;originWidth=1235&amp;size=52169&amp;status=done&amp;style=none&amp;width=617.5" alt="image.png" />
+遮挡的有点多….但是 这就是两个都路由过来了啊
+<img src="https://img-blog.csdnimg.cn/img_convert/ba6f31e52bb58c91b13126aa96237a89.png#align=left&amp;display=inline&amp;height=466&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=932&amp;originWidth=1621&amp;size=194469&amp;status=done&amp;style=none&amp;width=810.5" alt="image.png" />
+关于https可以忽略了直接挂载在slb层了啊。然后http 强制跳转 https也可以在slb层上面配置了
+<img src="https://img-blog.csdnimg.cn/img_convert/bfa2a2fc8af78e3d0dc6019ccd3cb16d.png#align=left&amp;display=inline&amp;height=342&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=683&amp;originWidth=1523&amp;size=111451&amp;status=done&amp;style=none&amp;width=761.5" alt="image.png" />
+流氓玩法强跳….测试也是成功的….
+<img src="https://img-blog.csdnimg.cn/img_convert/fe1db72829a2dc1602458e5d9069660f.png#align=left&amp;display=inline&amp;height=174&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=348&amp;originWidth=1561&amp;size=25364&amp;status=done&amp;style=none&amp;width=780.5" alt="image.png" /></p>
+<h3 id="2-ingress方式">2. Ingress方式</h3>
+<p>ingress的方式基本就是<a href="https://kubernetes.io/zh/docs/concepts/services-networking/ingress/">https://kubernetes.io/zh/docs/concepts/services-networking/ingress/</a> kubernetes 常见的ingress方式吧？
+继续拿dashboard做演示</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt;EOF&gt; traefik-dashboard-ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: traefik-dashboard-ingress
+  namespace: kube-system
+  annotations:
+    kubernetes.io/ingress.class: traefik  
+    traefik.ingress.kubernetes.io/router.entrypoints: web
+spec:
+  rules:
+  - host: traefik1.saynaihe.com
+    http:
+      paths:
+      - pathType: Prefix
+        path: /
+        backend:
+          service:
+            name: traefik
+            port:
+              number: 8080
+EOF
+kubectl apply -f traefik-dashboard-ingress.yaml
+</code></pre></div></div>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/52a4e18ada84a2664d8ef5be4e7688ee.png#align=left&amp;display=inline&amp;height=228&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=456&amp;originWidth=899&amp;size=42553&amp;status=done&amp;style=none&amp;width=449.5" alt="image.png" />
+由于端口强制跳转了设置，直接https了哈哈哈验证完成
+<img src="https://img-blog.csdnimg.cn/img_convert/6cacdd9191ecfbb4298c2f129cf513c7.png#align=left&amp;display=inline&amp;height=444&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=888&amp;originWidth=1627&amp;size=121141&amp;status=done&amp;style=none&amp;width=813.5" alt="image.png" /></p>
+<h2 id="3方式三使用-kubernetes-gateway-api">3、方式三：使用 Kubernetes Gateway API</h2>
+<p>关于<code class="language-plaintext highlighter-rouge">Kubernetes Gateway API</code> 可以通过<code class="language-plaintext highlighter-rouge">CRD</code> 方式创建路由规则
+              CRD  自定义资源强调一下
+    详情可以参考：<a href="https://doc.traefik.io/traefik/v2.4/routing/providers/kubernetes-gateway/">https://doc.traefik.io/traefik/v2.4/routing/providers/kubernetes-gateway/</a></p>
+
+<ul>
+  <li><strong>GatewayClass：</strong> GatewayClass 是基础结构提供程序定义的群集范围的资源。此资源表示可以实例化的网关类。一般该资源是用于支持多个基础设施提供商用途的，这里我们只部署一个即可。</li>
+  <li><strong>Gateway：</strong> Gateway 与基础设施配置的生命周期是 1:1。当用户创建网关时，GatewayClass 控制器会提供或配置一些负载平衡基础设施。</li>
+  <li><strong>HTTPRoute：</strong> HTTPRoute 是一种网关 API 类型，用于指定 HTTP 请求从网关侦听器到 API 对象（即服务）的路由行为。</li>
+</ul>
+
+<p><img src="https://img-blog.csdnimg.cn/img_convert/784984193bf45635c12225480a9d7133.png#align=left&amp;display=inline&amp;height=423&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=845&amp;originWidth=1690&amp;size=196554&amp;status=done&amp;style=none&amp;width=845" alt="image.png" /></p>
+<h3 id="1-创建-gatewayclass">1. 创建 GatewayClass</h3>
+<p><strong>**#</strong>创建 GatewayClass 资源 kubernetes-gatewayclass.yaml 文件**
+**参照： **<a href="https://doc.traefik.io/traefik/v2.4/routing/providers/kubernetes-gateway/#kind-gatewayclass">https://doc.traefik.io/traefik/v2.4/routing/providers/kubernetes-gateway/#kind-gatewayclass</a></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt;EOF&gt; kubernetes-gatewayclass.yaml
+kind: GatewayClass
+apiVersion: networking.x-k8s.io/v1alpha1
+metadata:
+  name: traefik
+spec:
+  # Controller is a domain/path string that indicates
+  # the controller that is managing Gateways of this class.
+  controller: traefik.io/gateway-controller
+EOF
+kubectl apply -f kubernetes-gatewayclass.yaml
+</code></pre></div></div>
+<h3 id="2-配置-http-路由规则-traefik-dashboard-为例">2 配置 HTTP 路由规则 （Traefik Dashboard 为例）</h3>
+<p><strong>创建 Gateway 资源 http-gateway.yaml 文件</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt;EOF&gt; http-gateway.yaml
+apiVersion: networking.x-k8s.io/v1alpha1
+kind: Gateway
+metadata: 
+  name: http-gateway
+  namespace: kube-system
+spec: 
+  gatewayClassName: traefik
+  listeners: 
+    - protocol: HTTP
+      port: 80
+      routes: 
+        kind: HTTPRoute
+        namespaces:
+          from: All
+        selector:
+          matchLabels:
+            app: traefik
+EOF
+kubectl apply -f http-gateway.yaml            
+</code></pre></div></div>
+<p><strong>创建 HTTPRoute 资源 traefik-httproute.yaml 文件</strong></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat &lt;&lt;EOF&gt; traefik-httproute.yaml
+apiVersion: networking.x-k8s.io/v1alpha1
+kind: HTTPRoute
+metadata:
+  name: traefik-dashboard-httproute
+  namespace: kube-system
+  labels:
+    app: traefik
+spec:
+  hostnames:
+    - "traefi2.saynaihe.com"
+  rules:
+    - matches:
+        - path:
+            type: Prefix
+            value: /
+      forwardTo:
+        - serviceName: traefik
+          port: 8080
+          weight: 1
+EOF
+kubectl apply -f traefik-httproute.yaml            
+</code></pre></div></div>
+<p>这里就出问题了…..，无法访问，仔细看了下文档<a href="https://doc.traefik.io/traefik/providers/kubernetes-gateway/">https://doc.traefik.io/traefik/providers/kubernetes-gateway/</a>
+<img src="https://img-blog.csdnimg.cn/img_convert/b6c18a95682a987fa06bcf07974404d5.png#align=left&amp;display=inline&amp;height=359&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=718&amp;originWidth=1588&amp;size=124387&amp;status=done&amp;style=none&amp;width=794" alt="image.png" />
+全部删除一次重新部署吧将2.5中版本变成v0.1.0就好了….图就不上了基本步骤是一样的。
+<img src="https://img-blog.csdnimg.cn/img_convert/04920fa7cf9f829c79d4c9224d390dc5.png#align=left&amp;display=inline&amp;height=412&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=823&amp;originWidth=1570&amp;size=104263&amp;status=done&amp;style=none&amp;width=785" alt="image.png" />
+注： 都没有做域名解析，本地绑定了host。 saynaihe.com域名只是做演示。没有实际搞….因为我没有做备案。现在不备案的基本绑上就被扫描到封了。用正式域名做的试验。另外养成的习惯用CRD习惯了…部署应用基本个人都用了CRD的方式  —ingressroute。ingress的方式是更适合从ingress-nginx迁移到traefik使用了。至于Kubernetes Gateway API个人还是图个新鲜，没有整明白。v0.2.0不能用…就演示下了.</p>
+
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2021/03/27/Kubernetes-traefik/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
+                  <a class="post-link" href="/2021/03/27/Kuberentes-cbs/">Kuberentes集群添加腾讯云CBS为默认存储</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2021-03-27
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes1.20" title="Category: kubernetes1.20" rel="category">kubernetes1.20</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
+    
+        <a href="/tag/#CBS" title="Tag: CBS" rel="tag">CBS</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#前言" id="markdown-toc-前言">前言</a></li>
+  <li><a href="#初始环境" id="markdown-toc-初始环境">初始环境</a></li>
+  <li><a href="#集成腾讯云-cbs-csi" id="markdown-toc-集成腾讯云-cbs-csi">集成腾讯云 CBS CSI</a>    <ul>
+      <li><a href="#1-clone-仓库" id="markdown-toc-1-clone-仓库">1. clone 仓库</a></li>
+      <li><a href="#2参照文档前置要求完成kubernetes集群的配置修改" id="markdown-toc-2参照文档前置要求完成kubernetes集群的配置修改">2.参照文档前置要求完成kubernetes集群的配置修改</a>        <ul>
+          <li><a href="#1-master节点" id="markdown-toc-1-master节点">1. master节点</a></li>
+          <li><a href="#2-修改所有节点的kubelet配置" id="markdown-toc-2-修改所有节点的kubelet配置">2. 修改所有节点的kubelet配置</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#3部署cbs-csi插件" id="markdown-toc-3部署cbs-csi插件">3.部署CBS CSI插件</a>    <ul>
+      <li><a href="#1-使用腾讯云-api-credential-创建-kubernetes-secret" id="markdown-toc-1-使用腾讯云-api-credential-创建-kubernetes-secret">1. 使用腾讯云 API Credential 创建 kubernetes secret:</a>        <ul>
+          <li><a href="#1-前提" id="markdown-toc-1-前提">1. 前提：</a></li>
+          <li><a href="#2-根据文档提示将secretid-secretkey-base64转换生成kubernetes-secret" id="markdown-toc-2-根据文档提示将secretid-secretkey-base64转换生成kubernetes-secret">2. 根据文档提示将SecretId SecretKey base64转换生成kubernetes secret</a></li>
+        </ul>
+      </li>
+      <li><a href="#2-创建rbac" id="markdown-toc-2-创建rbac">2. 创建rbac</a></li>
+      <li><a href="#3创建controllernode和plugin" id="markdown-toc-3创建controllernode和plugin">3.创建controller,node和plugin</a></li>
+    </ul>
+  </li>
+  <li><a href="#4-验证" id="markdown-toc-4-验证">4. 验证</a></li>
+</ul>
+
+<h1 id="前言">前言</h1>
+<p>接上文<a href="https://blog.csdn.net/saynaihe/article/details/115187298">https://blog.csdn.net/saynaihe/article/details/115187298</a> kubeadm  搭建高可用ha集群，接下来考虑的度量有存储，对外暴露服务。日志收集，监控报警几项。个人习惯就先将存储优先来讨论了。
+关于存储storageclass
+如<a href="https://kubernetes.io/zh/docs/concepts/storage/storage-classes">https://kubernetes.io/zh/docs/concepts/storage/storage-classes</a>所示，常见的有很多类型,如下：
+<img src="https://img-blog.csdnimg.cn/img_convert/dde52dd300170764556021abdf4c2a46.png#align=left&amp;display=inline&amp;height=195&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=390&amp;originWidth=248&amp;size=11290&amp;status=done&amp;style=none&amp;width=124" alt="image.png" />
+由于我的集群建在公有云上面 腾讯云有开源的cbs 的 csi组件。在kubernetes1.16-1.18 环境使用docker 做runtime的环境中使用过腾讯云的开源组件。这就又拿来用了。方便集成。</p>
+<h1 id="初始环境">初始环境</h1>
+<p>参加：<a href="https://editor.csdn.net/md/?articleId=115187298">https://editor.csdn.net/md/?articleId=115187298</a></p>
 
 <table>
   <thead>
     <tr>
-      <th style="text-align: left">ip</th>
-      <th style="text-align: center">主机名</th>
-      <th style="text-align: center"> </th>
-      <th>服务</th>
-      <th> </th>
+      <th>主机名</th>
+      <th>ip</th>
+      <th>系统</th>
+      <th>内核</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td style="text-align: left">10.0.4.20</td>
-      <td style="text-align: center">vip</td>
-      <td style="text-align: center"> </td>
-      <td> </td>
-      <td>master zookeeper</td>
+      <td>sh-master-01</td>
+      <td>10.3.2.5</td>
+      <td>centos8</td>
+      <td>4.18.0-240.15.1.el8_3.x86_64</td>
     </tr>
     <tr>
-      <td style="text-align: left">10.0.4.27</td>
-      <td style="text-align: center">sh-master-01</td>
-      <td style="text-align: center"> </td>
-      <td>master zookeeper</td>
-      <td> </td>
+      <td>sh-master-02</td>
+      <td>10.3.2.13</td>
+      <td>centos8</td>
+      <td>4.18.0-240.15.1.el8_3.x86_64</td>
     </tr>
     <tr>
-      <td style="text-align: left">10.0.4.46</td>
-      <td style="text-align: center">sh-master-02</td>
-      <td style="text-align: center"> </td>
-      <td>master zookeeper</td>
-      <td> </td>
+      <td>sh-master-03</td>
+      <td>10.3.2.16</td>
+      <td>centos8</td>
+      <td>4.18.0-240.15.1.el8_3.x86_64</td>
     </tr>
     <tr>
-      <td style="text-align: left">10.0.4.47</td>
-      <td style="text-align: center">sh-master-02</td>
-      <td style="text-align: center"> </td>
-      <td> </td>
-      <td> </td>
+      <td>sh-work-01</td>
+      <td>10.3.2.2</td>
+      <td>centos8</td>
+      <td>4.18.0-240.15.1.el8_3.x86_64</td>
     </tr>
     <tr>
-      <td style="text-align: left">10.0.4.14</td>
-      <td style="text-align: center">sh-work-01</td>
-      <td style="text-align: center"> </td>
-      <td> </td>
-      <td> </td>
+      <td>sh-work-02</td>
+      <td>10.3.2.2</td>
+      <td>centos8</td>
+      <td>4.18.0-240.15.1.el8_3.x86_64</td>
     </tr>
     <tr>
-      <td style="text-align: left">10.0.4.2</td>
-      <td style="text-align: center">sh-work-02</td>
-      <td style="text-align: center"> </td>
-      <td> </td>
-      <td> </td>
-    </tr>
-    <tr>
-      <td style="text-align: left">10.0.4.6</td>
-      <td style="text-align: center">sh-work-03</td>
-      <td style="text-align: center"> </td>
-      <td> </td>
-      <td> </td>
+      <td>sh-work-03</td>
+      <td>10.3.2.4</td>
+      <td>centos8</td>
+      <td>4.18.0-240.15.1.el8_3.x86_64</td>
     </tr>
   </tbody>
 </table>
 
+<h1 id="集成腾讯云-cbs-csi">集成腾讯云 CBS CSI</h1>
+<h2 id="1-clone-仓库">1. clone 仓库</h2>
+<p>注： kubernetes-csi-tencentcloud中包括 CBS CSI，  CFS CSI 与 COSFS CSI。这里我就只用CBS块存储了。其他两个也用过，感觉用起来还是不太适合。</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>git clone https://github.com/TencentCloud/kubernetes-csi-tencentcloud.git
+</code></pre></div></div>
+<p>各种名词可以参照：<a href="https://github.com/TencentCloud/kubernetes-csi-tencentcloud/blob/master/docs/README_CBS_zhCN.md">https://github.com/TencentCloud/kubernetes-csi-tencentcloud/blob/master/docs/README_CBS_zhCN.md</a>。</p>
+<h2 id="2参照文档前置要求完成kubernetes集群的配置修改">2.参照文档前置要求完成kubernetes集群的配置修改</h2>
+<h3 id="1-master节点">1. master节点</h3>
+<p>参照<a href="https://github.com/TencentCloud/kubernetes-csi-tencentcloud/blob/master/docs/README_CBS_zhCN.md">https://github.com/TencentCloud/kubernetes-csi-tencentcloud/blob/master/docs/README_CBS_zhCN.md</a>。参照一下图片前置要求
+<img src="https://img-blog.csdnimg.cn/img_convert/4c103c1c600f27936fcb33428538261b.png#align=left&amp;display=inline&amp;height=339&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=678&amp;originWidth=1240&amp;size=96553&amp;status=done&amp;style=none&amp;width=620" alt="image.png" />对三台master节点修改 kube-apiserver.yaml kube-controller-manager.yaml kube-scheduler.yaml。增加如下配置（查看对应版本对应需求）</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code> - --feature-gates=VolumeSnapshotDataSource=true
+</code></pre></div></div>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/dc9d51d2d0935e29203a5e713bfe42fd.png#align=left&amp;display=inline&amp;height=246&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=491&amp;originWidth=959&amp;size=49878&amp;status=done&amp;style=none&amp;width=479.5" alt="image.png" />
+<img src="https://img-blog.csdnimg.cn/img_convert/e78eb4b1ccc2d77a212eb399cc871c6a.png#align=left&amp;display=inline&amp;height=228&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=456&amp;originWidth=963&amp;size=45375&amp;status=done&amp;style=none&amp;width=481.5" alt="image.png" />
+<img src="https://img-blog.csdnimg.cn/img_convert/6c1c842b7db9cc48fb049cf7e5a5fcef.png#align=left&amp;display=inline&amp;height=224&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=448&amp;originWidth=973&amp;size=38729&amp;status=done&amp;style=none&amp;width=486.5" alt="image.png" /></p>
+<h3 id="2-修改所有节点的kubelet配置">2. 修改所有节点的kubelet配置</h3>
+<p>kubelet增加–feature-gates=VolumeSnapshotDataSource=true的支持
+<img src="https://img-blog.csdnimg.cn/img_convert/946f5d3fc28c66c4083fd747e3e236b9.png#align=left&amp;display=inline&amp;height=61&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=121&amp;originWidth=1378&amp;size=23031&amp;status=done&amp;style=none&amp;width=689" alt="image.png" /></p>
+<h1 id="3部署cbs-csi插件">3.部署CBS CSI插件</h1>
+<h2 id="1-使用腾讯云-api-credential-创建-kubernetes-secret">1. 使用腾讯云 API Credential 创建 kubernetes secret:</h2>
+<h3 id="1-前提">1. 前提：</h3>
+<p>首先的在腾讯云后台<a href="https://console.cloud.tencent.com/cam">https://console.cloud.tencent.com/cam</a>创建一个用户，访问方式我是只开通了编程访问，至于用户权限则需要开通CBS相关权限。我是直接绑定了CSB两个默认相关的权限，还有财务付款权限，记得一定的支持付款，否则硬盘创建不了……。玩的好的可以自定义创建下权限，否则个人觉得财务权限貌似有点大……
+<img src="https://img-blog.csdnimg.cn/img_convert/3f82e8ac162441cbbf7537c653ce10bd.png#align=left&amp;display=inline&amp;height=361&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=721&amp;originWidth=1543&amp;size=86001&amp;status=done&amp;style=none&amp;width=771.5" alt="image.png" />
+<img src="https://img-blog.csdnimg.cn/img_convert/282fe41f530152a3d7cdc76cc4fd4f87.png#align=left&amp;display=inline&amp;height=366&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=732&amp;originWidth=1499&amp;size=69960&amp;status=done&amp;style=none&amp;width=749.5" alt="image.png" /></p>
+<h3 id="2-根据文档提示将secretid-secretkey-base64转换生成kubernetes-secret">2. 根据文档提示将SecretId SecretKey base64转换生成kubernetes secret</h3>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>echo -n "XXXXXXXXXXX" |base6
+ echo -n "XXXXXXXXXX" |base64
+</code></pre></div></div>
+<p>将base64写入secret.yaml文件
+<img src="https://img-blog.csdnimg.cn/img_convert/e3c1c9068c00392414904c077406c80a.png#align=left&amp;display=inline&amp;height=134&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=267&amp;originWidth=977&amp;size=27777&amp;status=done&amp;style=none&amp;width=488.5" alt="image.png" /></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cd /root/kubernetes-csi-tencentcloud-master/deploy/cbs/kubernetes
+kubectl apply -f secret.yaml
+</code></pre></div></div>
+<p>注：<strong>项目是在root目录git clone的，故cd /root/kubernetes-csi-tencentcloud-master/deploy/cbs/kubernetes.包括一下没有特别强调目录的，都是在此目录下执行的</strong>
+<strong><img src="https://img-blog.csdnimg.cn/img_convert/3a0e231afbf7ef97d8cb52232b7aec61.png#align=left&amp;display=inline&amp;height=96&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=191&amp;originWidth=1016&amp;size=24729&amp;status=done&amp;style=none&amp;width=508" alt="image.png" /></strong></p>
+<h2 id="2-创建rbac">2. 创建rbac</h2>
+<p>创建attacher,provisioner,plugin需要的rbac：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f  csi-controller-rbac.yaml
+kubectl apply -f  csi-node-rbac.yaml
+</code></pre></div></div>
+<h2 id="3创建controllernode和plugin">3.创建controller,node和plugin</h2>
+<p>创建controller plugin和node plugin</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl apply -f  csi-controller.yaml
+kubectl apply -f  csi-node.yaml
+### snapshot-crd我没有使用，字面意思应该是快照的....
+kubectl apply -f  snapshot-crd.yaml 
+</code></pre></div></div>
+<p>kubectl get pods -n kube-system 可以看到cbs-csi相关组件创建ing：
+<img src="https://img-blog.csdnimg.cn/img_convert/836c21097717eca14a6d8dae352b4041.png#align=left&amp;display=inline&amp;height=309&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=617&amp;originWidth=839&amp;size=81252&amp;status=done&amp;style=none&amp;width=419.5" alt="image.png" /></p>
+<h1 id="4-验证">4. 验证</h1>
+<p>切换目录
+cd   /root/kubernetes-csi-tencentcloud-master/deploy/cbs/examples</p>
+
+<ol>
+  <li>参照storageclass参数修改storageclass-basic.yaml</li>
+</ol>
+
+<p><img src="https://img-blog.csdnimg.cn/img_convert/ab44a5b4369a95c7f811151097aeb55f.png#align=left&amp;display=inline&amp;height=253&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=505&amp;originWidth=1333&amp;size=125348&amp;status=done&amp;style=none&amp;width=666.5" alt="image.png" /></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>创建storageclass:
+    kubectl apply -f  storageclass-basic.yaml
+创建pvc:
+    kubectl apply -f  pvc.yaml
+创建申请pvc的pod:
+    kubectl apply -f  app.yaml
+</code></pre></div></div>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/0f4a3e380a819f4cfd26acb0d635a0f3.png#align=left&amp;display=inline&amp;height=279&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=557&amp;originWidth=888&amp;size=67805&amp;status=done&amp;style=none&amp;width=444" alt="image.png" />
+嗯 kubectl get storageclass<br />
+<img src="https://img-blog.csdnimg.cn/img_convert/62f3a38e2aeb7d960661bdb0ffd246c5.png#align=left&amp;display=inline&amp;height=44&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=87&amp;originWidth=1217&amp;size=12553&amp;status=done&amp;style=none&amp;width=608.5" alt="image.png" />
+到此为止，搭建其他应用就可以用cbs存储了。具体参数看文档  看文档 看文档  说三遍。</p>
+
                 </div>
                 <div class="read-all">
-                    <a  href="/2020/09/11/hadoop-ha-hbase-hive-spark/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                    <a  href="/2021/03/27/Kuberentes-cbs/"><i class="fa fa-newspaper-o"></i>Read All</a>
+                </div>
+                <hr>
+              </li>
+            
+              <li>
+                <h2>
+                  <a class="post-link" href="/2021/03/26/centos8+kubeadm1.20.5+cilium+hubble/">centos8+kubeadm1.20.5+cilium+hubble环境搭建</a>
+                </h2>
+                <div class="label">
+                    <div class="label-card">
+                        <i class="fa fa-calendar"></i>2021-03-26
+                    </div>
+                    <div class="label-card">
+                        <i class="fa fa-user"></i>duiniwukenaihe
+                        
+                    </div>
+                    <div class="label-card">
+                        
+                    </div>
+
+                    <div class="label-card">
+                    
+
+
+<!-- <span class="point">•</span> -->
+<span class="categories">
+  <i class="fa fa-th-list"></i>
+  
+    
+        <a href="/category/#kubernetes1.20" title="Category: kubernetes1.20" rel="category">kubernetes1.20</a>
+    
+  
+
+  <!-- <span class="point">•</span> -->
+</span>
+
+
+                    </div>
+
+                    <div class="label-card">
+                    
+<!-- <span class="point">•</span> -->
+<span class="pageTag">
+  <i class="fa fa-tags"></i>
+  
+    
+        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
+    
+        <a href="/tag/#cilium" title="Tag: cilium" rel="tag">cilium</a>&nbsp;
+    
+        <a href="/tag/#hubble" title="Tag: hubble" rel="tag">hubble</a>
+    
+  
+
+</span>
+
+                    </div>
+                </div>
+                <div class="excerpt">
+                    <ul id="markdown-toc">
+  <li><a href="#前言" id="markdown-toc-前言">前言</a></li>
+  <li><a href="#环境准备" id="markdown-toc-环境准备">环境准备：</a></li>
+  <li><a href="#1-系统初始化" id="markdown-toc-1-系统初始化">1. 系统初始化：</a>    <ul>
+      <li><a href="#1-更改主机名" id="markdown-toc-1-更改主机名">1. 更改主机名</a></li>
+      <li><a href="#2-关闭swap交换分区" id="markdown-toc-2-关闭swap交换分区">2. 关闭swap交换分区</a></li>
+      <li><a href="#3-关闭selinux" id="markdown-toc-3-关闭selinux">3. 关闭selinux</a></li>
+      <li><a href="#4-关闭防火墙" id="markdown-toc-4-关闭防火墙">4. 关闭防火墙</a></li>
+      <li><a href="#5-调整文件打开数等配置" id="markdown-toc-5-调整文件打开数等配置">5. 调整文件打开数等配置</a></li>
+      <li><a href="#6-yum--update-八仙过海各显神通吧安装自己所需的习惯的应用" id="markdown-toc-6-yum--update-八仙过海各显神通吧安装自己所需的习惯的应用">6. yum  update 八仙过海各显神通吧，安装自己所需的习惯的应用</a></li>
+      <li><a href="#7-ipvs添加centos8内核默认418内核419不包括419的是用这个" id="markdown-toc-7-ipvs添加centos8内核默认418内核419不包括419的是用这个">7. ipvs添加（centos8内核默认4.18.内核4.19不包括4.19的是用这个）</a></li>
+      <li><a href="#8-优化系统参数不一定是最优各取所有" id="markdown-toc-8-优化系统参数不一定是最优各取所有">8. 优化系统参数(不一定是最优，各取所有)</a></li>
+      <li><a href="#9-containerd安装" id="markdown-toc-9-containerd安装">9. containerd安装</a></li>
+      <li><a href="#10-配置-cri-客户端-crictl" id="markdown-toc-10-配置-cri-客户端-crictl">10. 配置 CRI 客户端 crictl</a></li>
+      <li><a href="#11-安装-kubeadmcentos8没有对应yum源使用centos7的阿里云yum源" id="markdown-toc-11-安装-kubeadmcentos8没有对应yum源使用centos7的阿里云yum源">11. 安装 Kubeadm(centos8没有对应yum源使用centos7的阿里云yum源)</a></li>
+      <li><a href="#12-修改kubelet配置" id="markdown-toc-12-修改kubelet配置">12. 修改kubelet配置</a></li>
+      <li><a href="#13--journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志最大200m可根据个人需求设置" id="markdown-toc-13--journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志最大200m可根据个人需求设置">13 . journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志，最大200m(可根据个人需求设置)</a></li>
+    </ul>
+  </li>
+  <li><a href="#2-master节点操作" id="markdown-toc-2-master节点操作">2. master节点操作</a>    <ul>
+      <li><a href="#1--安装haproxy" id="markdown-toc-1--安装haproxy">1 . 安装haproxy</a></li>
+      <li><a href="#2-sh-master-01节点初始化" id="markdown-toc-2-sh-master-01节点初始化">2. sh-master-01节点初始化</a>        <ul>
+          <li><a href="#1生成config配置文件" id="markdown-toc-1生成config配置文件">1.生成config配置文件</a></li>
+          <li><a href="#2-修改kubeadm初始化文件" id="markdown-toc-2-修改kubeadm初始化文件">2. 修改kubeadm初始化文件</a></li>
+          <li><a href="#3-kubeadm-master-01节点初始化屏蔽kube-proxy" id="markdown-toc-3-kubeadm-master-01节点初始化屏蔽kube-proxy">3. kubeadm master-01节点初始化（屏蔽kube-proxy）。</a></li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li><a href="#3-helm-安装-部署cilium-与hubble默认helm3了" id="markdown-toc-3-helm-安装-部署cilium-与hubble默认helm3了">3. helm 安装 部署cilium 与hubble(默认helm3了)</a>    <ul>
+      <li><a href="#1-下载helm并安装helm" id="markdown-toc-1-下载helm并安装helm">1. 下载helm并安装helm</a></li>
+      <li><a href="#2--helm-安装cilium-hubble" id="markdown-toc-2--helm-安装cilium-hubble">2 . helm 安装cilium hubble</a></li>
+    </ul>
+  </li>
+  <li><a href="#4-work节点部署" id="markdown-toc-4-work节点部署">4. work节点部署</a></li>
+</ul>
+<h1 id="前言">前言</h1>
+<p>腾讯云绑定用户，开始使用过腾讯云的tke1.10版本。鉴于各种原因选择了自建。线上kubeadm自建kubernetes集群1.16版本（小版本升级到1.16.15）。kubeadm+haproxy+slb+flannel搭建高可用集群，集群启用ipvs。对外服务使用slb绑定traefik tcp 80  443端口对外映射（这是历史遗留问题，过去腾讯云slb不支持挂载多证书，这样也造成了无法使用slb的日志投递功能，现在slb已经支持了多证书的挂载，可以直接使用http http方式了）。生产环境当时搭建仓库没有使用腾讯云的块存储，直接使用cbs。直接用了local disk,还有nfs的共享存储。前几天整了个项目的压力测试，然后使用nfs存储的项目IO直接就飙升了。生产环境不建议使用。准备安装kubernetes 1.20版本，并使用cilium组网。hubble替代kube-proxy 体验一下ebpf。另外也直接上containerd。dockershim的方式确实也浪费资源的。这样也是可以减少资源开销，部署速度的。反正就是体验一下各种最新功能：
+<img src="https://img-blog.csdnimg.cn/img_convert/7b1e4478c35beb59c94356c0fe860813.png#align=left&amp;display=inline&amp;height=404&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=808&amp;originWidth=816&amp;size=214004&amp;status=done&amp;style=none&amp;width=408" alt="image.png" />
+<img src="https://img-blog.csdnimg.cn/img_convert/8501dd6e6766bdbf93a7b960627c0ba7.png#align=left&amp;display=inline&amp;height=168&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=336&amp;originWidth=782&amp;size=57458&amp;status=done&amp;style=none&amp;width=391" alt="image.png" />
+图片引用自：<a href="https://blog.kelu.org/tech/2020/10/09/the-diff-between-docker-containerd-runc-docker-shim.html">https://blog.kelu.org/tech/2020/10/09/the-diff-between-docker-containerd-runc-docker-shim.html</a></p>
+<h1 id="环境准备">环境准备：</h1>
+<p>注：master节点4核心8G配置。work节点16核32G。腾讯云S5云主机
+| 主机名 | ip | 系统 | 内核 |
+| — | — | — | — |
+| sh-master-01 | 10.3.2.5  | centos8 | 4.18.0-240.15.1.el8_3.x86_64 |
+| sh-master-02 | 10.3.2.13 | centos8 | 4.18.0-240.15.1.el8_3.x86_64 |
+| sh-master-03 | 10.3.2.16 | centos8 | 4.18.0-240.15.1.el8_3.x86_64 |
+| sh-work-01 | 10.3.2.2 | centos8 | 4.18.0-240.15.1.el8_3.x86_64 |
+| sh-work-02 | 10.3.2.3 | centos8 | 4.18.0-240.15.1.el8_3.x86_64 |
+| sh-work-03 | 10.3.2.4 | centos8 | 4.18.0-240.15.1.el8_3.x86_64 |</p>
+
+<p>注： 用centos8是为了懒升级内核版本了。centos7内核版本3.10确实有些老了。但是同样的centos8 kubernetes源是没有的，只能使用centos7的源。
+VIP  slb地址：10.3.2.12（因为内网没有使用域名的需求，直接用了传统型内网负载，为了让slb映射端口与本地端口一样中间加了一层haproxy代理本地6443.然后slb代理8443端口为6443.）。
+<img src="https://img-blog.csdnimg.cn/img_convert/bb980270732f984faf857bec80061fd3.png#align=left&amp;display=inline&amp;height=236&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=472&amp;originWidth=550&amp;size=22601&amp;status=done&amp;style=none&amp;width=275" alt="image.png" />
+<img src="https://img-blog.csdnimg.cn/img_convert/2a8c7c5c02c6326fb072b2b80ce7cb7f.png#align=left&amp;display=inline&amp;height=416&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=831&amp;originWidth=1210&amp;size=55052&amp;status=done&amp;style=none&amp;width=605" alt="image.png" /></p>
+<h1 id="1-系统初始化">1. 系统初始化：</h1>
+<p>注：由于环境是部署在公有云的，使用了懒人方法。直接初始化了一台server.然后其他的直接都是复制的方式搭建的。</p>
+<h2 id="1-更改主机名">1. 更改主机名</h2>
+
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>hostnamectl set-hostname sh-master-01
+cat /etc/hosts
+</code></pre></div></div>
+<p><img src="https://img-blog.csdnimg.cn/img_convert/9c6027a9982a8d069d6e323cd5f70a46.png#align=left&amp;display=inline&amp;height=81&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=161&amp;originWidth=1118&amp;size=16245&amp;status=done&amp;style=none&amp;width=559" alt="image.png" />
+就是举个例子了。我的host文件只在三台master节点写了，work节点都没有写的…….</p>
+
+<h2 id="2-关闭swap交换分区">2. 关闭swap交换分区</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>swapoff -a
+sed -i 's/.*swap.*/#&amp;/' /etc/fstab
+</code></pre></div></div>
+
+<h2 id="3-关闭selinux">3. 关闭selinux</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>setenforce  0 
+sed -i "s/^SELINUX=enforcing/SELINUX=disabled/g" /etc/sysconfig/selinux 
+sed -i "s/^SELINUX=enforcing/SELINUX=disabled/g" /etc/selinux/config 
+sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/sysconfig/selinux 
+sed -i "s/^SELINUX=permissive/SELINUX=disabled/g" /etc/selinux/config
+</code></pre></div></div>
+
+<h2 id="4-关闭防火墙">4. 关闭防火墙</h2>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl disable --now firewalld
+chkconfig firewalld off
+</code></pre></div></div>
+<h2 id="5-调整文件打开数等配置">5. 调整文件打开数等配置</h2>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat&gt; /etc/security/limits.conf <span class="nt">&lt;</span><span class="err">&lt;</span><span class="na">EOF</span>
+<span class="na">*</span> <span class="na">soft</span> <span class="na">nproc</span> <span class="err">1000000</span>
+<span class="na">*</span> <span class="na">hard</span> <span class="na">nproc</span> <span class="err">1000000</span>
+<span class="na">*</span> <span class="na">soft</span> <span class="na">nofile</span> <span class="err">1000000</span>
+<span class="na">*</span> <span class="na">hard</span> <span class="na">nofile</span> <span class="err">1000000</span>
+<span class="na">*</span> <span class="na">soft</span>  <span class="na">memlock</span>  <span class="na">unlimited</span>
+<span class="na">*</span> <span class="na">hard</span> <span class="na">memlock</span>  <span class="na">unlimited</span>
+<span class="na">EOF</span>
+</code></pre></div></div>
+<p>当然了这里最好的其实是/etc/security/limits.d目录下生成一个新的配置文件。避免修改原来的总配置文件、这也是推荐使用的方式。</p>
+<h2 id="6-yum--update-八仙过海各显神通吧安装自己所需的习惯的应用">6. yum  update 八仙过海各显神通吧，安装自己所需的习惯的应用</h2>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum update
+yum -y install  gcc bc gcc-c++ ncurses ncurses-devel cmake elfutils-libelf-devel openssl-devel flex* bison* autoconf automake zlib* fiex* libxml* ncurses-devel libmcrypt* libtool-ltdl-devel* make cmake  pcre pcre-devel openssl openssl-devel   jemalloc-devel tlc libtool vim unzip wget lrzsz bash-comp* ipvsadm ipset jq sysstat conntrack libseccomp conntrack-tools socat curl wget git conntrack-tools psmisc nfs-utils tree bash-completion conntrack libseccomp net-tools crontabs sysstat iftop nload strace bind-utils tcpdump htop telnet lsof
+</code></pre></div></div>
+
+<h2 id="7-ipvs添加centos8内核默认418内核419不包括419的是用这个">7. ipvs添加（centos8内核默认4.18.内核4.19不包括4.19的是用这个）</h2>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:&gt; /etc/modules-load.d/ipvs.conf
+module=(
+ip_vs
+ip_vs_rr
+ip_vs_wrr
+ip_vs_sh
+br_netfilter
+  )
+for kernel_module in ${module[@]};do
+    /sbin/modinfo -F filename $kernel_module |<span class="err">&amp;</span> grep -qv ERROR <span class="err">&amp;&amp;</span> echo $kernel_module &gt;&gt; /etc/modules-load.d/ipvs.conf || :
+done
+</code></pre></div></div>
+
+<p>内核大于等于4.19的</p>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>:&gt; /etc/modules-load.d/ipvs.conf
+module=(
+ip_vs
+ip_vs_rr
+ip_vs_wrr
+ip_vs_sh
+nf_conntrack
+br_netfilter
+  )
+for kernel_module in ${module[@]};do
+    /sbin/modinfo -F filename $kernel_module |<span class="err">&amp;</span> grep -qv ERROR <span class="err">&amp;&amp;</span> echo $kernel_module &gt;&gt; /etc/modules-load.d/ipvs.conf || :
+done
+</code></pre></div></div>
+<p>这个地方我想我开不开ipvs应该没有多大关系了吧？ 因为我网络组件用的cilium  hubble。网络用的是ebpf。没有用iptables  ipvs吧？至于配置ipvs算是原来部署养成的习惯
+加载ipvs模块</p>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>systemctl daemon-reload
+systemctl enable --now systemd-modules-load.service
+</code></pre></div></div>
+
+<p>查询ipvs是否加载</p>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>#  lsmod | grep ip_vs
+ip_vs_sh               16384  0
+ip_vs_wrr              16384  0
+ip_vs_rr               16384  0
+ip_vs                 172032  6 ip_vs_rr,ip_vs_sh,ip_vs_wrr
+nf_conntrack          172032  6 xt_conntrack,nf_nat,xt_state,ipt_MASQUERADE,xt_CT,ip_vs
+nf_defrag_ipv6         20480  4 nf_conntrack,xt_socket,xt_TPROXY,ip_vs
+libcrc32c              16384  3 nf_conntrack,nf_nat,ip_vs
+</code></pre></div></div>
+
+<h2 id="8-优化系统参数不一定是最优各取所有">8. 优化系统参数(不一定是最优，各取所有)</h2>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat <span class="nt">&lt;</span><span class="err">&lt;</span><span class="na">EOF</span> <span class="nt">&gt;</span> /etc/sysctl.d/k8s.conf
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+net.ipv4.neigh.default.gc_stale_time = 120
+net.ipv4.conf.all.rp_filter = 0
+net.ipv4.conf.default.rp_filter = 0
+net.ipv4.conf.default.arp_announce = 2
+net.ipv4.conf.lo.arp_announce = 2
+net.ipv4.conf.all.arp_announce = 2
+net.ipv4.ip_forward = 1
+net.ipv4.tcp_max_tw_buckets = 5000
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 1024
+net.ipv4.tcp_synack_retries = 2
+# 要求iptables不对bridge的数据进行处理
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+net.bridge.bridge-nf-call-arptables = 1
+net.netfilter.nf_conntrack_max = 2310720
+fs.inotify.max_user_watches=89100
+fs.may_detach_mounts = 1
+fs.file-max = 52706963
+fs.nr_open = 52706963
+vm.overcommit_memory=1
+vm.panic_on_oom=0
+vm.swappiness = 0
+EOF
+
+sysctl --system
+</code></pre></div></div>
+
+<h2 id="9-containerd安装">9. containerd安装</h2>
+<p>dnf  与yum  centos8的变化，具体的自己去看了呢。差不多吧…….</p>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>dnf install dnf-utils device-mapper-persistent-data lvm2
+yum-config-manager --add-repo http://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+sudo yum update -y <span class="err">&amp;&amp;</span> sudo yum install -y containerd.io
+containerd config default &gt; /etc/containerd/config.toml
+# 替换 containerd 默认的 sand_box 镜像，编辑 /etc/containerd/config.toml
+
+sandbox_image = "registry.aliyuncs.com/google_containers/pause:3.2"
+
+# 重启containerd
+$ systemctl daemon-reload
+$ systemctl restart containerd
+
+</code></pre></div></div>
+<p>其他的配置一个是启用SystemdCgroup另外一个是添加了本地镜像库，账号密码（直接使用了腾讯云的仓库）。
+<img src="https://img-blog.csdnimg.cn/img_convert/0a5572f643ca79030fb0fb5cf7fa8bff.png#align=left&amp;display=inline&amp;height=241&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=482&amp;originWidth=941&amp;size=56294&amp;status=done&amp;style=none&amp;width=470.5" alt="image.png" /></p>
+<h2 id="10-配置-cri-客户端-crictl">10. 配置 CRI 客户端 crictl</h2>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat <span class="nt">&lt;</span><span class="err">&lt;</span><span class="na">EOF</span> <span class="nt">&gt;</span> /etc/crictl.yaml
+runtime-endpoint: unix:///run/containerd/containerd.sock
+image-endpoint: unix:///run/containerd/containerd.sock
+timeout: 10
+debug: false
+EOF
+
+# 验证是否可用（可以顺便验证一下私有仓库）
+crictl  pull nginx:alpine
+crictl  rmi  nginx:alpine
+crictl  images
+</code></pre></div></div>
+
+<h2 id="11-安装-kubeadmcentos8没有对应yum源使用centos7的阿里云yum源">11. 安装 Kubeadm(centos8没有对应yum源使用centos7的阿里云yum源)</h2>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat <span class="nt">&lt;</span><span class="err">&lt;</span><span class="na">EOF</span> <span class="nt">&gt;</span> /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=http://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64
+enabled=1
+gpgcheck=0
+repo_gpgcheck=0
+gpgkey=http://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg http://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+# 删除旧版本，如果安装了
+yum remove kubeadm kubectl kubelet kubernetes-cni cri-tools socat 
+# 查看所有可安装版本 下面两个都可以啊
+# yum list --showduplicates kubeadm --disableexcludes=kubernetes
+# 安装指定版本用下面的命令
+# yum -y install kubeadm-1.20.5 kubectl-1.20.5 kubelet-1.20.5
+or 
+# yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+# 默认安装最新稳定版，当前版本1.20.5
+yum install kubeadm
+
+# 开机自启
+systemctl enable kubelet.service
+
+</code></pre></div></div>
+<h2 id="12-修改kubelet配置">12. 修改kubelet配置</h2>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>vi /etc/sysconfig/kubelet
+KUBELET_EXTRA_ARGS= --cgroup-driver=systemd --container-runtime=remote --container-runtime-endpoint=/run/containerd/containerd.sock
+</code></pre></div></div>
+<h2 id="13--journal-日志相关避免日志重复搜集浪费系统资源修改systemctl启动的最小文件打开数量关闭ssh反向dns解析设置清理日志最大200m可根据个人需求设置">13 . journal 日志相关避免日志重复搜集，浪费系统资源。修改systemctl启动的最小文件打开数量,关闭ssh反向dns解析.设置清理日志，最大200m(可根据个人需求设置)</h2>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>sed -ri 's/^\$ModLoad imjournal/#&amp;/' /etc/rsyslog.conf
+sed -ri 's/^\$IMJournalStateFile/#&amp;/' /etc/rsyslog.conf
+sed -ri 's/^#(DefaultLimitCORE)=/\1=100000/' /etc/systemd/system.conf
+sed -ri 's/^#(DefaultLimitNOFILE)=/\1=100000/' /etc/systemd/system.conf
+sed -ri 's/^#(UseDNS )yes/\1no/' /etc/ssh/sshd_config
+journalctl --vacuum-size=200M
+</code></pre></div></div>
+
+<h1 id="2-master节点操作">2. master节点操作</h1>
+<h2 id="1--安装haproxy">1 . 安装haproxy</h2>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>yum install haproxy
+</code></pre></div></div>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>cat <span class="nt">&lt;</span><span class="err">&lt;</span><span class="na">EOF</span> <span class="nt">&gt;</span>  /etc/haproxy/haproxy.cfg
+#---------------------------------------------------------------------
+# Example configuration for a possible web application.  See the
+# full configuration options online.
+#
+#   http://haproxy.1wt.eu/download/1.4/doc/configuration.txt
+#
+#---------------------------------------------------------------------
+
+#---------------------------------------------------------------------
+# Global settings
+#---------------------------------------------------------------------
+global
+    # to have these messages end up in /var/log/haproxy.log you will
+    # need to:
+    #
+    # 1) configure syslog to accept network log events.  This is done
+    #    by adding the '-r' option to the SYSLOGD_OPTIONS in
+    #    /etc/sysconfig/syslog
+    #
+    # 2) configure local2 events to go to the /var/log/haproxy.log
+    #   file. A line like the following can be added to
+    #   /etc/sysconfig/syslog
+    #
+    #    local2.*                       /var/log/haproxy.log
+    #
+    log         127.0.0.1 local2
+
+    chroot      /var/lib/haproxy
+    pidfile     /var/run/haproxy.pid
+    maxconn     4000
+    user        haproxy
+    group       haproxy
+    daemon
+
+    # turn on stats unix socket
+    stats socket /var/lib/haproxy/stats
+
+#---------------------------------------------------------------------
+# common defaults that all the 'listen' and 'backend' sections will
+# use if not designated in their block
+#---------------------------------------------------------------------
+defaults
+    mode                    tcp
+    log                     global
+    option                  tcplog
+    option                  dontlognull
+    option http-server-close
+    option forwardfor       except 127.0.0.0/8
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s
+    timeout queue           1m
+    timeout connect         10s
+    timeout client          1m
+    timeout server          1m
+    timeout http-keep-alive 10s
+    timeout check           10s
+    maxconn                 3000
+
+#---------------------------------------------------------------------
+# main frontend which proxys to the backends
+#---------------------------------------------------------------------
+frontend kubernetes
+    bind *:8443              #配置端口为8443
+    mode tcp
+    default_backend kubernetes
+#---------------------------------------------------------------------
+# static backend for serving up images, stylesheets and such
+#---------------------------------------------------------------------
+backend kubernetes           #后端服务器，也就是说访问10.3.2.12:6443会将请求转发到后端的三台，这样就实现了负载均衡
+    balance roundrobin               
+    server master1  10.3.2.5:6443 check maxconn 2000
+    server master2  10.3.2.13:6443 check maxconn 2000
+    server master3  10.3.2.16:6443 check maxconn 2000
+EOF
+ systemctl enable haproxy <span class="err">&amp;&amp;</span> systemctl start haproxy <span class="err">&amp;&amp;</span> systemctl status haproxy
+</code></pre></div></div>
+
+<p>嗯 slb绑定端口
+<img src="https://img-blog.csdnimg.cn/img_convert/e530a86097215a4e70c71a52de871eea.png#align=left&amp;display=inline&amp;height=347&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=693&amp;originWidth=1473&amp;size=53528&amp;status=done&amp;style=none&amp;width=736.5" alt="image.png" /></p>
+<h2 id="2-sh-master-01节点初始化">2. sh-master-01节点初始化</h2>
+<h3 id="1生成config配置文件">1.生成config配置文件</h3>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm config print init-defaults &gt; config.yaml
+</code></pre></div></div>
+<p>下面的图就是举个例子…….
+<img src="https://img-blog.csdnimg.cn/img_convert/1ad4d7b5478c6f2ec8f9002d3c1186ca.png#align=left&amp;display=inline&amp;height=314&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=628&amp;originWidth=1549&amp;size=65445&amp;status=done&amp;style=none&amp;width=774.5" alt="image.png" /></p>
+<h3 id="2-修改kubeadm初始化文件">2. 修改kubeadm初始化文件</h3>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>apiVersion: kubeadm.k8s.io/v1beta2
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: abcdef.0123456789abcdef
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 10.3.2.5
+  bindPort: 6443
+nodeRegistration:
+  criSocket: /run/containerd/containerd.sock
+  name: sh-master-01
+  taints:
+  - effect: NoSchedule
+    key: node-role.kubernetes.io/master
+---
+apiServer:
+  timeoutForControlPlane: 4m0s
+  certSANs:
+  - sh-master-01
+  - sh-master-02
+  - sh-master-03
+  - sh-master.k8s.io
+  - localhost
+  - 127.0.0.1
+  - 10.3.2.5
+  - 10.3.2.13
+  - 10.3.2.16
+  - 10.3.2.12
+apiVersion: kubeadm.k8s.io/v1beta2
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controlPlaneEndpoint: "10.3.2.12:6443"
+controllerManager: {}
+dns:
+  type: CoreDNS
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: registry.aliyuncs.com/google_containers
+kind: ClusterConfiguration
+kubernetesVersion: v1.20.5
+networking:
+  dnsDomain: xx.daemon
+  serviceSubnet: 172.254.0.0/16
+  podSubnet: 172.3.0.0/16
+scheduler: {}
+</code></pre></div></div>
+<p>修改的地方在下图中做了标识
+<img src="https://img-blog.csdnimg.cn/img_convert/6704923aff5211e9f6abbaef7dcfb405.png#align=left&amp;display=inline&amp;height=401&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=801&amp;originWidth=1461&amp;size=79487&amp;status=done&amp;style=none&amp;width=730.5" alt="image.png" /></p>
+<h3 id="3-kubeadm-master-01节点初始化屏蔽kube-proxy">3. kubeadm master-01节点初始化（屏蔽kube-proxy）。</h3>
+<div class="language-html highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm init --skip-phases=addon/kube-proxy --config=config.yaml
+</code></pre></div></div>
+<p>安装成功截图就忽略了，后写的笔记没有保存截图。成功的日志中包含</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>mkdir -p $HOME/.kube
+mkdir -p $HOME/.kube  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+按照输出sh-master-02 ，sh-master-03节点加入集群
+将sh-master-01 /etc/kubernetes/pki目录下ca.* sa.* front-proxy-ca.* etcd/ca* 打包分发到sh-master-02,sh-master-03 /etc/kubernetes/pki目录下 
+kubeadm join 10.3.2.12:6443 --token abcdef.0123456789abcdef     --discovery-token-ca-cert-hash sha256:eb0fe00b59fa27f82c62c91def14ba294f838cd0731c91d0d9c619fe781286b6     --control-plane
+然后同sh-master-01一样执行一遍下面的命令：
+mkdir -p $HOME/.kube
+sudo \cp /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+</code></pre></div></div>
+
+<h1 id="3-helm-安装-部署cilium-与hubble默认helm3了">3. helm 安装 部署cilium 与hubble(默认helm3了)</h1>
+<h2 id="1-下载helm并安装helm">1. 下载helm并安装helm</h2>
+<p>注： 由于网络原因。下载helm安装包下载不动经常，直接github下载到本地了
+<img src="https://img-blog.csdnimg.cn/img_convert/efff9f32fe36c47fb54983fdb90e143f.png#align=left&amp;display=inline&amp;height=453&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=906&amp;originWidth=1504&amp;size=124812&amp;status=done&amp;style=none&amp;width=752" alt="image.png" /></p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>tar zxvf helm-v3.5.3-linux-amd64.tar.gz 
+cp helm /usr/bin/
+
+</code></pre></div></div>
+<h2 id="2--helm-安装cilium-hubble">2 . helm 安装cilium hubble</h2>
+<p>早先版本 cilium 与hubble是分开的现在貌似都集成了一波流走一遍：</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm install cilium cilium/cilium --version 1.9.5
+--namespace kube-system
+--set nodeinit.enabled=true
+--set externalIPs.enabled=true
+--set nodePort.enabled=true
+--set hostPort.enabled=true
+--set pullPolicy=IfNotPresent
+--set config.ipam=cluster-pool
+--set hubble.enabled=true
+--set hubble.listenAddress=":4244"
+--set hubble.relay.enabled=true
+--set hubble.metrics.enabled="{dns,drop,tcp,flow,port-distribution,icmp,http}"
+--set prometheus.enabled=true
+--set peratorPrometheus.enabled=true
+--set hubble.ui.enabled=true
+--set kubeProxyReplacement=strict
+--set k8sServiceHost=10.3.2.12
+--set k8sServicePort=6443
+</code></pre></div></div>
+<p>部署成功就是这样的
+<img src="https://img-blog.csdnimg.cn/img_convert/50bc9d6e6dbf7d1216ce4788fb073a4f.png#align=left&amp;display=inline&amp;height=35&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=70&amp;originWidth=1379&amp;size=10597&amp;status=done&amp;style=none&amp;width=689.5" alt="image.png" />
+<img src="https://img-blog.csdnimg.cn/img_convert/8ccf1c18b6d56b745c022252fbd2485f.png#align=left&amp;display=inline&amp;height=262&amp;margin=[objectObject]&amp;name=image.png&amp;originHeight=523&amp;originWidth=1139&amp;size=69949&amp;status=done&amp;style=none&amp;width=569.5" alt="image.png" />
+嗯 木有kube-proxy的（截图是work加点加入后的故node-init  cilium pod都有6个）</p>
+<h1 id="4-work节点部署">4. work节点部署</h1>
+<p>sh-work-01 sh-work-02 sh-work-03节点加入集群</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubeadm join 10.3.2.12:6443 --token abcdef.0123456789abcdef     --discovery-token-ca-cert-hash sha256:eb0fe00b59fa27f82c62c91def14ba294f838cd0731c91d0d9c619fe781286b6
+</code></pre></div></div>
+
+                </div>
+                <div class="read-all">
+                    <a  href="/2021/03/26/centos8+kubeadm1.20.5+cilium+hubble/"><i class="fa fa-newspaper-o"></i>Read All</a>
                 </div>
                 <hr>
               </li>
@@ -1501,715 +2845,6 @@ EOF
                 <hr>
               </li>
             
-              <li>
-                <h2>
-                  <a class="post-link" href="/2019/12/05/eck-qustion/">2019-12-05-eck-qustion</a>
-                </h2>
-                <div class="label">
-                    <div class="label-card">
-                        <i class="fa fa-calendar"></i>2019-12-05
-                    </div>
-                    <div class="label-card">
-                        <i class="fa fa-user"></i>duiniwukenaihe
-                        
-                    </div>
-                    <div class="label-card">
-                        
-                    </div>
-
-                    <div class="label-card">
-                    
-
-
-<!-- <span class="point">•</span> -->
-<span class="categories">
-  <i class="fa fa-th-list"></i>
-  
-    
-        <a href="/category/#elastic-oparator" title="Category: elastic-oparator" rel="category">elastic-oparator</a>
-    
-  
-
-  <!-- <span class="point">•</span> -->
-</span>
-
-
-                    </div>
-
-                    <div class="label-card">
-                    
-<!-- <span class="point">•</span> -->
-<span class="pageTag">
-  <i class="fa fa-tags"></i>
-  
-    
-        <a href="/tag/#elastic-oparator" title="Tag: elastic-oparator" rel="tag">elastic-oparator</a>&nbsp;
-    
-        <a href="/tag/#ECK" title="Tag: ECK" rel="tag">ECK</a>
-    
-  
-
-</span>
-
-                    </div>
-                </div>
-                <div class="excerpt">
-                    <ul id="markdown-toc">
-  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a>    <ul>
-      <li><a href="#1-kibana汉化" id="markdown-toc-1-kibana汉化">1. kibana汉化</a></li>
-      <li><a href="#kibana创建新用户" id="markdown-toc-kibana创建新用户">kibana创建新用户</a></li>
-    </ul>
-  </li>
-</ul>
-
-<p>集群配置：
-初始集群环境kubeadm 1.16.3</p>
-
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: center">ip</th>
-      <th style="text-align: center">自定义域名</th>
-      <th style="text-align: center">主机名</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: center">192.168.3.8</td>
-      <td style="text-align: center">master.k8s.io</td>
-      <td style="text-align: center">k8s-vip</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.10</td>
-      <td style="text-align: center">master01.k8s.io</td>
-      <td style="text-align: center">k8s-master-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.5</td>
-      <td style="text-align: center">master02.k8s.io</td>
-      <td style="text-align: center">k8s-master-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.12</td>
-      <td style="text-align: center">master03.k8s.io</td>
-      <td style="text-align: center">k8s-master-03</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.6</td>
-      <td style="text-align: center">node01.k8s.io</td>
-      <td style="text-align: center">k8s-node-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.2</td>
-      <td style="text-align: center">node02.k8s.io</td>
-      <td style="text-align: center">k8s-node-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.4</td>
-      <td style="text-align: center">node03.k8s.io</td>
-      <td style="text-align: center">k8s-node-03</td>
-    </tr>
-  </tbody>
-</table>
-
-<h1 id="描述背景">描述背景：</h1>
-<blockquote>
-  <p>elastic-oparator搭建完成eck, kibana管理界面汉化和建立新用户权限设置。</p>
-
-  <p>初始化环境参考https://duiniwukenaihe.github.io/2019/10/21/k8s-efk/。然后默认把7.4的镜像修改成7.5.0直接升级了一下</p>
-</blockquote>
-
-<h2 id="1-kibana汉化">1. kibana汉化</h2>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> | kubectl apply -f -
-apiVersion: kibana.k8s.elastic.co/v1beta1
-kind: Kibana
-metadata:
-  name: kibana
-  namespace: elastic-system
-spec:
-  version: 7.5.0
-  count: 1
-  elasticsearchRef:
-    name: "elastic"
-  http:
-    tls:
-      selfSignedCertificate:
-        disabled: true
-  podTemplate:
-    spec:
-      containers:
-      - name: kibana
-        env:
-        - name: I18N_LOCALE
-          value: zh-CN
-        resources:
-          requests:
-            memory: 1Gi
-          limits:
-            memory: 2Gi
-        volumeMounts:
-        - name: timezone-volume
-          mountPath: /etc/localtime
-          readOnly: true
-      volumes:
-      - name: timezone-volume
-        hostPath:
-          path: /usr/share/zoneinfo/Asia/Shanghai
-</span><span class="no">EOF
-</span></code></pre></div></div>
-<blockquote>
-  <p>这样就可以支持中文了</p>
-</blockquote>
-
-<p><img src="/assets/images/efk/chinese.png" alt="chinese" /></p>
-
-<h2 id="kibana创建新用户">kibana创建新用户</h2>
-<blockquote>
-  <p>按照官方教程 创建后貌似用户是无法登陆的，New user can’t login kibana。可参考https://discuss.elastic.co/t/new-user-cant-login-kibana/204810。</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> | kubectl apply -f -
-apiVersion: elasticsearch.k8s.elastic.co/v1beta1
-kind: Elasticsearch
-metadata:
-  name: elastic
-  namespace: elastic-system
-spec:
-  version: 7.5.0
-  nodeSets:
-  - name: elastic
-    count: 3
-    config:
-      node.master: true
-      node.data: true
-      node.ingest: true
-      node.store.allow_mmap: false
-      xpack.security.authc.realms:
-        native:
-          native1: 
-            order: 1
-    volumeClaimTemplates:
-    - metadata:
-        name: elasticsearch-data
-      spec:
-        accessModes:
-        - ReadWriteOnce
-        resources:
-          requests:
-            storage: 30Gi
-        storageClassName: rook-ceph-block
-</span><span class="no">EOF
-</span></code></pre></div></div>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>增加了：
-      xpack.security.authc.realms:
-        native:
-          native1: 
-            order: 1
-</code></pre></div></div>
-<p><img src="/assets/images/efk/user.png" alt="user" /></p>
-<blockquote>
-  <p>其他参考官方文档即可。</p>
-</blockquote>
-
-                </div>
-                <div class="read-all">
-                    <a  href="/2019/12/05/eck-qustion/"><i class="fa fa-newspaper-o"></i>Read All</a>
-                </div>
-                <hr>
-              </li>
-            
-              <li>
-                <h2>
-                  <a class="post-link" href="/2019/12/03/k8s-jenkins-sonarqube/">2019-12-03-k8s-jenkins-sonarqube</a>
-                </h2>
-                <div class="label">
-                    <div class="label-card">
-                        <i class="fa fa-calendar"></i>2019-12-03
-                    </div>
-                    <div class="label-card">
-                        <i class="fa fa-user"></i>duiniwukenaihe
-                        
-                    </div>
-                    <div class="label-card">
-                        
-                    </div>
-
-                    <div class="label-card">
-                    
-
-
-<!-- <span class="point">•</span> -->
-<span class="categories">
-  <i class="fa fa-th-list"></i>
-  
-    
-        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
-    
-  
-
-  <!-- <span class="point">•</span> -->
-</span>
-
-
-                    </div>
-
-                    <div class="label-card">
-                    
-<!-- <span class="point">•</span> -->
-<span class="pageTag">
-  <i class="fa fa-tags"></i>
-  
-    
-        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
-    
-        <a href="/tag/#jenkins" title="Tag: jenkins" rel="tag">jenkins</a>&nbsp;
-    
-        <a href="/tag/#sonarqube" title="Tag: sonarqube" rel="tag">sonarqube</a>
-    
-  
-
-</span>
-
-                    </div>
-                </div>
-                <div class="excerpt">
-                    <ul id="markdown-toc">
-  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
-  <li><a href="#sonarqube配置" id="markdown-toc-sonarqube配置">sonarqube配置</a>    <ul>
-      <li><a href="#1-禁用scm传感器" id="markdown-toc-1-禁用scm传感器">1. 禁用SCM传感器</a></li>
-      <li><a href="#2-安装-分析插件" id="markdown-toc-2-安装-分析插件">2. 安装 分析插件</a></li>
-      <li><a href="#2-生成token" id="markdown-toc-2-生成token">2. 生成token</a></li>
-    </ul>
-  </li>
-  <li><a href="#jenkins整合" id="markdown-toc-jenkins整合">jenkins整合</a>    <ul>
-      <li><a href="#1-安装相关插件" id="markdown-toc-1-安装相关插件">1. 安装相关插件</a></li>
-      <li><a href="#2-连接sonarqube" id="markdown-toc-2-连接sonarqube">2. 连接sonarqube</a></li>
-      <li><a href="#3-配置-sonarqube-scanner-插件" id="markdown-toc-3-配置-sonarqube-scanner-插件">3. 配置 SonarQube Scanner 插件</a></li>
-      <li><a href="#4-配置-maven插件" id="markdown-toc-4-配置-maven插件">4. 配置 maven插件</a></li>
-    </ul>
-  </li>
-  <li><a href="#创建pipeline流水线测试项目" id="markdown-toc-创建pipeline流水线测试项目">创建pipeline流水线测试项目</a>    <ul>
-      <li><a href="#1-创建流水线任务" id="markdown-toc-1-创建流水线任务">1. 创建流水线任务</a>        <ul>
-          <li><a href="#2-参数化构建流程-文本参数" id="markdown-toc-2-参数化构建流程-文本参数">2. 参数化构建流程-文本参数</a></li>
-          <li><a href="#3-创建pipeline-脚本-这里都是直接copy过来的" id="markdown-toc-3-创建pipeline-脚本-这里都是直接copy过来的">3. 创建pipeline 脚本 这里都是直接copy过来的</a></li>
-          <li><a href="#4-执行jenkins任务构建" id="markdown-toc-4-执行jenkins任务构建">4. 执行jenkins任务构建</a></li>
-        </ul>
-      </li>
-    </ul>
-  </li>
-  <li><a href="#登陆sonarqube查看扫描结果" id="markdown-toc-登陆sonarqube查看扫描结果">登陆sonarqube查看扫描结果.</a></li>
-</ul>
-
-<p>集群配置：
-初始集群环境kubeadm 1.16.3</p>
-
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: center">ip</th>
-      <th style="text-align: center">自定义域名</th>
-      <th style="text-align: center">主机名</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: center">192.168.3.8</td>
-      <td style="text-align: center">master.k8s.io</td>
-      <td style="text-align: center">k8s-vip</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.10</td>
-      <td style="text-align: center">master01.k8s.io</td>
-      <td style="text-align: center">k8s-master-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.5</td>
-      <td style="text-align: center">master02.k8s.io</td>
-      <td style="text-align: center">k8s-master-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.12</td>
-      <td style="text-align: center">master03.k8s.io</td>
-      <td style="text-align: center">k8s-master-03</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.6</td>
-      <td style="text-align: center">node01.k8s.io</td>
-      <td style="text-align: center">k8s-node-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.2</td>
-      <td style="text-align: center">node02.k8s.io</td>
-      <td style="text-align: center">k8s-node-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.4</td>
-      <td style="text-align: center">node03.k8s.io</td>
-      <td style="text-align: center">k8s-node-03</td>
-    </tr>
-  </tbody>
-</table>
-
-<h1 id="描述背景">描述背景：</h1>
-<blockquote>
-  <p>示例过程参考http://www.mydlq.club/article/11/超级小豆丁文档进行操作，版本过程略有不同。初衷是没有进过大公司，羡慕大公司的工作流，安装下sonarqube与jenkins集成跑个测试用例自己安慰下自己……
-上一张抄来的流程图</p>
-</blockquote>
-
-<p><img src="/assets/images/sonar/jenkins-sonar1.png" alt="jenkins-sonar1" /></p>
-
-<h1 id="sonarqube配置">sonarqube配置</h1>
-
-<h2 id="1-禁用scm传感器">1. 禁用SCM传感器</h2>
-<blockquote>
-  <p>点击 配置—SCM—Disable the SCM Sensor 将其关闭
-<img src="/assets/images/sonar/jenkins-sonar2.png" alt="jenkins-sonar2" /></p>
-  <h2 id="2-安装-分析插件">2. 安装 分析插件</h2>
-  <p>点击配置-应用市场，搜索安装了java php js的相关插件，还安装了L10n，开始没有安装，pipeline后面编译maven示例的时候报错了，安装还是有必要的</p>
-</blockquote>
-
-<p><img src="/assets/images/sonar/jenkins-sonar3.png" alt="jenkins-sonar3" /></p>
-<h2 id="2-生成token">2. 生成token</h2>
-<blockquote>
-  <p>token 字符串是用于 Jenkins 在执行流水线时候将待检测信息发送到 SonarQube的安全凭证。
-点击右上角头像—我的账号—安全—生成令牌 生成验证的 Token。</p>
-</blockquote>
-
-<p><img src="/assets/images/sonar/jenkins-sonar4.png" alt="jenkins-sonar4" /></p>
-
-<h1 id="jenkins整合">jenkins整合</h1>
-<h2 id="1-安装相关插件">1. 安装相关插件</h2>
-<blockquote>
-
-  <p>Maven Integration plugin</p>
-
-  <p>Pipeline Maven Integration Plugin</p>
-
-  <p>Pipeline Utility Steps</p>
-
-  <p>SonarQube Scanner for Jenkins</p>
-
-  <p>打开 系统管理—插件管理—可选插件 输入 相关插件名称 进行插件筛选，直接安装就Ok了。</p>
-  <h2 id="2-连接sonarqube">2. 连接sonarqube</h2>
-  <p>点击凭据-系统-全局凭证-添加凭据-Secret text，复制sonarqube token到Secret ID,命名为sonar了 我就.
-<img src="/assets/images/sonar/jenkins-sonar5.png" alt="jenkins-sonar5" />
-系统管理-系统配置-SonarQube servers，添加sonarqube service配置。name 随便命名了一个jenkins,server url，由于我的jenkins和sonarqube 在一个namespace 我直接用了service 那么 通信，server authentication 添加了上一步创建的 sonar的secret text。
-<img src="/assets/images/sonar/jenkins-sonar6.png" alt="jenkins-sonar6" /></p>
-  <h2 id="3-配置-sonarqube-scanner-插件">3. 配置 SonarQube Scanner 插件</h2>
-  <p>打开 系统管理—全局工具配置—SonarQube Scanner 输入 Name，选择最新版本点击自动安装即可.
-<img src="/assets/images/sonar/jenkins-sonar7.png" alt="jenkins-sonar7" /></p>
-  <h2 id="4-配置-maven插件">4. 配置 maven插件</h2>
-  <p>打开 系统管理—全局工具配置—Maven 输入 Name，选择最新版本点击自动安装即可.（我的安装的时候一直下不下来包，就直接下载了一个最新版的包copy到了容器中的路径中去.）
-<img src="/assets/images/sonar/jenkins-sonar8.png" alt="jenkins-sonar8" /></p>
-  <h1 id="创建pipeline流水线测试项目">创建pipeline流水线测试项目</h1>
-  <h2 id="1-创建流水线任务">1. 创建流水线任务</h2>
-  <p><img src="/assets/images/sonar/jenkins-sonar9.png" alt="jenkins-sonar9" /></p>
-  <h3 id="2-参数化构建流程-文本参数">2. 参数化构建流程-文本参数</h3>
-  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>名称： sonar_project_properties
-默认值：
-sonar.sources<span class="o">=</span>src
-sonar.language<span class="o">=</span>java
-sonar.sourceEncoding<span class="o">=</span>UTF-8
-sonar.java.binaries<span class="o">=</span>target/classes
-sonar.java.source<span class="o">=</span>1.8
-sonar.java.target<span class="o">=</span>1.8
-</code></pre></div>  </div>
-  <p><img src="/assets/images/sonar/jenkins-sonar10.png" alt="jenkins-sonar10" /></p>
-  <h3 id="3-创建pipeline-脚本-这里都是直接copy过来的">3. 创建pipeline 脚本 这里都是直接copy过来的</h3>
-  <div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">**</span>// 设置超时时间为10分钟，如果未成功则结束任务
-<span class="nb">timeout</span><span class="o">(</span><span class="nb">time</span>: 600, unit: <span class="s1">'SECONDS'</span><span class="o">)</span> <span class="o">{</span>
-    node <span class="o">()</span> <span class="o">{</span>
-        stage<span class="o">(</span><span class="s1">'Git 拉取阶段'</span><span class="o">){</span>
-            // Git 拉取代码
-            git branch: <span class="s2">"master"</span> ,changelog: <span class="nb">true</span> , url: <span class="s2">"https://github.com/a324670547/springboot-helloworld"</span>
-        <span class="o">}</span>
-        stage<span class="o">(</span><span class="s1">'Maven 编译阶段'</span><span class="o">)</span> <span class="o">{</span>
-            // 设置 Maven 工具,引用先前全局工具配置中设置工具的名称
-            def m3 <span class="o">=</span> tool name: <span class="s1">'maven'</span>
-            // 执行 Maven 命令
-            sh <span class="s2">"</span><span class="k">${</span><span class="nv">m3</span><span class="k">}</span><span class="s2">/bin/mvn -B -e clean install -Dmaven.test.skip=true"</span>
-        <span class="o">}</span>
-        stage<span class="o">(</span><span class="s1">'SonarQube 扫描阶段'</span><span class="o">){</span>
-            // 读取maven变量
-            pom <span class="o">=</span> readMavenPom file: <span class="s2">"./pom.xml"</span>
-            // 创建SonarQube配置文件
-            writeFile file: <span class="s1">'sonar-project.properties'</span>, 
-                      text: <span class="s2">"""sonar.projectKey=</span><span class="k">${</span><span class="nv">pom</span><span class="p">.artifactId</span><span class="k">}</span><span class="s2">:</span><span class="k">${</span><span class="nv">pom</span><span class="p">.version</span><span class="k">}</span><span class="se">\n</span><span class="s2">"""</span>+
-                            <span class="s2">"""sonar.projectName=</span><span class="k">${</span><span class="nv">pom</span><span class="p">.artifactId</span><span class="k">}</span><span class="se">\n</span><span class="s2">"""</span>+
-                            <span class="s2">"""sonar.projectVersion=</span><span class="k">${</span><span class="nv">pom</span><span class="p">.version</span><span class="k">}</span><span class="se">\n</span><span class="s2">"""</span>+
-                            <span class="s2">"""</span><span class="k">${</span><span class="nv">sonar_project_properties</span><span class="k">}</span><span class="s2">"""</span>
-            // 设置 SonarQube 代码扫描工具,引用先前全局工具配置中设置工具的名称
-            def sonarqubeScanner <span class="o">=</span> tool name: <span class="s1">'sonar-scanner'</span>
-            // 设置 SonarQube 环境,其中参数设置为之前系统设置中SonarQuke服务器配置的 Name
-            withSonarQubeEnv<span class="o">(</span><span class="s1">'jenkins'</span><span class="o">)</span> <span class="o">{</span>
-                // 执行代码扫描
-                sh <span class="s2">"</span><span class="k">${</span><span class="nv">sonarqubeScanner</span><span class="k">}</span><span class="s2">/bin/sonar-scanner"</span>
-            <span class="o">}</span>
-        <span class="o">}</span>
-    <span class="o">}</span>
-<span class="o">}</span><span class="k">**</span>
-</code></pre></div>  </div>
-  <p><img src="/assets/images/sonar/jenkins-sonar11.png" alt="jenkins-sonar11" /></p>
-  <h3 id="4-执行jenkins任务构建">4. 执行jenkins任务构建</h3>
-  <p>点击 Build with Parameters 执行 Jenkins 任务,由于插件安装不完整，sonarqube 少安装了L10n插件，开始失败率 好多次。等待确认成功
-<img src="/assets/images/sonar/jenkins-sonar12.png" alt="jenkins-sonar12" /></p>
-  <h1 id="登陆sonarqube查看扫描结果">登陆sonarqube查看扫描结果.</h1>
-</blockquote>
-
-<p><img src="/assets/images/sonar/jenkins-sonar13.png" alt="jenkins-sonar13" /></p>
-
-<blockquote>
-  <p>总结：流程算是草草完成，还有很多不明白的地方，因为工作环境都是php，也没有成熟的发布流程，对java的maven构建还是很陌生。而且sonarqube的配置还是十分不熟悉。后续先搞明白下sonarqube的各种配置设置参数，系统的看下maven gradle这些主流的java构建工具。</p>
-</blockquote>
-
-                </div>
-                <div class="read-all">
-                    <a  href="/2019/12/03/k8s-jenkins-sonarqube/"><i class="fa fa-newspaper-o"></i>Read All</a>
-                </div>
-                <hr>
-              </li>
-            
-              <li>
-                <h2>
-                  <a class="post-link" href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/">2019-11-29-k8s-helm-install-postgresql-sonarqube</a>
-                </h2>
-                <div class="label">
-                    <div class="label-card">
-                        <i class="fa fa-calendar"></i>2019-11-29
-                    </div>
-                    <div class="label-card">
-                        <i class="fa fa-user"></i>duiniwukenaihe
-                        
-                    </div>
-                    <div class="label-card">
-                        
-                    </div>
-
-                    <div class="label-card">
-                    
-
-
-<!-- <span class="point">•</span> -->
-<span class="categories">
-  <i class="fa fa-th-list"></i>
-  
-    
-        <a href="/category/#kubernetes" title="Category: kubernetes" rel="category">kubernetes</a>
-    
-  
-
-  <!-- <span class="point">•</span> -->
-</span>
-
-
-                    </div>
-
-                    <div class="label-card">
-                    
-<!-- <span class="point">•</span> -->
-<span class="pageTag">
-  <i class="fa fa-tags"></i>
-  
-    
-        <a href="/tag/#kubernetes" title="Tag: kubernetes" rel="tag">kubernetes</a>&nbsp;
-    
-        <a href="/tag/#helm" title="Tag: helm" rel="tag">helm</a>&nbsp;
-    
-        <a href="/tag/#postgresql" title="Tag: postgresql" rel="tag">postgresql</a>&nbsp;
-    
-        <a href="/tag/#sonarqube" title="Tag: sonarqube" rel="tag">sonarqube</a>
-    
-  
-
-</span>
-
-                    </div>
-                </div>
-                <div class="excerpt">
-                    <ul id="markdown-toc">
-  <li><a href="#描述背景" id="markdown-toc-描述背景">描述背景：</a></li>
-  <li><a href="#开始安装" id="markdown-toc-开始安装">开始安装</a>    <ul>
-      <li><a href="#1-git-clone-chart库" id="markdown-toc-1-git-clone-chart库">1. git clone chart库</a></li>
-      <li><a href="#2-helm-安装postgresql" id="markdown-toc-2-helm-安装postgresql">2. helm 安装postgresql</a></li>
-      <li><a href="#3-helm-安装sonar" id="markdown-toc-3-helm-安装sonar">3. helm 安装sonar</a></li>
-      <li><a href="#4-treafik代理-sonar" id="markdown-toc-4-treafik代理-sonar">4. treafik代理 sonar</a></li>
-      <li><a href="#5-登录sonar-修改密码设置语言包" id="markdown-toc-5-登录sonar-修改密码设置语言包">5. 登录sonar 修改密码设置语言包</a></li>
-    </ul>
-  </li>
-</ul>
-
-<p>集群配置：
-初始集群环境kubeadm 1.16.3</p>
-
-<table>
-  <thead>
-    <tr>
-      <th style="text-align: center">ip</th>
-      <th style="text-align: center">自定义域名</th>
-      <th style="text-align: center">主机名</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="text-align: center">192.168.3.8</td>
-      <td style="text-align: center">master.k8s.io</td>
-      <td style="text-align: center">k8s-vip</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.10</td>
-      <td style="text-align: center">master01.k8s.io</td>
-      <td style="text-align: center">k8s-master-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.5</td>
-      <td style="text-align: center">master02.k8s.io</td>
-      <td style="text-align: center">k8s-master-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.12</td>
-      <td style="text-align: center">master03.k8s.io</td>
-      <td style="text-align: center">k8s-master-03</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.6</td>
-      <td style="text-align: center">node01.k8s.io</td>
-      <td style="text-align: center">k8s-node-01</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.2</td>
-      <td style="text-align: center">node02.k8s.io</td>
-      <td style="text-align: center">k8s-node-02</td>
-    </tr>
-    <tr>
-      <td style="text-align: center">192.168.3.4</td>
-      <td style="text-align: center">node03.k8s.io</td>
-      <td style="text-align: center">k8s-node-03</td>
-    </tr>
-  </tbody>
-</table>
-
-<h1 id="描述背景">描述背景：</h1>
-<blockquote>
-  <p>正常来说helm玩的好应该是直接安装的但是玩的不太好 ，postgresql 和sonarqube分成两部安装的。变量各种用的不熟悉，安装后sonarqube报错什么的， 就分成两步安装了。</p>
-</blockquote>
-
-<h1 id="开始安装">开始安装</h1>
-<h2 id="1-git-clone-chart库">1. git clone chart库</h2>
-<blockquote>
-  <p>git clone https://github.com/helm/charts</p>
-</blockquote>
-
-<h2 id="2-helm-安装postgresql">2. helm 安装postgresql</h2>
-
-<blockquote>
-  <p>cd charts/stable/sonarqube/postgresql</p>
-
-  <p>修改 values.yaml，就设置了用户密码和存储类storageClass。</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>postgresqlPassword: qmVy5wubfmcekZy3
-
-storageClass: <span class="s2">"rook-ceph-block"</span>
-</code></pre></div></div>
-
-<p><img src="/assets/images/sonar/sonar1.png" alt="sonar1.png" />
-<img src="/assets/images/sonar/sonar2.png" alt="sonar2.png" /></p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>helm <span class="nb">install</span> <span class="nt">--name</span> sonar-postgresql <span class="nt">-f</span> values.yaml <span class="nb">.</span> <span class="nt">--namespace</span> kube-ops
-</code></pre></div></div>
-
-<p><img src="/assets/images/sonar/sonar3.png" alt="sonar3.png" /></p>
-
-<blockquote>
-  <p>进入postgresql 创建sonar数据库</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">export </span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="si">$(</span>kubectl get secret <span class="nt">--namespace</span> kube-ops sonar-postgresql <span class="nt">-o</span> <span class="nv">jsonpath</span><span class="o">=</span><span class="s2">"{.data.postgresql-password}"</span> | <span class="nb">base64</span> <span class="nt">--decode</span><span class="si">)</span>
-
-kubectl run sonar-postgresql-client <span class="nt">--rm</span> <span class="nt">--tty</span> <span class="nt">-i</span> <span class="nt">--restart</span><span class="o">=</span><span class="s1">'Never'</span> <span class="nt">--namespace</span> kube-ops <span class="nt">--image</span> docker.io/bitnami/postgresql:11.6.0-debian-9-r0 <span class="nt">--env</span><span class="o">=</span><span class="s2">"PGPASSWORD=</span><span class="nv">$POSTGRES_PASSWORD</span><span class="s2">"</span> <span class="nt">--command</span> <span class="nt">--</span> psql <span class="nt">--host</span> sonar-postgresql <span class="nt">-U</span> postgres <span class="nt">-d</span> postgres <span class="nt">-p</span> 5432
-
-<span class="nv">postgres</span><span class="o">=</span><span class="c"># CREATE DATABASE sonar；</span>
-</code></pre></div></div>
-<blockquote>
-  <p>kubectl delete pods sonar-postgresql-client -n kube-ops 客户端就删除了就是看helm安装的输出试了一下呢。</p>
-</blockquote>
-
-<h2 id="3-helm-安装sonar">3. helm 安装sonar</h2>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> ../sonarqube
-<span class="nb">rm</span> <span class="nt">-rf</span> requirements.yaml
-<span class="c"># 不删除的话还要检查依赖charts目录下放postgresql的 chart目录。放上试了几次没有整明白，就分开整了</span>
-修改values.yaml
-<span class="c">#配置storageclass</span>
-  storageClass: rook-ceph-block
-  accessMode: ReadWriteOnce
-  size: 10Gi
-<span class="c">#配置postgresql</span>
-postgresql:
-  <span class="c"># Enable to deploy the PostgreSQL chart</span>
-  enabled: <span class="nb">false</span>  
-  <span class="c"># To use an external PostgreSQL instance, set enabled to false and uncomment</span>
-  <span class="c"># the line below:</span>
-  postgresServer: <span class="s2">"sonar-postgresql"</span>
-  <span class="c"># To use an external secret for the password for an external PostgreSQL</span>
-  <span class="c"># instance, set enabled to false and provide the name of the secret on the</span>
-  <span class="c"># line below:</span>
-  <span class="c"># postgresPasswordSecret: ""</span>
-  postgresUser: <span class="s2">"postgres"</span>
-  postgresPassword: <span class="s2">"qmVy5wubfmcekZy3"</span>
-  postgresDatabase: <span class="s2">"sonar"</span>
-  <span class="c"># Specify the TCP port that PostgreSQL should use</span>
-  service:
-    port: 5432
-
-</code></pre></div></div>
-<blockquote>
-  <p>helm install –name sonar -f values.yaml . –namespace kube-ops</p>
-</blockquote>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>kubectl get pods <span class="nt">-n</span> kube-ops
-
-kubectl get svc <span class="nt">-n</span> kube-ops
-</code></pre></div></div>
-<p><img src="/assets/images/sonar/sonar4.png" alt="sonar4.png" />
-<img src="/assets/images/sonar/sonar5.png" alt="sonar5.png" />
-<img src="/assets/images/sonar/sonar6.png" alt="sonar6.png" /></p>
-<h2 id="4-treafik代理-sonar">4. treafik代理 sonar</h2>
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cat</span> <span class="o">&lt;&lt;</span><span class="no">EOF</span><span class="sh"> &gt; sonarqube-https.yaml
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: kube-ops
-  name: sonar-sonarqube-https
-spec:
-  entryPoints:
-    - websecure
-  tls:
-    secretName: all-saynaihe-com
-  routes:
-    - match: Host(</span><span class="se">\`</span><span class="sh">sonarqube.sainaihe.com</span><span class="se">\`</span><span class="sh">)
-      kind: Rule
-      services:
-        - name: sonar-sonarqube
-          port: 9000
-</span><span class="no">EOF
-</span>kubectl apply <span class="nt">-f</span> sonarqube-https.yaml
-</code></pre></div></div>
-<p><img src="/assets/images/sonar/sonar7.png" alt="sonar7.png" /></p>
-<h2 id="5-登录sonar-修改密码设置语言包">5. 登录sonar 修改密码设置语言包</h2>
-<p><img src="/assets/images/sonar/sonar8.png" alt="sonar8.png" />
-<img src="/assets/images/sonar/sonar9.png" alt="sonar9.png" />
-<img src="/assets/images/sonar/sonar10.png" alt="sonar10.png" /></p>
-<blockquote>
-  <p>ok安装完成了，有时间整下和jenkins的结合跑个例子。</p>
-</blockquote>
-
-                </div>
-                <div class="read-all">
-                    <a  href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/"><i class="fa fa-newspaper-o"></i>Read All</a>
-                </div>
-                <hr>
-              </li>
-            
         </ul>
 
 
@@ -2312,7 +2947,13 @@ spec:
                 </div>
                 <ul class="content-ul" recent>
                     
-                        <li><a href="/2020/09/11/hadoop-ha-hbase-hive-spark/">2020-09-11-hadoop-ha-hbase-hive-spark</a></li>
+                        <li><a href="/2021/03/27/Kuberentes-eck/">Kuberentes 1.20.5搭建eck</a></li>
+                    
+                        <li><a href="/2021/03/27/Kubernetes-traefik/">Kubernetes 1.20.5 安装traefik在腾讯云下的实践</a></li>
+                    
+                        <li><a href="/2021/03/27/Kuberentes-cbs/">Kuberentes集群添加腾讯云CBS为默认存储</a></li>
+                    
+                        <li><a href="/2021/03/26/centos8+kubeadm1.20.5+cilium+hubble/">centos8+kubeadm1.20.5+cilium+hubble环境搭建</a></li>
                     
                         <li><a href="/2020/07/31/kubernetes-csi-tencentcloud-cosfs/">2020-07-31-kubernetes集群使用腾讯云cos存储</a></li>
                     
@@ -2325,12 +2966,6 @@ spec:
                         <li><a href="/2020/07/22/tencent-slb-kubeadm-ha/">2020-07-22-腾讯云-slb-kubeadm高可用集群搭建</a></li>
                     
                         <li><a href="/2019/12/27/traefik/">2019-12-27-traefik</a></li>
-                    
-                        <li><a href="/2019/12/05/eck-qustion/">2019-12-05-eck-qustion</a></li>
-                    
-                        <li><a href="/2019/12/03/k8s-jenkins-sonarqube/">2019-12-03-k8s-jenkins-sonarqube</a></li>
-                    
-                        <li><a href="/2019/11/29/k8s-helm-install-postgresql-sonarqube/">2019-11-29-k8s-helm-install-postgresql-sonarqube</a></li>
                     
                 </ul>
             </div>
@@ -2357,7 +2992,7 @@ spec:
                             <span class="name">
                                 kubernetes
                             </span>
-                            <span class="badge">23</span>
+                            <span class="badge">22</span>
                         </a>
                     </li>
                     
@@ -2380,11 +3015,11 @@ spec:
                     </li>
                     
                     <li>
-                        <a href="/category/#hadoop" class="categories-list-item" cate="hadoop">
+                        <a href="/category/#kubernetes1.20" class="categories-list-item" cate="kubernetes1.20">
                             <span class="name">
-                                hadoop
+                                kubernetes1.20
                             </span>
-                            <span class="badge">1</span>
+                            <span class="badge">4</span>
                         </a>
                     </li>
                     
@@ -2438,7 +3073,7 @@ spec:
                       
                       
                       
-                      <a href="/tag/#Operator" style="font-size: 10pt; color: #888;">Operator</a>
+                      <a href="/tag/#Operator" style="font-size: 9.5pt; color: #888;">Operator</a>
                     
                       
                       
@@ -2522,7 +3157,7 @@ spec:
                       
                       
                       
-                      <a href="/tag/#on" style="font-size: 10pt; color: #888;">on</a>
+                      <a href="/tag/#on" style="font-size: 9.5pt; color: #888;">on</a>
                     
                       
                       
@@ -2543,7 +3178,7 @@ spec:
                       
                       
                       
-                      <a href="/tag/#helm" style="font-size: 10.5pt; color: #777;">helm</a>
+                      <a href="/tag/#helm" style="font-size: 10pt; color: #888;">helm</a>
                     
                       
                       
@@ -2564,14 +3199,14 @@ spec:
                       
                       
                       
-                      <a href="/tag/#kubernetes1.16" style="font-size: 10pt; color: #888;">kubernetes1.16</a>
+                      <a href="/tag/#kubernetes1.16" style="font-size: 9pt; color: #999;">kubernetes1.16</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#jenkins" style="font-size: 10.5pt; color: #777;">jenkins</a>
+                      <a href="/tag/#jenkins" style="font-size: 9.5pt; color: #888;">jenkins</a>
                     
                       
                       
@@ -2620,7 +3255,7 @@ spec:
                       
                       
                       
-                      <a href="/tag/#kuberadm" style="font-size: 10pt; color: #888;">kuberadm</a>
+                      <a href="/tag/#kuberadm" style="font-size: 9.5pt; color: #888;">kuberadm</a>
                     
                       
                       
@@ -2634,7 +3269,7 @@ spec:
                       
                       
                       
-                      <a href="/tag/#sonarqube" style="font-size: 10pt; color: #888;">sonarqube</a>
+                      <a href="/tag/#sonarqube" style="font-size: 9.5pt; color: #888;">sonarqube</a>
                     
                       
                       
@@ -2662,7 +3297,7 @@ spec:
                       
                       
                       
-                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10.5pt; color: #777;">kubernetes1.18.6</a>
+                      <a href="/tag/#kubernetes1.18.6" style="font-size: 10pt; color: #888;">kubernetes1.18.6</a>
                     
                       
                       
@@ -2683,21 +3318,21 @@ spec:
                       
                       
                       
-                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 10pt; color: #888;">kubernetes-csi-tencentcloud</a>
+                      <a href="/tag/#kubernetes-csi-tencentcloud" style="font-size: 9.5pt; color: #888;">kubernetes-csi-tencentcloud</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#kubernetes1.16.8" style="font-size: 10pt; color: #888;">kubernetes1.16.8</a>
+                      <a href="/tag/#kubernetes1.16.8" style="font-size: 9.5pt; color: #888;">kubernetes1.16.8</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#etcd" style="font-size: 10pt; color: #888;">etcd</a>
+                      <a href="/tag/#etcd" style="font-size: 9.5pt; color: #888;">etcd</a>
                     
                       
                       
@@ -2739,28 +3374,28 @@ spec:
                       
                       
                       
-                      <a href="/tag/#hadoop" style="font-size: 9pt; color: #999;">hadoop</a>
+                      <a href="/tag/#cilium" style="font-size: 9pt; color: #999;">cilium</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#hbase" style="font-size: 9pt; color: #999;">hbase</a>
+                      <a href="/tag/#hubble" style="font-size: 9pt; color: #999;">hubble</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#hive" style="font-size: 9pt; color: #999;">hive</a>
+                      <a href="/tag/#CBS" style="font-size: 9pt; color: #999;">CBS</a>
                     
                       
                       
                       
                       
                       
-                      <a href="/tag/#spark" style="font-size: 9pt; color: #999;">spark</a>
+                      <a href="/tag/#eck" style="font-size: 9pt; color: #999;">eck</a>
                     
                 </div>
             </div>

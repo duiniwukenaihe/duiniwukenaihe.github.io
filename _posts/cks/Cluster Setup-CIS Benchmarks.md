@@ -1,21 +1,21 @@
 ---
 layout: "post"
-title: "Cluster Setup - CIS Benchmarks（集群设置-CIS基线)"
+title: "Cluster-Setup-CIS-Benchmarks"
 date: "2021-03-13 18:00:00"
-category: "kubernetes cks"
-tags:  "kubernetes cks"
+category: "kubernetes"
+tags:  "Cluster-Setup-CIS-Benchmarks"
 author: duiniwukenaihe
 ---
 * content
 {:toc}
 
-# 前言
+# 前言  
 这一节主要掌握使用 kube-bench  cis 安全基线检查集群的安全配置,并提高集群的安全性。所有操作都是抛砖引玉。
 
-# 1 . 关于CSI的释意
-## 1 . 什么是  CIS
+# 1 . 关于CSI的释意  
+## 1 . 什么是  CIS  
 CIS----Center fo internet Security   互联网安全中心
-## 2. 关于csi
+## 2. 关于csi  
 
 1. **安全配置目标系统的最佳实践**
 1. **涵盖超过14个技术组织**
