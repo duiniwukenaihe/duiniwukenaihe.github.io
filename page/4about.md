@@ -9,7 +9,7 @@ type: page
 * content
 {:toc}
 
-> 目前从事运维工作，努力学习中......
+> 一直从事运维工作，不断学习中......一直信赖于我大jack哥的座右铭： 临渊羡鱼，不如退而结网。热衷于kubernetes elasticsearch，flink等新兴技术，技术激进主义者。
 
 ## GitHub
 
@@ -17,4 +17,5 @@ type: page
 
 
 ## QQ
+> 820042728
 {% include comments.html %}
