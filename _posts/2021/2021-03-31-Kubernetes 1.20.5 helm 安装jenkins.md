@@ -1,3 +1,14 @@
+---
+layout: post
+title: Kubernetes 1.20.5 helm 安装jenkins
+date: 2021-03-31 9:00:00
+category: kubernetes1.20
+tags:  kubernetes jenkins helm 
+author: duiniwukenaihe
+---
+* content
+{:toc}
+
 初始环境
 kubeadm 搭建kubenretes 1.20.5 集群如下
 ![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1617174519997-e3798b4d-ad11-4e62-a101-19d3dd219171.png#align=left&display=inline&height=230&margin=%5Bobject%20Object%5D&name=image.png&originHeight=460&originWidth=882&size=61981&status=done&style=none&width=441)
