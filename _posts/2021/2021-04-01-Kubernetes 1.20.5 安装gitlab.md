@@ -59,22 +59,6 @@ spec:
       storage: 10Gi
   storageClassName: cbs-csi
 ```
-```
-apiVersion: traefik.containo.us/v1alpha1
-kind: IngressRoute
-metadata:
-  namespace: kube-ops
-  name: gitlab-http
-spec:
-  entryPoints:
-    - web
-  routes:
-    - match: Host(`gitlab.saynaihe.com`)
-      kind: Rule
-      services:
-        - name: gitlab
-          port: 80
-```
 在当前目录下执行
 ```
 kubectl apply -f .
@@ -83,6 +67,7 @@ kubectl apply -f .
 # 2. gitlab-redis搭建
 注： 特意指定了namespace，否则执行kubectl  apply -f  yaml文件的时候经常会忘掉指定namespace
 ，claimName 修改为自己创建的pvc。
+
 cat redis.yaml
 ```
 ## Service
@@ -170,8 +155,10 @@ kubectl  apply -f redis.yaml
 ![image.png](https://img-blog.csdnimg.cn/img_convert/4a1f8e6e1f049fdebe68eb834f51f9e9.png#align=left&display=inline&height=241&margin=[objectObject]&name=image.png&originHeight=481&originWidth=1626&size=110455&status=done&style=none&width=813)
 等待创建完成running。
 # 3.gitlab-postgresql搭建
-同redis 配置一样修改pg配置
+同redis 配置一样修改pg配置.
+
 cat pg.yaml
+
 ```
 ## Service
 kind: Service
