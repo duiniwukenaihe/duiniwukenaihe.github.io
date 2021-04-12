@@ -13,7 +13,7 @@ type: page
 
 ## GitHub
 
-<iframe src="https://githubbadge.appspot.com/lework?s=1" style="border: 0;height: 142px;width: 200px;overflow: hidden;" frameBorder="0"></iframe>
+<iframe src="https://githubbadge.appspot.com/duiniwukenaihe?s=1" style="border: 0;height: 142px;width: 200px;overflow: hidden;" frameBorder="0"></iframe>
 
 
 ## QQ
