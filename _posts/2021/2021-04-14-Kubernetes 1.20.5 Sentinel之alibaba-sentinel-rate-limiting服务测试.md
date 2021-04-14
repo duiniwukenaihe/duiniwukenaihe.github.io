@@ -24,6 +24,7 @@ maven打包jar包。
 ![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1618402382586-019f5ca4-4c7e-47e9-9d69-07ae93d5c257.png#align=left&display=inline&height=342&margin=%5Bobject%20Object%5D&name=image.png&originHeight=683&originWidth=1912&size=143470&status=done&style=none&width=956)
 ## 2. 构建image镜像
 其实 idea可以直接打出来image镜像的。以后研究吧。复用了一下原来做其他springboot的Dockerfile。
+
 cat Dockerfile 
 ```
 FROM openjdk:8-jdk-alpine
@@ -103,7 +104,7 @@ sentinel         ClusterIP   172.254.163.115   <none>        8858/TCP,8719/TCP  
 test             ClusterIP   172.254.143.171   <none>        8001/TCP            3h5m
 ```
 kubernetes 服务器集群内部  curl 172.254.143.171:8001/hello  curl了十次......
-登陆[https://sentinel.saynaihe.com/](https://sentinel.layame.com/)观察
+登陆[https://sentinel.saynaihe.com/](https://sentinel.saynaihe.com/)观察
 
 
 ![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1618403339597-5c42e19d-8230-4b45-bcac-957a082b7e4c.png#align=left&display=inline&height=390&margin=%5Bobject%20Object%5D&name=image.png&originHeight=779&originWidth=1721&size=186960&status=done&style=none&width=860.5)
