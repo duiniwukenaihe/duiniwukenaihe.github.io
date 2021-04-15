@@ -14,7 +14,7 @@ author: duiniwukenaihe
 参照 [Kubernetes 1.20.5搭建nacos](https://www.yuque.com/duiniwukenaihe/ehb02i/vsg9vd)，在kubernetes集群中集成了nacos服务。想体验下服务的注册与发现功能。当然了 也想体验下sentinel各种的集成，反正就是spring cloud alibaba全家桶的完整体验啊......一步一步来吧哈哈哈。先来一下服务的注册与发现。
 特别鸣谢[https://blog.didispace.com/spring-cloud-alibaba-1/](https://blog.didispace.com/spring-cloud-alibaba-1/)，程序猿DD的系列文章昨天无意间看到的，很不错，已经收藏。
 ## 一. maven打包构建应用IMAGE镜像
-注意：一下maven打包构建流程基本copy自[https://blog.didispace.com/spring-cloud-alibaba-1/](https://blog.didispace.com/spring-cloud-alibaba-1/)。所以就不做代码的搬运工了。项目演示的代码都可以去程序猿DD大佬的github去下载。
+注意：以下maven打包构建流程基本copy自[https://blog.didispace.com/spring-cloud-alibaba-1/](https://blog.didispace.com/spring-cloud-alibaba-1/)。所以就不做代码的搬运工了。项目演示的代码都可以去程序猿DD大佬的github去下载。
 
 
 **关 于服务提供者与服务消费者alibaba-nacos-discovery-server为服务提供者 alibaba-nacos-discovery-client-common为服务消费者强调一下。**
