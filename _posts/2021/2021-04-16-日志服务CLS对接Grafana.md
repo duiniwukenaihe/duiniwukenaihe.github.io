@@ -165,7 +165,7 @@ Topic：日志主题ID 。 |
 * | select http_referer,avg(request_time) as lagency group by http_referer order by lagency desc limit 10
 ```
 
-- Format：选择** Graph,Pie,Gauge panel**。
+- Format：选择**Graph,Pie,Gauge panel**。
 - Metrics：lagency。
 - Bucket：http_referer。
 - Time：不是连续时间数据，**不填写**
