@@ -42,7 +42,11 @@ kubectl get pods -n monitoring
 ## 2. 如何修改grafana的配置文件呢？
 参照[https://cloud.tencent.com/developer/article/1785751](https://cloud.tencent.com/developer/article/1785751)。部署完了插件的安装，是要修改grafana.ini的配置文件的。仔细观察一下prometheus-operator中 grafana的配置文件是默认的，并没有其他方式进行挂载，那该怎么办呢？
 参照：[https://blog.csdn.net/u010918487/article/details/110522133](https://blog.csdn.net/u010918487/article/details/110522133)
+
+
 **将grafana的配置文件以configmap的方式进行挂载**
+
+
 具体流程：
 ### 1.  将grafana容器中的grafana.ini文件复制到本地
 就是复习一下kubectl cp命令了：
@@ -140,7 +144,7 @@ Topic：日志主题ID 。 |
 ### 2. 饼形图
 搞不出来一般就是没有安装饼形图插件吧。一定记得前提安装了饼形图插件
 
-- 输入的 Query 语句如下所示：
+输入的 Query 语句如下所示：
 ```
 * | select count(*) as count, status group by status
 ```
@@ -156,7 +160,7 @@ Topic：日志主题ID 。 |
 柱状图，压力图（bar gauge）统计访问延时前10的页面
 ![](https://cdn.nlark.com/yuque/0/2021/png/2505271/1618543918658-66859c69-69c1-4805-8312-ffa8ca21a1b9.png#clientId=u502b8fb1-00b2-4&from=paste&height=810&id=uabd702c2&margin=%5Bobject%20Object%5D&originHeight=810&originWidth=1465&originalType=binary&size=139750&status=done&style=none&taskId=u7516b39d-1756-4039-bf4f-55c11b6483b&width=1465)
 
-- 输入的 Query 语句如下所示：
+输入的 Query 语句如下所示：
 ```
 * | select http_referer,avg(request_time) as lagency group by http_referer order by lagency desc limit 10
 ```
@@ -180,7 +184,7 @@ Topic：日志主题ID 。 |
 表格的应该就算是简单的了
 ![](https://cdn.nlark.com/yuque/0/2021/png/2505271/1618544698729-2153b639-8888-443c-b814-2fbaa026d8d0.png#clientId=u502b8fb1-00b2-4&from=paste&height=848&id=uaab884e5&margin=%5Bobject%20Object%5D&originHeight=848&originWidth=1384&originalType=binary&size=121900&status=done&style=none&taskId=uaaa6ac7e-451f-4621-9062-2789ad976e9&width=1384)
 
-- 输入的 Query 语句如下所示：
+输入的 Query 语句如下所示：
 ```
 * | select remote_addr,count(*) as count group by remote_addr order by count desc limit 10
 ```
