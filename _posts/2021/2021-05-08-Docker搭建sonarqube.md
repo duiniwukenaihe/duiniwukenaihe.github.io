@@ -1,9 +1,9 @@
 ---
 layout: post
-title: Docker搭建sonarqube
+title: Docker搭建sonarqube8.9
 date: 2021-05-08 6:00:00
 category: docker
-tags: docker sonarqube
+tags: docker sonarqube8.9.0 lts
 author: duiniwukenaihe
 ---
 * content
