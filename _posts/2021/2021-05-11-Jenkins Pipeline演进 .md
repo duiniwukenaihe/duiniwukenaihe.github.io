@@ -249,6 +249,7 @@ parallel {
 }
 ```
 如下：
+
 ```
 pipeline {
     
