@@ -196,7 +196,7 @@ pipeline {
 #### 2. 切换选择git仓库，使用了选项参数。这个地方是固定的对于程序来说就只能固定的这两个仓库的：
 ![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620699877310-caef1d05-a007-4410-911c-3ab56ae0b2db.png#clientId=ued98a1d3-a285-4&from=paste&height=554&id=u1d5654be&margin=%5Bobject%20Object%5D&name=image.png&originHeight=554&originWidth=1120&originalType=binary&size=39805&status=done&style=none&taskId=u3df33c35-61fc-4bc2-9214-0215f1ff2f0&width=1120)
 还整了一个选项参数：srcType .copy泽阳老师课程来的。虽然仓库默认都是gitlab了。但是凑个数添加一下svn。
-### ![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620699952656-90ab5e93-b6c4-46e8-89a9-44998179130d.png#clientId=ued98a1d3-a285-4&from=paste&height=577&id=ubd05d41d&margin=%5Bobject%20Object%5D&name=image.png&originHeight=577&originWidth=1126&originalType=binary&size=34813&status=done&style=none&taskId=uce2eed73-77a9-47c5-9ae5-5ed95e08520&width=1126)
+![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620699952656-90ab5e93-b6c4-46e8-89a9-44998179130d.png#clientId=ued98a1d3-a285-4&from=paste&height=577&id=ubd05d41d&margin=%5Bobject%20Object%5D&name=image.png&originHeight=577&originWidth=1126&originalType=binary&size=34813&status=done&style=none&taskId=uce2eed73-77a9-47c5-9ae5-5ed95e08520&width=1126)
 2. 关于凭据秘钥
 将仓库 还有gitlab秘钥都在jenkins中新建为秘钥：
 ![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620700171784-7b1f3848-91ec-4d41-87f3-91190e4bdaad.png#clientId=ued98a1d3-a285-4&from=paste&height=660&id=ud666a1b9&margin=%5Bobject%20Object%5D&name=image.png&originHeight=660&originWidth=1482&originalType=binary&size=100096&status=done&style=none&taskId=u43661958-6eee-47ad-995a-e9a26d012b5&width=1482)先把拉取代码的stage上一下：
