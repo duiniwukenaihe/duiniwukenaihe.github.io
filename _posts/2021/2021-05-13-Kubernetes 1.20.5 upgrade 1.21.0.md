@@ -3,7 +3,7 @@ layout: post
 title: 2021-0513-Kubernetes 1.20.5 upgrade 1.21.0
 date: 2021-05-13 6:00:00
 category: kubernetes
-tags: kubeadm kubernetes1.20.5 upgrade kubernetes1.21
+tags: kubeadm kubernetes1.20.5 upgrade kubernetes1.21 containerd
 author: duiniwukenaihe
 ---
 * content
