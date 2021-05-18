@@ -16,17 +16,17 @@ author: duiniwukenaihe
 
 [Kubernetes 1.20.5 upgrade 1.21.0](https://blog.csdn.net/saynaihe/article/details/116761740?spm=1001.2014.3001.5501)，升级完成突然发现Prometheus discover中两个服务down了,收到微信报警
 
-![image.png](/assets/images/2021/05-17/49l9jxvrnq.png)
+![image.png](/assets/images/2021/05-14/49l9jxvrnq.png)
 
 登陆Prometheus控制台一看controller-manager  kube-scheduler服务确实是down：
 
-![image.png](/assets/images/2021/05-17/67lub4v5im.png)
+![image.png](/assets/images/2021/05-14/67lub4v5im.png)
 
 ## 2. 查看服务状态确认相关服务是正常状态
 
 登陆集群查看kubectl get pods -n kube-system服务都是正常的。当然了也可以kubectl logs -f $podname -n kube-system去查看一下相关pod的log日志进行确认一下。
 
-![image.png](/assets/images/2021/05-17/et7wt3068z.png)
+![image.png](/assets/images/2021/05-14/et7wt3068z.png)
 
 ## 3. 定位原因
 
@@ -40,11 +40,11 @@ author: duiniwukenaihe
 
 cat  cat kube-controller-manager.yaml 发现--bind-address=127.0.0.1了 恢复了初始的设置，在安装Prometheus-oprator的时候将其修改为0.0.0.0的同理修改。
 
-![image.png](/assets/images/2021/05-17/xwm3gpuysk.png)
+![image.png](/assets/images/2021/05-14/xwm3gpuysk.png)
 
 修改scheduler配置文件--bind-address=0.0.0.0
 
-![image.png](/assets/images/2021/05-17/uekyw7se7w.png)
+![image.png](/assets/images/2021/05-14/uekyw7se7w.png)
 
 注： 修改配置文件是针对所有master节点配置文件的。
 
@@ -60,13 +60,13 @@ cat  cat kube-controller-manager.yaml 发现--bind-address=127.0.0.1了 恢复�
 
 等待服务跑起来running......
 
-![image.png](/assets/images/2021/05-17/1de82qkvre.png)
+![image.png](/assets/images/2021/05-14/1de82qkvre.png)
 
 ## 6. 确认Prometheus控制台status状态up
 
 登陆Prometheus web控制台确认监控恢复正常状态：
 
-![image.png](/assets/images/2021/05-17/lpo9ckils4.png)
+![image.png](/assets/images/2021/05-14/lpo9ckils4.png)
 
 # 问题复盘：
 
