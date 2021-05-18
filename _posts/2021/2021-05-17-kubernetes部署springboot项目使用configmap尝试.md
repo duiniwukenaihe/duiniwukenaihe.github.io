@@ -15,15 +15,15 @@ author: duiniwukenaihe
 
 关于打包 都是maven的本来可以直接接手的。但是程序喜欢自己打，我就只在项目里面放Dockerfile.只负责镜像层面了：
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/4yfmcyzpdf.png)
+![image.png](/assets/images/2021/05-17/4yfmcyzpdf.png)
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/qxw3dcirmh.png)基本就是这个样子，当然了发布环境的时候我本来想写configmap的方式直接让程序去读我的环境变量的......但是程序找我要数据库 redis的连接地址 账号密码 说要写在 配置文件[application.yml](http://github.layabox.com:10080/laya-open-php/pvp/blob/develop/game/src/main/resources/application.yml)中，无果。随他去了。自己拉了一下t项目试一下是否可以在springboot中使用configmap的方式。
+![image.png](/assets/images/2021/05-17/qxw3dcirmh.png)基本就是这个样子，当然了发布环境的时候我本来想写configmap的方式直接让程序去读我的环境变量的......但是程序找我要数据库 redis的连接地址 账号密码 说要写在 配置文件[application.yml](http://github.layabox.com:10080/laya-open-php/pvp/blob/develop/game/src/main/resources/application.yml)中，无果。随他去了。自己拉了一下t项目试一下是否可以在springboot中使用configmap的方式。
 
 # 1. kubernetes部署springboot项目使用configmap
 
 百度随手搜了一下啊关键词  springboot kubernetes  configmap一堆：
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/nxhsou7t2y.png)
+![image.png](/assets/images/2021/05-17/nxhsou7t2y.png)
 
 比如图上这个，但是都感觉不是我想要的，我就想简单的整下我的变量。然后无意间看到了：[https://capgemini.github.io/engineering/externalising-spring-boot-config-with-kubernetes/](https://capgemini.github.io/engineering/externalising-spring-boot-config-with-kubernetes/)就按照这个方式来搞一下了：
 
@@ -33,17 +33,17 @@ author: duiniwukenaihe
 
 参照原配置文件：
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/2xv1kb3aij.png)
+![image.png](/assets/images/2021/05-17/2xv1kb3aij.png)
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/5nb3wms403.png)
+![image.png](/assets/images/2021/05-17/5nb3wms403.png)
 
 修改后的：
 
 变量名都是自己随手写的 主要测试效果能否实现。当然了实际的需要和程序统一的还是规范化参数要好的，${}的格式都是。
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/gnit8whf3s.png)
+![image.png](/assets/images/2021/05-17/gnit8whf3s.png)
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/o3exep2w4f.png)
+![image.png](/assets/images/2021/05-17/o3exep2w4f.png)
 
 嗯提取了8个参数将其变量化。
 
@@ -51,7 +51,7 @@ author: duiniwukenaihe
 
 docker打包没有集成在我的jenkins pipeline里面（程序的库，我就不做过多参与了），生成jar包
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/x7n76rk0xj.png)
+![image.png](/assets/images/2021/05-17/x7n76rk0xj.png)
 
 将jar包上传到我一台有docker环境的服务器上面打包成docker image:
 
@@ -64,14 +64,14 @@ ADD target/game-1.0-SNAPSHOT.jar game-1.0-SNAPSHOT.jar
 ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/game-1.0-SNAPSHOT.jar"]
 ```
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/l4evvn5ccw.png)
+![image.png](/assets/images/2021/05-17/l4evvn5ccw.png)
 
 ```
 docker build -t ccr.ccs.tencentyun.com/xxxx/xxxx:0.2 .
 docker push ccr.ccs.tencentyun.com/xxxx/xxxx:0.2
 ```
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/l04w4f48qh.png)
+![image.png](/assets/images/2021/05-17/l04w4f48qh.png)
 
 ## 3. 生成configmap文件
 
@@ -96,7 +96,7 @@ data:
      }'
 ```
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/yhwtdc3knf.png)
+![image.png](/assets/images/2021/05-17/yhwtdc3knf.png)
 
 apply部署configmap文件：
 
@@ -106,7 +106,7 @@ kubectl apply -f spring-config.yaml -n qa
 
 describe一下：
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/o5kkud9ph8.png)
+![image.png](/assets/images/2021/05-17/o5kkud9ph8.png)
 
 ## 4. 部署springboot 服务
 
@@ -194,17 +194,17 @@ kubectl  get pods -n qa
 kubectl logs -f pvp-test-7f49fcdb9-dsjlz  -n qa
 ```
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/z69tm86t35.png)
+![image.png](/assets/images/2021/05-17/z69tm86t35.png)
 
 启动的过程中是有错误的但是先忽略这个。因为我看了一下啊nacos中 我的服务其实已经注册上了....。初步我想要 结果算是实现了！
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/tjucujfzvk.png)
+![image.png](/assets/images/2021/05-17/tjucujfzvk.png)
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/5iucvue3za.png)
+![image.png](/assets/images/2021/05-17/5iucvue3za.png)
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/u4dmqnsflo.png)
+![image.png](/assets/images/2021/05-17/u4dmqnsflo.png)
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/j0b9fb3fkg.png)
+![image.png](/assets/images/2021/05-17/j0b9fb3fkg.png)
 
 ## 6. 关于报错：
 
@@ -241,9 +241,9 @@ kubectl delete pods pvp-test-7f49fcdb9-dsjlz -n qa
 kubectl logs -f pvp-test-7f49fcdb9-ck9m6 -n qa
 ```
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/cvszp8s7ou.png)
+![image.png](/assets/images/2021/05-17/cvszp8s7ou.png)
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/al8ug0xnnw.png)
+![image.png](/assets/images/2021/05-17/al8ug0xnnw.png)
 
 依然报错...仔细一看日志....嗯 参数应该是configmaps....，我少写了一个s吧？修改configmap-get.yaml文件如下：
 
@@ -266,7 +266,7 @@ kubectl apply -f configmap-get.yaml
 kubectl delete pods  pvp-test-7f49fcdb9-ck9m6 -n qa
 ```
 
-![image.png](https://ask.qcloudimg.com/http-save/1006587/scaszpywmz.png)
+![image.png](/assets/images/2021/05-17/scaszpywmz.png)
 
 嗯这次总算成功了
 
