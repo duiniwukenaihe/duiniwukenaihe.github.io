@@ -11,7 +11,9 @@ author: duiniwukenaihe
 
 
 # 前言：
+
  SonarQube 是一个用于代码质量管理的开源平台，用于管理源代码的质量。同时 SonarQube 还对大量的持续集成工具提供了接口支持，可以很方便地在持续集成中使用 SonarQube。此外 SonarQube 的插件还可以对 Java 以外的其他编程语言提供支持，对国际化以及报告文档化也有良好的支持。
+
 # 特性:
 
 - 多语言的平台： 支持超过20种编程语言，包括Java、Python、C#、C/C++、JavaScript等常用语言。
@@ -21,24 +23,32 @@ author: duiniwukenaihe
 - 质量门： 在扫描代码后可以通过对“质量门”的比对判定此次“构建”的结果是否通过，质量门可以由用户定义，由多维度判定是否通过。
 
 注：这东西个人还是仅测试不敢玩哈哈哈。个性的程序员太多，出现各种各样的坏味道对应小运维来说也不知道怎么该跟程序所解释对接。不能作为一个清晰既定的衡量标准去衡量各种。各种阀值做不到正确的配置。只用于演示演示。
+
 # 关于SonarQube 的版本
 
 1. Community
-1. Developer
-1. Enterprise
-1. Data Center
-
-
+2. Developer
+3. Enterprise
+4. Data Center
 
 过去个人玩是只在kubernetes上部署了SonarQube 的7.9lts版本（community社区版本）。lts顾名思义长期稳定支持版。kubernetes的部署方式可以参见豆丁大佬的博文：[http://www.mydlq.club/article/25/](http://www.mydlq.club/article/25/)。个人也写个一篇类似的文章helm的安装方式搭建：[https://duiniwukenaihe.github.io/2019/11/29/k8s-helm-install-postgresql-sonarqube/](https://duiniwukenaihe.github.io/2019/11/29/k8s-helm-install-postgresql-sonarqube/)
+
 # 一. SonarQube部署过程：
+
 注：报名了泽阳大佬的jenkins CI/CD训练营。基本就是按照阳明大佬的步骤来的.想更深入学习的可以报名：[https://www.idevops.site/](https://www.idevops.site/)。物超所值。满满的干货。当然了大佬课程是搭建的7.9.6的版本，我是直接玩8.9.0的lts了。
+
 ## 1. 前提条件：
-个人环境是在内网搭建的proxmox虚拟化的服务器上虚拟的centos8.3.并参照[https://blog.csdn.net/qq_41570843/article/details/106182073](https://blog.csdn.net/qq_41570843/article/details/106182073)安装了docker环境的初始化主机。
+
+个人环境是在内网搭建的proxmox虚拟化的服务器上虚拟的centos8.3.并参照[https://blog.csdn.net/qq\_41570843/article/details/106182073](https://blog.csdn.net/qq_41570843/article/details/106182073)安装了docker环境的初始化主机。
+
 主机ip为：192.168.0.109
+
 ## 2. docker搭建SonarQube
+
 关于 lts镜像 为什么用sonarqube:8.9.0-community image呢？可以到dockerhub看下两个镜像的tag
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620439663547-ebbf47ce-5667-4582-ad46-ff7550cf517b.png#clientId=u0c56fcc4-4a47-4&from=paste&height=739&id=u8fc9871a&margin=%5Bobject%20Object%5D&name=image.png&originHeight=739&originWidth=1469&originalType=binary&size=76488&status=done&style=none&taskId=u13ad6f96-79f2-4562-8095-d53ca8b9c29&width=1469)
+
+![image.png](/assets/images/2021/05-08/zcphdmix3h.png)
+
 ```
 ## 创建数据目录
 mkdir -p /data/sonarqube/{sonarqube_conf,sonarqube_extensions,sonarqube_logs,sonarqube_data}
@@ -54,37 +64,53 @@ docker run  -itd  --name sonarqube \
     sonarqube:8.9.0-community
 ## 验证
 docker logs -f sonarqube
-
 ```
 
-
 登陆web管理页面初始用户名密码dmin修改密码。7.9的版本应该是没有默认修改密码的这一步的，会直接登陆控制台页面。初始化修改密码这步在安全性上我个人觉得这也是一个进步。
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620439508099-9cd81b3b-6d2e-475c-bc3b-eed8a9db7ddd.png#clientId=u0c56fcc4-4a47-4&from=paste&height=669&id=ue6e1f454&margin=%5Bobject%20Object%5D&name=image.png&originHeight=669&originWidth=1013&originalType=binary&size=39932&status=done&style=none&taskId=ud58b685d-62ff-45e9-9199-25ad850b2dd&width=1013)
+
+![image.png](/assets/images/2021/05-08/erjllxvj39.png)
+
 ## 3. 在线安装插件（中文插件为例）
 
-
 Adminstration-Marketplace-Plugins
-先提示一条风险l understand the risk我了解风险。（这一步应该也是新的版本增加的7.9.6的lts貌似是没有的）然后install 搜索chinese install插件，然后重启。（网络经常抽筋安装不了）
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620439868116-05579ce6-cd5f-4011-b75c-1a74fc3037af.png#clientId=u0c56fcc4-4a47-4&from=paste&height=672&id=u56f83754&margin=%5Bobject%20Object%5D&name=image.png&originHeight=672&originWidth=1375&originalType=binary&size=67894&status=done&style=none&taskId=u7856a5ad-9011-45c3-bc05-2c4099ec0ad&width=1375)
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620441558295-bee57ee0-9504-4c8e-a374-03f87f1519af.png#clientId=u0c56fcc4-4a47-4&from=paste&height=770&id=u8f1fcd9b&margin=%5Bobject%20Object%5D&name=image.png&originHeight=770&originWidth=1530&originalType=binary&size=112906&status=done&style=none&taskId=u47d96804-6a38-43ca-a4ec-8013ecf6b62&width=1530)
-## 4. 手动下载插件离线安装
-[https://github.com/xuhuisheng/sonar-l10n-zh/tree/sonar-l10n-zh-plugin-8.8#the-chinese-translation-pack-for-sonarqube](https://github.com/xuhuisheng/sonar-l10n-zh/tree/sonar-l10n-zh-plugin-8.8#the-chinese-translation-pack-for-sonarqube)查看版本对应关系
-[https://github.com/xuhuisheng/sonar-l10n-zh/releases/tag/sonar-l10n-zh-plugin-8.9](https://github.com/xuhuisheng/sonar-l10n-zh/releases/tag/sonar-l10n-zh-plugin-8.9)
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620441341152-b773a36d-6591-4535-b027-42a23999276a.png#clientId=u0c56fcc4-4a47-4&from=paste&height=728&id=ue97d00c2&margin=%5Bobject%20Object%5D&name=image.png&originHeight=728&originWidth=814&originalType=binary&size=60808&status=done&style=none&taskId=u11cd1408-3851-48d1-959d-efdd72ec6e5&width=814)
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620441536953-c36ab9d3-a557-4be8-b173-050bf3a8d972.png#clientId=u0c56fcc4-4a47-4&from=paste&height=334&id=uef8ebd5a&margin=%5Bobject%20Object%5D&name=image.png&originHeight=334&originWidth=1114&originalType=binary&size=46911&status=done&style=none&taskId=u4f8a03b2-0cf5-4668-bd32-a7375c50d65&width=1114)
 
-上传到/data/sonarqube/sonarqube_extensions/downloads目录，然后
+先提示一条风险l understand the risk
+
+我了解风险。（这一步应该也是新的版本增加的7.9.6的lts貌似是没有的）然后install 搜索chinese install插件，然后重启。（网络经常抽筋安装不了）
+
+![image.png](/assets/images/2021/05-08/hn52xh1pel.png)
+
+![image.png](/assets/images/2021/05-08/t286cvnopv.png)
+
+## 4. 手动下载插件离线安装
+
+[https://github.com/xuhuisheng/sonar-l10n-zh/tree/sonar-l10n-zh-plugin-8.8#the-chinese-translation-pack-for-sonarqube](https://github.com/xuhuisheng/sonar-l10n-zh/tree/sonar-l10n-zh-plugin-8.8#the-chinese-translation-pack-for-sonarqube)查看版本对应关系
+
+[https://github.com/xuhuisheng/sonar-l10n-zh/releases/tag/sonar-l10n-zh-plugin-8.9](https://github.com/xuhuisheng/sonar-l10n-zh/releases/tag/sonar-l10n-zh-plugin-8.9)
+
+![image.png](/assets/images/2021/05-08/2f6nb92ejl.png)
+
+![image.png](/assets/images/2021/05-08/1tohwxe9zg.png)
+
+上传到/data/sonarqube/sonarqube\_extensions/downloads目录，然后
+
 ```
 cd /data/sonarqube/sonarqube_extensions/downloads
 wget https://github.com/xuhuisheng/sonar-l10n-zh/releases/download/sonar-l10n-zh-plugin-8.9/sonar-l10n-zh-plugin-8.9.jar
 chmod +x sonar-l10n-zh-plugin-1.29.jar
 docker restart sonarqube
 ```
+
 ## 5.配置强制登录
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620441866200-9b2fa901-77af-4bff-826b-dc702604dd73.png#clientId=u0c56fcc4-4a47-4&from=paste&height=753&id=ufd3bfc18&margin=%5Bobject%20Object%5D&name=image.png&originHeight=753&originWidth=1067&originalType=binary&size=65998&status=done&style=none&taskId=ub8ea86ae-b979-40d1-a62c-8ae70fbaea6&width=1067)
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620442087824-b90e7767-add9-47dd-bbb4-98de925d1ef4.png#clientId=u0c56fcc4-4a47-4&from=paste&height=713&id=ub7ce756d&margin=%5Bobject%20Object%5D&name=image.png&originHeight=713&originWidth=1446&originalType=binary&size=43247&status=done&style=none&taskId=uc4d44e6c-4336-45ba-8bb5-9e01c9eeabf&width=1446)
+
+![image.png](/assets/images/2021/05-08/sh4ig7t2p8.png)
+
+![image.png](/assets/images/2021/05-08/f47jril3n2.png)
+
 ## 6. 将容器中lib目录复制到本地，并在容器中挂载本地目录
+
 其实是加深下docker cp的用法了
+
 ```
 ## lib目录
 
@@ -102,72 +128,99 @@ docker run  -itd  --name sonarqube \
     -v /data/sonarqube/sonarqube_data:/opt/sonarqube/data \
     -v /data/sonarqube/sonarqube_lib:/opt/sonarqube/lib \
     sonarqube:8.9.0-community
-
 ```
+
 在lib目录下新建一个文件，登陆容器挂载目录内验证加载成功
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620442960086-5931ea6c-cae2-4dfb-aef2-d3f008812ec1.png#clientId=u0c56fcc4-4a47-4&from=paste&height=454&id=u8b8fe97c&margin=%5Bobject%20Object%5D&name=image.png&originHeight=454&originWidth=1190&originalType=binary&size=59192&status=done&style=none&taskId=u1ceeccdb-3be7-4e4c-87f6-7f20e210f77&width=1190)
+
+![image.png](/assets/images/2021/05-08/1e3q9eznmr.png)
+
 注：这一步后web登陆sonarqube应该又要重新初始化一遍密码。因为数据库没有整外部的也没有挂载数据目录。使用的默认的数据库内部的。生产环境应该起码配置外部的数据库的嗯大部分用的是postgresql…
+
 ## 7. 关于插件的版本与对应关系
+
 在sonarqube7.9版本中 常用的插件举个例子：
 
 1. java -Java Code Quality and Security
-1. js-SonarJS
-1. GO-SonarGo
+2. js-SonarJS
+3. GO-SonarGo
 
 8.9版本中很多不需要安装了....参照：[https://docs.sonarqube.org/latest/instance-administration/plugin-version-matrix/](https://docs.sonarqube.org/latest/instance-administration/plugin-version-matrix/)。凡是提示Bundled的都已经默认集成了：
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620443466026-446fb1d1-f738-4b4e-982c-77c5ea551f88.png#clientId=u0c56fcc4-4a47-4&from=paste&height=815&id=u1847f3cf&margin=%5Bobject%20Object%5D&name=image.png&originHeight=815&originWidth=1042&originalType=binary&size=64560&status=done&style=none&taskId=u0184ae50-9501-4336-bb47-a7a7a350cbe&width=1042)
+
+![image.png](/assets/images/2021/05-08/myu8b6fv4e.png)
+
 # 二. 配置Scanner
 
-
 ## 1. 关于Scanner:
-> - Gradle - [SonarScanner for Gradle](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/)
-> - .NET - [SonarScanner for .NET](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-msbuild/)
-> - Maven - use the [SonarScanner for Maven](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-maven/)
-> - Jenkins - [SonarScanner for Jenkins](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-jenkins/)
-> - Azure DevOps - [SonarQube Extension for Azure DevOps](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-azure-devops/)
-> - Ant - [SonarScanner for Ant](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-ant/)
-> - anything else (CLI) - [SonarScanner](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner/)
+
+> Gradle - [SonarScanner for Gradle](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-gradle/)
+> .NET - [SonarScanner for .NET](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-msbuild/)
+> Maven - use the [SonarScanner for Maven](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-maven/)
+> Jenkins - [SonarScanner for Jenkins](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-jenkins/)
+> Azure DevOps - [SonarQube Extension for Azure DevOps](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-azure-devops/)
+> Ant - [SonarScanner for Ant](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner-for-ant/)
+> anything else (CLI) - [SonarScanner](https://docs.sonarqube.org/latest/analysis/scan/sonarscanner/)
 
 选择anything else了，cli的方式。直接在192.168.0.173这台搭建了gitlab的主机上面搭建了（这台主机我也搞了jenkins slave。安装了jdk的1.8）
+
 关于主机已经运行的gitlab环境参照：[https://cloud.tencent.com/developer/article/1818427](https://cloud.tencent.com/developer/article/1818427)
 
 ## 2. 关于版本：
+
 [https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/](https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/)一般是安装最新的我个人。但是下载的时候貌似没有看好...选择了sonar-scanner-cli-4.6.1.2450-linux.zip。反正大同小异的就拿这个来演示了......
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620444728625-fead62b1-a904-4394-adb4-3be4ebaef906.png#clientId=u0c56fcc4-4a47-4&from=paste&height=987&id=u11dae0bb&margin=%5Bobject%20Object%5D&name=image.png&originHeight=987&originWidth=1349&originalType=binary&size=131939&status=done&style=none&taskId=u81fa2328-901f-46a6-bc1c-859a06f8fde&width=1349)
+
+![image.png](/assets/images/2021/05-08/71bgjlv24p.png)
+
 ## 3. 安装scanner
+
 ```
 wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.1.2450-linux.zip
 unzip sonar-scanner-cli-4.6.1.2450-linux.zip
 mv sonar-scanner-4.6.1.2450-linux /usr/local/
 ```
+
 vim /etc/profile
+
 ```
 export SCANNER_HOME=/usr/local/sonar-scanner-4.6.1.2450-linux
 export PATH=$PATH:$SCANNER_HOME/bin
 ```
+
 source/etc/profile
 
 确认版本安装成功生效
+
 ```
 sonar-scanner -v
 ```
+
 what嗯  我本地的环境是jdk1.8d  为什么我的sonar-scanner java版本是java11呢？这是因为sonar-scanner中集成了jre环境。默认是使用自己的jre的.
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620444987588-11c2bf1d-9723-40ba-a2b5-86cd28ecce15.png#clientId=u0c56fcc4-4a47-4&from=paste&height=534&id=u124c109b&margin=%5Bobject%20Object%5D&name=image.png&originHeight=534&originWidth=1035&originalType=binary&size=71668&status=done&style=none&taskId=u27e938e0-a9d5-4a58-9547-56b7ed46678&width=1035)
+
+![image.png](/assets/images/2021/05-08/2cpqb0nyci.png)
+
 ## 4. 修改scanner的java使用版本
+
 ```
 vim /usr/local/sonar-scanner-4.6.1.2450-linux/bin/sonar-scanner
 ###修改use_embedded_jre参数
 use_embedded_jre=false
 ```
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620445245111-2638842f-382d-485b-a68c-114063df06aa.png#clientId=u0c56fcc4-4a47-4&from=paste&height=310&id=u9763ca84&margin=%5Bobject%20Object%5D&name=image.png&originHeight=310&originWidth=826&originalType=binary&size=20205&status=done&style=none&taskId=uef30b59d-15c0-4f4e-b577-62704dda99d&width=826)
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620445252981-989d0b60-c809-4b76-8882-73ffab3c647f.png#clientId=u0c56fcc4-4a47-4&from=paste&height=314&id=ube60ab69&margin=%5Bobject%20Object%5D&name=image.png&originHeight=314&originWidth=899&originalType=binary&size=20407&status=done&style=none&taskId=ufffeadc0-d923-477a-a5b5-c8b6a1069c1&width=899)
+
+![image.png](/assets/images/2021/05-08/60e4awzgze.png)
+
+![image.png](/assets/images/2021/05-08/ez9e2ss05k.png)
+
 sonar-scanner -v 验证java版本
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620445351342-72032846-f584-4b98-a4fc-4f49e14e9c88.png#clientId=u0c56fcc4-4a47-4&from=paste&height=344&id=u8ed32232&margin=%5Bobject%20Object%5D&name=image.png&originHeight=344&originWidth=897&originalType=binary&size=48274&status=done&style=none&taskId=u74e56d38-2952-4787-a888-61c7ca71d81&width=897)
+
+![image.png](/assets/images/2021/05-08/ipmnyd2dzq.png)
+
 # 三. SonarScanner的简单使用
+
 只是简单验证使用下sonnarscanner的使用
+
 ## 1. maven的安装
 
 注：其实在安装jenkins的时候已经安装了maven了。但是这里没有写jenkins的部署。所以这里就补写一下了。
+
 ```
 ### 下载
 
@@ -193,27 +246,43 @@ Java version: 1.8.0_292, vendor: Red Hat, Inc., runtime: /usr/lib/jvm/java-1.8.0
 Default locale: en_US, platform encoding: UTF-8
 OS name: "linux", version: "4.18.0-240.22.1.el8_3.x86_64", arch: "amd64", family: "unix"
 ```
-## 2.初始化一个maven项目
-### 1. 初始化一个springboot  maven项目
-** **[https://start.spring.io/](https://start.spring.io/)的maven项目
 
-![](https://cdn.nlark.com/yuque/0/2021/png/2584012/1618039117462-6a064654-944e-49e4-918a-cd05d90e0714.png?x-oss-process=image%2Fresize%2Cw_746#from=paste&height=432&id=eezo9&margin=%5Bobject%20Object%5D&originHeight=432&originWidth=746&originalType=url&status=done&style=none&width=746)
+## 2.初始化一个maven项目
+
+### 1. 初始化一个springboot  maven项目
+
+\*\* \*\*[https://start.spring.io/](https://start.spring.io/)的maven项目
+
+![](/assets/images/2021/05-08/xgmcz9wrer.png)
+
 ### 2. 上传到gitlab私有仓库
+
 其实是跟着泽阳大佬的步骤做的一个devops-maven-service gitlab项目。反正就是那么的一个demo没有做什么复杂的设置。其实如果只是只sonarqube集成也可以不先整合到gitlab的，但是为了尽量还原自己的环境，故上传到gitlab了。
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620446937160-a3cee496-a138-47b0-8fdf-e2f5600c1bba.png#clientId=u0c56fcc4-4a47-4&from=paste&height=972&id=ud9158c84&margin=%5Bobject%20Object%5D&name=image.png&originHeight=972&originWidth=1731&originalType=binary&size=112561&status=done&style=none&taskId=u2ebb913d-da08-40b7-9d72-f05f728b6ec&width=1731)
+
+![image.png](/assets/images/2021/05-08/p651d08unt.png)
+
 ### 3. 克隆仓库
+
 ```
 git clone http://192.168.0.173/devops/devops-maven-service
 ```
+
 ### 4. maven打包
+
 ```
 mvn clean package
 ```
+
 一定记得mvn打包。自己脑袋糊涂了。不maven打包哪里会有target class目录呢......
+
 执行扫描会报错的（扫描代码详见下一步）
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620452980442-0f1031c0-4b06-4eea-985c-5b028dcf1b32.png#clientId=u0c56fcc4-4a47-4&from=paste&height=662&id=u75ea1a5e&margin=%5Bobject%20Object%5D&name=image.png&originHeight=662&originWidth=1026&originalType=binary&size=87346&status=done&style=none&taskId=u2d83a928-fa49-4d24-b5d0-9727da95fba&width=1026)
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620447188356-8a062caf-77c3-4046-9038-a0cf5313c094.png#clientId=u0c56fcc4-4a47-4&from=paste&height=438&id=u7c83c20d&margin=%5Bobject%20Object%5D&name=image.png&originHeight=438&originWidth=1361&originalType=binary&size=93906&status=done&style=none&taskId=u86e69fe6-c498-48b7-87d6-4ae174384e9&width=1361)
+
+![image.png](/assets/images/2021/05-08/nrxbkojmlr.png)
+
+![image.png](/assets/images/2021/05-08/atdarrehtj.png)
+
 ### 5. sonar扫描
+
 ```
     sonar-scanner -Dsonar.host.url=http://192.168.0.209:9000 \
 -Dsonar.projectKey=devops-maven-service \
@@ -231,26 +300,41 @@ mvn clean package
 -Dsonar.java.test.binaries=target/test-classes \
 -Dsonar.java.surefire.report=target/surefire-reports
 ```
+
 嗯配置参数基本字面意思homepage ci都是乱写的可以忽略。
+
 具体参数实例可以参考： [https://docs.sonarqube.org/latest/analysis/analysis-parameters/](https://docs.sonarqube.org/latest/analysis/analysis-parameters/)
+
 各种语言的扫描示例：[https://docs.sonarqube.org/latest/analysis/languages/](https://docs.sonarqube.org/latest/analysis/languages/go/)
+
 反正正常扫描完了就是下面专业的
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620446984962-e85eac1a-107d-440e-bd75-0a5a125553b5.png#clientId=u0c56fcc4-4a47-4&from=paste&height=381&id=ued9df1c0&margin=%5Bobject%20Object%5D&name=image.png&originHeight=381&originWidth=1447&originalType=binary&size=61225&status=done&style=none&taskId=uf2d8d6a5-f588-41ba-85fb-1e506824e35&width=1447)
+
+![image.png](/assets/images/2021/05-08/sqyll5nr87.png)
+
 ### 6. 登陆sonarqube web查看结果
+
 介绍后登陆sonarqubeweb管理页面查看：
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620453393415-7b3e512d-453e-4ec2-8615-b161fe1d1699.png#clientId=u0c56fcc4-4a47-4&from=paste&height=633&id=ud9294a77&margin=%5Bobject%20Object%5D&name=image.png&originHeight=633&originWidth=1376&originalType=binary&size=78981&status=done&style=none&taskId=u1c9b0834-d9ba-49b6-8ea4-17cb7331194&width=1376)
+
+![image.png](/assets/images/2021/05-08/ljsztl2k1w.png)
+
 ### 7.就想拿一个自己的项目跑一下
+
 嗯 貌似就是这样的。拿自己内部的一个tts的项目测试下（起名是个学问，这样的名字我也很无语。其实就是一个使用阿里云tts文字转语音的服务）。
+
 #### 1. 下载代码到sonar服务器忽略
+
 #### 2. mvn 打包
+
 ```
 mvn clean package
 ```
-讲真出现那么多Positive matches 我有点强迫症。都是大佬写的。就抛砖引玉了......
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620453636679-cc3fdb5b-5cdf-4de5-9b5b-05efcf7974c8.png#clientId=u0c56fcc4-4a47-4&from=paste&height=678&id=uc22ae25b&margin=%5Bobject%20Object%5D&name=image.png&originHeight=678&originWidth=1629&originalType=binary&size=105990&status=done&style=none&taskId=u6e6dc3d8-ab14-45e8-8e8e-964c0a2dee2&width=1629)
 
+讲真出现那么多Positive matches 我有点强迫症。都是大佬写的。就抛砖引玉了......
+
+![image.png](/assets/images/2021/05-08/cgwhbx9j74.png)
 
 #### 3. sonar扫描
+
 ```
     sonar-scanner -Dsonar.host.url=http://192.168.0.209:9000 \
 -Dsonar.projectKey=tts \
@@ -268,8 +352,13 @@ mvn clean package
 -Dsonar.java.test.binaries=target/test-classes \
 -Dsonar.java.surefire.report=target/surefire-reports
 ```
+
 #### 4. 登陆sonarqube查看
+
 扫描完成登陆sonarqube查看 嗯 tts的应用也有了
-![image.png](https://cdn.nlark.com/yuque/0/2021/png/2505271/1620453780403-3dcc8bd2-1b40-4358-a606-b68e1d118472.png#clientId=u0c56fcc4-4a47-4&from=paste&height=682&id=u191d3dbc&margin=%5Bobject%20Object%5D&name=image.png&originHeight=682&originWidth=1601&originalType=binary&size=82544&status=done&style=none&taskId=ua4f38df2-607f-454a-acd5-141182a51a4&width=1601)
+
+![image.png](/assets/images/2021/05-08/mrf08jyawx.png)
+
 # 后记：
+
 对于我来说和鬼东西段时间还是用不起来。只能算是扩展下自己的知识面，了解下人家的思想和流程......。然后再准备搞一下与jenkins的流程。就为了体验一下正常的cicd工具流过程。
