@@ -6,7 +6,8 @@ category: Centos
 tags: centos gitlab
 author: duiniwukenaihe
 ---
-
+* content
+{:toc}
 
 # 背景：
 
