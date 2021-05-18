@@ -6,7 +6,8 @@ category: Centos
 tags: centos gitlab
 author: duiniwukenaihe
 ---
-* content
+
+
 # 背景：
 
 本来吧gitlab都是搞在kubernetes上面的。公司内网环境需要一个内部的gitlab.然后就准备搭建一个。另外跟着阳明大佬的课程做gitlab触发jenkins任务的时候我的jenkins想拿内网的去做，没法去触发啊。正好搞一个内网的去玩一下呢。线上的都是on kubernetes 的不想太随意去各种玩了......
