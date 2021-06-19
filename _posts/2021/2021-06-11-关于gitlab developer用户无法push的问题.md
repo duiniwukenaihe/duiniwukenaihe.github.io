@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 22021-06-11-关于gitlab developer用户无法push的问题
+title: 2021-06-11-关于gitlab developer用户无法push的问题
 date: 2021-06-11 2:00:00
 category: gitlab
 tags: gitlab push
