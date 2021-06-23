@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 2021-06-23-Kubernetes 应用java程序无法使用jmap jstack的解决方案
+title: 2021-06-23-Kubernetes java程序无法使用jmap jstack的解决方案
 date: 2021-06-23 2:00:00
 category: kubernetes
 tags: java jstack jmap
