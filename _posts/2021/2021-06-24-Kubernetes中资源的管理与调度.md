@@ -516,7 +516,9 @@ spec:
 
 Guaranteed 级别的 pod，有以下几个条件：
 
-- CPU 和内存都要设置 requests 和 limitsapiVersion: v1
+- CPU 和内存都要设置 requests 和 limits
+```
+apiVersion: v1
 kind: Pod
 metadata:
   name: php-test
@@ -532,6 +534,7 @@ spec:
       requests:
         memory: "200Mi"
         cpu: "700m"
+```		
 - 每个容器都需要设置资源量
 - 它们必须相等（每个容器的每种资源的 requests 和 limits 必须相等） 
 
