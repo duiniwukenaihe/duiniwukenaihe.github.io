@@ -13,11 +13,13 @@ author: duiniwukenaihe
 php应用中出现大佬域名解析失败的报错.....what?开始怀疑过kubernets版本问题，也怀疑过网络组件。但是未能找到原因。今天正好百度搜索资料时候偶然看到：[https://www.it1352.com/589254.html](https://www.it1352.com/589254.html)，看到他上面解决的curl调取花费时间过长的时候curl指定了CURL_IPRESOLVE_V4。就顺便想了下...是了。我的集群没有禁用ipv6!划重点了：
 ​
 
-**如果开启了IPv6，curl默认会优先解析 IPv6，在对应域名没有 IPv6 的情况下，会等待 IPv6 dns解析失败 timeout 之后才按以前的正常流程去找 IPv4**
+如果开启了IPv6，curl默认会优先解析 IPv6，在对应域名没有 IPv6 的情况下，会等待 IPv6 dns解析失败 timeout 之后才按以前的正常流程去找 IPv4
 # 关于解决方案:
+
 自己简单想一想也有两种解决方式：
 
 1. work节点禁用ipv6
+
 2 php代码指定CURL_IPRESOLVE_V4
 # 入手解决：
 
