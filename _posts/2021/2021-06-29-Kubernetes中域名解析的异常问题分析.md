@@ -17,12 +17,15 @@ php应用中出现大佬域名解析失败的报错.....what?开始怀疑过kube
 # 关于解决方案:
 **自己简单想一想也有两种解决方式：**
 
-1. **work节点禁用ipv6.**
-1. **php代码指定**CURL_IPRESOLVE_V4。
+1. work节点禁用ipv6
+2 php代码指定CURL_IPRESOLVE_V4
 # 入手解决：
+
 ## 1.关于work节点禁用ipv6
+
 参照：[https://blog.csdn.net/wh211212/article/details/80996364](https://blog.csdn.net/wh211212/article/details/80996364)
 我是直接sysctl设置禁用IPv6的方式了，不想重启集群节点！
+
 ```
 在/etc/sysctl.conf中添加以下行
 net.ipv6.conf.all.disable_ipv6 = 1
@@ -41,5 +44,3 @@ sysctl -p
 # 其他可以参考的：
 ## 1. [k8s – coredns禁用ipv6解析](https://yuerblog.cc/2019/09/13/k8s-coredns%E7%A6%81%E7%94%A8ipv6%E8%A7%A3%E6%9E%90/)
 ## 2. [容器中使用nscd缓存优化 DNS 解析](https://my.oschina.net/u/2322202/blog/3115148)
-[
-](https://my.oschina.net/u/2322202/blog/3115148)
