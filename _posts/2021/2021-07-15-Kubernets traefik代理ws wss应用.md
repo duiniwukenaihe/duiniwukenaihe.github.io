@@ -337,8 +337,6 @@ ingress:traefik.ingress.kubernetes.io/service.passhostheader: "true"
 
 ​
 
-![](https://ask8088-private-1251520898.cn-south.myqcloud.com/developer-images/article/1006587/58et142e76.png?q-sign-algorithm=sha1&q-ak=AKID2uZ1FGBdx1pNgjE3KK4YliPpzyjLZvug&q-sign-time=1626333487;1626340687&q-key-time=1626333487;1626340687&q-header-list=&q-url-param-list=&q-signature=0e83586b103ed11fa5b4983a040ddfaf4c08d303)
-
-​
+![image.png](/assets/images/2021/07-15/c47fcce97a3a0cbb1af992978166b372.png)
 
 如果有问题 可以尝试一下上面的方式！
