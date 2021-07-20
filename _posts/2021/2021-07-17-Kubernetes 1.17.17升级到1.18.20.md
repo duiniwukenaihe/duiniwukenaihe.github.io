@@ -7,8 +7,8 @@ tags: kubernetes kubeadm
 author: duiniwukenaihe
 ---
 * content
-{:toc}#
- 背景：
+{:toc}
+# 背景：
 
 参照：[https://www.yuque.com/duiniwukenaihe/ehb02i/kdvrku](https://www.yuque.com/duiniwukenaihe/ehb02i/kdvrku) 完成了1.16.15到1.17.17 的升级，现在升级到1.18版本
 
