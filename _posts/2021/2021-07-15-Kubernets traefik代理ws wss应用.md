@@ -332,9 +332,9 @@ wscat --connect wss://web-socket-test.xxx.com:443
 ![image.png](/assets/images/2021/07-15/c47fcce97a3a0cbb1af992978166b372.png)
 
 ## 2. ingress
-
+```
 ingress:traefik.ingress.kubernetes.io/service.passhostheader: "true"
-
+```
 ​
 
 ![image.png](/assets/images/2021/07-15/c47fcce97a3a0cbb1af992978166b372.png)
