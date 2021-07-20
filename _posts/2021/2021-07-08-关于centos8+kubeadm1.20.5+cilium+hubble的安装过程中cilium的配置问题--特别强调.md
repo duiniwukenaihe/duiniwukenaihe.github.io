@@ -13,23 +13,23 @@ author: duiniwukenaihe
 
 ```
 [root@sh-master-01 ~]# kubectl get pods -n default -o wide
-NAME                          READY   STATUS             RESTARTS   AGE    IP           NODE         NOMINATED NODE   READINESS GATES
-csi-app                       1/1     Running            11         106d   10.0.4.204   sh-work-01   <none>           <none>
-nginx                         1/1     Running            0          13d    10.0.4.60    sh-work-01   <none>           <none>
-nginx-1-kkfvd                 1/1     Running            0          13d    10.0.5.223   sh-work-02   <none>           <none>
-nginx-1-klgpx                 1/1     Running            0          13d    10.0.4.163   sh-work-01   <none>           <none>
-nginx-1-s5mzp                 1/1     Running            0          13d    10.0.3.208   sh-work-03   <none>           <none>
-nginx-2-8cb2j                 1/1     Running            0          13d    10.0.3.218   sh-work-03   <none>           <none>
-nginx-2-l527j                 1/1     Running            0          13d    10.0.5.245   sh-work-02   <none>           <none>
-nginx-2-qnsrq                 1/1     Running            0          13d    10.0.4.77    sh-work-01   <none>           <none>
-php-apache-5b95f8f674-clzn5   1/1     Running            2          99d    10.0.3.64    sh-work-03   <none>           <none>
-pod-flag                      1/1     Running            316        13d    10.0.5.252   sh-work-02   <none>           <none>
-pod-nodeaffinity              1/1     Running            0          13d    10.0.4.118   sh-work-01   <none>           <none>
-pod-prefer                    1/1     Running            0          13d    10.0.5.181   sh-work-02   <none>           <none>
-pod-prefer1                   1/1     Running            0          13d    10.0.3.54    sh-work-03   <none>           <none>
-with-node-affinity            0/1     ImagePullBackOff   0          13d    10.0.4.126   sh-work-01   <none>           <none>
-with-pod-affinity             0/1     ImagePullBackOff   0          13d    10.0.5.30    sh-work-02   <none>           <none>
-with-pod-antiaffinity         1/1     Running            0          13d    10.0.4.159   sh-work-01   <none>           <none>
+NAME                          READY   STATUS             RESTARTS   AGE    IP           NODE         
+csi-app                       1/1     Running            11         106d   10.0.4.204   sh-work-01  
+nginx                         1/1     Running            0          13d    10.0.4.60    sh-work-01  
+nginx-1-kkfvd                 1/1     Running            0          13d    10.0.5.223   sh-work-02  
+nginx-1-klgpx                 1/1     Running            0          13d    10.0.4.163   sh-work-01  
+nginx-1-s5mzp                 1/1     Running            0          13d    10.0.3.208   sh-work-03   
+nginx-2-8cb2j                 1/1     Running            0          13d    10.0.3.218   sh-work-03  
+nginx-2-l527j                 1/1     Running            0          13d    10.0.5.245   sh-work-02   
+nginx-2-qnsrq                 1/1     Running            0          13d    10.0.4.77    sh-work-01  
+php-apache-5b95f8f674-clzn5   1/1     Running            2          99d    10.0.3.64    sh-work-03
+pod-flag                      1/1     Running            316        13d    10.0.5.252   sh-work-02 
+pod-nodeaffinity              1/1     Running            0          13d    10.0.4.118   sh-work-01
+pod-prefer                    1/1     Running            0          13d    10.0.5.181   sh-work-02
+pod-prefer1                   1/1     Running            0          13d    10.0.3.54    sh-work-03
+with-node-affinity            0/1     ImagePullBackOff   0          13d    10.0.4.126   sh-work-01
+with-pod-affinity             0/1     ImagePullBackOff   0          13d    10.0.5.30    sh-work-02
+with-pod-antiaffinity         1/1     Running            0          13d    10.0.4.159   sh-work-01
 ```
 
 主要是看ip一栏，这.，我记得我的 serviceSubnet: 172.254.0.0/16 , podSubnet: 172.3.0.0/16啊 是不是哪里搞错了了呢？
