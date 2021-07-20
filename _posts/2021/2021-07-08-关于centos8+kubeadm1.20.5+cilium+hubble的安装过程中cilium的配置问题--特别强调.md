@@ -7,7 +7,8 @@ tags: kubernetes kubeadm cilium
 author: duiniwukenaihe
 ---
 * content
-{:toc}# 背景：
+{:toc}
+# 背景：
 
 参见前文：[centos8+kubeadm1.20.5+cilium+hubble环境搭建](https://www.yuque.com/duiniwukenaihe/ehb02i/dkwh3p)，并升级到了1.21版本（[Kubernetes 1.20.5 upgrade 1.21.0](https://www.yuque.com/duiniwukenaihe/ehb02i/palbae)）。今天无聊查看一下集群呢突然发现一个问题：
 
